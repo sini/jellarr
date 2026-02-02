@@ -52,6 +52,11 @@ export default defineConfig(
       "@typescript-eslint/naming-convention": [
         "error",
         {
+          selector: "property",
+          filter: { regex: "^_file$", match: true },
+          format: null,
+        },
+        {
           selector: ["property"],
           modifiers: ["requiresQuotes"],
           format: null,
