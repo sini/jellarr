@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type Mock,
+  type MockInstance,
+} from "vitest";
 import {
   calculatePluginInstalls,
   compareVersions,
@@ -13,6 +21,7 @@ import {
   calculatePluginConfigurationsDiff,
   applyPluginConfigurations,
 } from "../../src/apply/plugins";
+import { resolveFileReferences } from "../../src/lib/file-refs";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type {
   PluginConfigList,
@@ -24,6 +33,7 @@ import type {
   BasePluginConfigurationSchema,
   PluginConfigurationSchema,
 } from "../../src/types/schema/plugins";
+import * as fs from "fs";
 
 vi.mock("../../src/lib/logger", () => ({
   logger: {
@@ -862,6 +872,100 @@ describe("calculatePluginConfigurationsDiff", () => {
       "fanart-id",
     ) as unknown as Record<string, unknown>;
     expect(fanartConfig.EnableImages).toBe(true);
+  });
+
+  it("should apply resolved _file values in configuration diff", async () => {
+    // Arrange
+    const readFileSpy: MockInstance<typeof fs.promises.readFile> = vi
+      .spyOn(fs.promises, "readFile")
+      .mockResolvedValueOnce("resolved-api-key\n");
+    const currentMap: Map<string, PluginConfigurationSchema> = new Map([
+      [
+        "SomePlugin",
+        {
+          id: "plugin-id",
+          configuration: {
+            ApiKey: "old-key",
+            OtherSetting: "preserved",
+          } as unknown as BasePluginConfigurationSchema,
+        },
+      ],
+    ]);
+    const unresolvedConfig: Record<string, unknown> = {
+      ApiKey: { _file: "/run/secrets/api-key" },
+    };
+
+    // Act — resolve _file references, then compute diff
+    const resolvedConfig: Record<string, unknown> =
+      await resolveFileReferences(unresolvedConfig);
+    const desired: PluginConfigList = [
+      {
+        name: "SomePlugin",
+        configuration: resolvedConfig,
+      },
+    ];
+    const result: Map<string, BasePluginConfigurationSchema> | undefined =
+      calculatePluginConfigurationsDiff(currentMap, desired);
+
+    // Assert
+    expect(result).toBeDefined();
+    expect(result?.size).toBe(1);
+    const config: Record<string, unknown> = result?.get(
+      "plugin-id",
+    ) as unknown as Record<string, unknown>;
+    expect(config.ApiKey).toBe("resolved-api-key");
+    expect(config.OtherSetting).toBe("preserved");
+    readFileSpy.mockRestore();
+  });
+
+  it("should apply resolved _file values in nested configuration diff", async () => {
+    // Arrange
+    const readFileSpy: MockInstance<typeof fs.promises.readFile> = vi
+      .spyOn(fs.promises, "readFile")
+      .mockResolvedValueOnce("secret-token\n");
+    const currentMap: Map<string, PluginConfigurationSchema> = new Map([
+      [
+        "Trakt",
+        {
+          id: "trakt-id",
+          configuration: {
+            TraktUsers: [{ AccessToken: "old-token", ExtraLogging: false }],
+          } as unknown as BasePluginConfigurationSchema,
+        },
+      ],
+    ]);
+    const unresolvedConfig: Record<string, unknown> = {
+      TraktUsers: [
+        {
+          AccessToken: { _file: "/run/secrets/trakt-token" },
+          ExtraLogging: true,
+        },
+      ],
+    };
+
+    // Act
+    const resolvedConfig: Record<string, unknown> =
+      await resolveFileReferences(unresolvedConfig);
+    const desired: PluginConfigList = [
+      {
+        name: "Trakt",
+        configuration: resolvedConfig,
+      },
+    ];
+    const result: Map<string, BasePluginConfigurationSchema> | undefined =
+      calculatePluginConfigurationsDiff(currentMap, desired);
+
+    // Assert
+    expect(result).toBeDefined();
+    expect(result?.size).toBe(1);
+    const config: Record<string, unknown> = result?.get(
+      "trakt-id",
+    ) as unknown as Record<string, unknown>;
+    const traktUsers: Array<Record<string, unknown>> =
+      config.TraktUsers as Array<Record<string, unknown>>;
+    expect(traktUsers[0].AccessToken).toBe("secret-token");
+    expect(traktUsers[0].ExtraLogging).toBe(true);
+    readFileSpy.mockRestore();
   });
 });
 

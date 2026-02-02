@@ -50,7 +50,9 @@ import {
   type PluginRemoval,
 } from "../apply/plugins";
 import { calculateMetadataDiff, applyMetadata } from "../apply/metadata";
-import { type MetadataConfigurationSchema } from "../types/schema/metadata";
+import type { MetadataConfigurationSchema } from "../types/schema/metadata";
+import type { PluginConfig, PluginConfigList } from "../types/config/plugins";
+import { resolveFileReferences } from "../lib/file-refs";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -212,6 +214,18 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.plugins) {
+    const resolvedPlugins: PluginConfigList = await Promise.all(
+      cfg.plugins.map(async (plugin: PluginConfig) => {
+        if (plugin.configuration) {
+          return {
+            ...plugin,
+            configuration: await resolveFileReferences(plugin.configuration),
+          };
+        }
+        return plugin;
+      }),
+    );
+
     let installedPlugins: PluginInfoSchema[] =
       await jellyfinClient.getPlugins();
     const catalog: PackageInfoSchema[] = await jellyfinClient.getPackages();
@@ -219,7 +233,7 @@ export async function runPipeline(path: string): Promise<void> {
     const pluginInstalls: PluginInstall[] | undefined = calculatePluginInstalls(
       installedPlugins,
       catalog,
-      cfg.plugins,
+      resolvedPlugins,
       await jellyfinClient.getServerVersion(),
     );
 
@@ -235,7 +249,7 @@ export async function runPipeline(path: string): Promise<void> {
     const pluginRemovals: PluginRemoval[] | undefined = calculatePluginRemovals(
       installedPlugins,
       catalog,
-      cfg.plugins,
+      resolvedPlugins,
     );
 
     if (pluginRemovals) {
@@ -254,7 +268,7 @@ export async function runPipeline(path: string): Promise<void> {
           jellyfinClient,
           installedPlugins,
         ),
-        resolveInstalledPluginNames(installedPlugins, catalog, cfg.plugins),
+        resolveInstalledPluginNames(installedPlugins, catalog, resolvedPlugins),
       );
 
     if (pluginConfigurationsToUpdate) {
