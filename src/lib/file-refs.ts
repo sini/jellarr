@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import type { z } from "zod";
-import { FileRefType, type FileRef } from "../types/config/plugins";
+import { FileRefType, type FileRef } from "../types/config/file-refs";
 
 async function resolveValue(value: unknown): Promise<unknown> {
   const parsed: z.ZodSafeParseResult<FileRef> = FileRefType.safeParse(value);

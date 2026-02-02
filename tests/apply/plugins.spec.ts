@@ -4,6 +4,7 @@ import {
   expect,
   vi,
   beforeEach,
+  afterEach,
   type Mock,
   type MockInstance,
 } from "vitest";
@@ -705,6 +706,10 @@ describe("calculatePluginConfigurationDiff", () => {
 });
 
 describe("calculatePluginConfigurationsDiff", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("should return undefined when no plugins desired", () => {
     // Arrange
     const currentMap: Map<string, PluginConfigurationSchema> = new Map([
@@ -878,7 +883,11 @@ describe("calculatePluginConfigurationsDiff", () => {
     // Arrange
     const readFileSpy: MockInstance<typeof fs.promises.readFile> = vi
       .spyOn(fs.promises, "readFile")
-      .mockResolvedValueOnce("resolved-api-key\n");
+      .mockImplementation((path: unknown) => {
+        if (path === "/run/secrets/api-key")
+          return Promise.resolve("resolved-api-key\n");
+        return Promise.reject(new Error(`unexpected path: ${String(path)}`));
+      });
     const currentMap: Map<string, PluginConfigurationSchema> = new Map([
       [
         "SomePlugin",
@@ -922,7 +931,11 @@ describe("calculatePluginConfigurationsDiff", () => {
     // Arrange
     const readFileSpy: MockInstance<typeof fs.promises.readFile> = vi
       .spyOn(fs.promises, "readFile")
-      .mockResolvedValueOnce("secret-token\n");
+      .mockImplementation((path: unknown) => {
+        if (path === "/run/secrets/trakt-token")
+          return Promise.resolve("secret-token\n");
+        return Promise.reject(new Error(`unexpected path: ${String(path)}`));
+      });
     const currentMap: Map<string, PluginConfigurationSchema> = new Map([
       [
         "Trakt",

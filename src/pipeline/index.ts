@@ -51,7 +51,10 @@ import {
 } from "../apply/plugins";
 import { calculateMetadataDiff, applyMetadata } from "../apply/metadata";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
-import type { PluginConfig, PluginConfigList } from "../types/config/plugins";
+import type {
+  PluginConfig,
+  ResolvedPluginConfigList,
+} from "../types/config/plugins";
 import { resolveFileReferences } from "../lib/file-refs";
 
 export async function runPipeline(path: string): Promise<void> {
@@ -214,18 +217,6 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.plugins) {
-    const resolvedPlugins: PluginConfigList = await Promise.all(
-      cfg.plugins.map(async (plugin: PluginConfig) => {
-        if (plugin.configuration) {
-          return {
-            ...plugin,
-            configuration: await resolveFileReferences(plugin.configuration),
-          };
-        }
-        return plugin;
-      }),
-    );
-
     let installedPlugins: PluginInfoSchema[] =
       await jellyfinClient.getPlugins();
     const catalog: PackageInfoSchema[] = await jellyfinClient.getPackages();
@@ -233,7 +224,7 @@ export async function runPipeline(path: string): Promise<void> {
     const pluginInstalls: PluginInstall[] | undefined = calculatePluginInstalls(
       installedPlugins,
       catalog,
-      resolvedPlugins,
+      cfg.plugins,
       await jellyfinClient.getServerVersion(),
     );
 
@@ -249,7 +240,7 @@ export async function runPipeline(path: string): Promise<void> {
     const pluginRemovals: PluginRemoval[] | undefined = calculatePluginRemovals(
       installedPlugins,
       catalog,
-      resolvedPlugins,
+      cfg.plugins,
     );
 
     if (pluginRemovals) {
@@ -260,6 +251,18 @@ export async function runPipeline(path: string): Promise<void> {
       );
       installedPlugins = await jellyfinClient.getPlugins();
     }
+
+    const resolvedPlugins: ResolvedPluginConfigList = await Promise.all(
+      cfg.plugins.map(async (plugin: PluginConfig) => {
+        if (plugin.configuration) {
+          return {
+            ...plugin,
+            configuration: await resolveFileReferences(plugin.configuration),
+          };
+        }
+        return plugin;
+      }),
+    );
 
     const pluginConfigurationsToUpdate:
       Map<string, BasePluginConfigurationSchema> | undefined =
