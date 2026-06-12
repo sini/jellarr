@@ -284,11 +284,19 @@ library:
           libraryOptions:
               pathInfos:
                   - path: "/data/movies"
-        - name: "TV Shows"
+        - name: "Shows"
           collectionType: "tvshows"
           libraryOptions:
               pathInfos:
                   - path: "/data/tv"
+              enableAutomaticSeriesGrouping: true
+              preferredMetadataLanguage: "en"
+              metadataCountryCode: "US"
+              allowEmbeddedSubtitles: "AllowAll" # AllowAll|AllowText|AllowImage|AllowNone
+              subtitleDownloadLanguages:
+                - "eng"
+              subtitleFetcherOrder:
+                - "Open Subtitles"
 ```
 
 `ignoreChanges` lists library options that are only applied when the library is
@@ -307,6 +315,8 @@ library:
           ignoreChanges:
               - pathInfos
 ```
+
+The full field set mirrors Jellyfin's `LibraryOptions` object.
 
 ### Branding Configuration
 
