@@ -6,6 +6,7 @@ import type {
   LibraryOptionsSchema,
   VirtualFolderInfoSchema,
 } from "../types/schema/library";
+import { withoutUndefined } from "../lib/objects";
 
 /** The LibraryOptions field each library option is written to. */
 export const LIBRARY_OPTION_FIELDS: Record<
@@ -29,21 +30,6 @@ export const LIBRARY_OPTION_FIELDS: Record<
   automaticRefreshIntervalDays: "AutomaticRefreshIntervalDays",
   enableRealtimeMonitor: "EnableRealtimeMonitor",
 };
-
-/**
- * Drop keys whose value is `undefined`. The library diff runs against the live
- * server config, so an omitted option must be absent rather than an explicit
- * `undefined`, which json-diff-ts would otherwise report as a spurious change.
- */
-function withoutUndefined<T extends Record<string, unknown>>(
-  obj: T,
-): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(obj).filter(
-      ([, value]: [string, unknown]) => value !== undefined,
-    ),
-  ) as Partial<T>;
-}
 
 export function mapVirtualFolderConfigToSchema(
   config: VirtualFolderConfig,
