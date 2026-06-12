@@ -37,6 +37,8 @@ import type {
   InstallPackageOptions,
   GetPluginConfigurationResponse,
   PostPluginConfigurationResponse,
+  GetApiKeysResponse,
+  PostApiKeyResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -46,6 +48,7 @@ import {
   type PackageInfoSchema,
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 
 export function createJellyfinClient(
   baseUrl: string,
@@ -420,6 +423,30 @@ export function createJellyfinClient(
       if (!res.response.ok) {
         throw new Error(
           `POST /Plugins/${pluginId}/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getApiKeys(): Promise<AuthenticationInfoSchema[]> {
+      const res: GetApiKeysResponse = await client.GET("/Auth/Keys");
+      if (res.error) {
+        throw new Error(
+          `GET /Auth/Keys failed: ${res.response.status.toString()}`,
+        );
+      }
+      const data: { Items?: AuthenticationInfoSchema[] } = res.data as {
+        Items?: AuthenticationInfoSchema[];
+      };
+      return data.Items ?? [];
+    },
+
+    async createApiKey(appName: string): Promise<void> {
+      const res: PostApiKeyResponse = await client.POST("/Auth/Keys", {
+        params: { query: { app: appName } },
+      });
+      if (res.error) {
+        throw new Error(
+          `POST /Auth/Keys failed: ${res.response.status.toString()}`,
         );
       }
     },

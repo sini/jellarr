@@ -19,6 +19,7 @@ import {
   type PackageInfoSchema,
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 
 export interface ApiResponse<T = unknown> {
   data?: T;
@@ -49,6 +50,10 @@ export type DeletePluginResponse = ApiResponse<void>;
 export type GetPluginConfigurationResponse =
   ApiResponse<BasePluginConfigurationSchema>;
 export type PostPluginConfigurationResponse = ApiResponse<void>;
+export type GetApiKeysResponse = ApiResponse<{
+  Items?: AuthenticationInfoSchema[];
+}>;
+export type PostApiKeyResponse = ApiResponse<void>;
 
 export interface InstallPackageOptions {
   assemblyGuid?: string;
@@ -103,4 +108,6 @@ export interface JellyfinClient {
     pluginId: string,
     body: BasePluginConfigurationSchema,
   ): Promise<void>;
+  getApiKeys(): Promise<AuthenticationInfoSchema[]>;
+  createApiKey(appName: string): Promise<void>;
 }
