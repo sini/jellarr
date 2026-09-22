@@ -285,6 +285,20 @@ The full field set mirrors Jellyfin's `NetworkConfiguration` object. Note that
 `corsHosts` is a `ServerConfiguration` field, not `NetworkConfiguration`, and is
 not part of the `networking` key.
 
+### Metadata Configuration
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+metadata:
+    # Use the library scan time for Date Added, so later file metadata updates do
+    # not make existing media appear newly added.
+    useFileCreationTimeForDateAdded: false
+```
+
+The Jellyfin default is `true`. Leave this section out if you do not want
+Jellarr to manage the setting.
+
 ### Library Configuration
 
 ```yaml

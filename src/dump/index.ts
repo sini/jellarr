@@ -4,6 +4,7 @@ import type {
   ServerConfigurationSchema,
   PluginRepositorySchema,
 } from "../types/schema/system";
+import type { MetadataConfigurationSchema } from "../types/schema/metadata";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
 import type { NetworkConfigurationSchema } from "../types/schema/networking";
 import type {
@@ -36,6 +37,7 @@ export async function runDump(baseUrl: string): Promise<void> {
 
   const [
     systemConfig,
+    metadataConfig,
     encodingConfig,
     networkingConfig,
     virtualFolders,
@@ -45,6 +47,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     apiKeys,
   ]: [
     ServerConfigurationSchema,
+    MetadataConfigurationSchema,
     EncodingOptionsSchema,
     NetworkConfigurationSchema,
     VirtualFolderInfoSchema[],
@@ -54,6 +57,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     AuthenticationInfoSchema[],
   ] = await Promise.all([
     client.getSystemConfiguration(),
+    client.getMetadataConfiguration(),
     client.getEncodingConfiguration(),
     client.getNetworkingConfiguration(),
     client.getVirtualFolders(),
@@ -187,6 +191,11 @@ export async function runDump(baseUrl: string): Promise<void> {
       enableSlowResponseWarning: systemConfig.EnableSlowResponseWarning,
       allowClientLogUpload: systemConfig.AllowClientLogUpload,
       enableLegacyAuthorization: systemConfig.EnableLegacyAuthorization,
+    },
+
+    metadata: {
+      useFileCreationTimeForDateAdded:
+        metadataConfig.UseFileCreationTimeForDateAdded,
     },
 
     encoding: {

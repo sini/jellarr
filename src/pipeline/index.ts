@@ -54,6 +54,8 @@ import {
 import { calculateApiKeysToCreate, createApiKeys } from "../apply/api-keys";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { ApiKeyConfig } from "../types/config/api-keys";
+import { calculateMetadataDiff, applyMetadata } from "../apply/metadata";
+import { type MetadataConfigurationSchema } from "../types/schema/metadata";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -93,6 +95,25 @@ export async function runPipeline(path: string): Promise<void> {
     console.log("✓ updated system config");
   } else {
     console.log("✓ system config already up to date");
+  }
+
+  if (cfg.metadata) {
+    const currentMetadataConfigurationSchema: MetadataConfigurationSchema =
+      await jellyfinClient.getMetadataConfiguration();
+
+    const updatedMetadataConfigurationSchema:
+      MetadataConfigurationSchema | undefined = calculateMetadataDiff(
+      currentMetadataConfigurationSchema,
+      cfg.metadata,
+    );
+
+    if (updatedMetadataConfigurationSchema) {
+      console.log("→ updating metadata config");
+      await applyMetadata(jellyfinClient, updatedMetadataConfigurationSchema);
+      console.log("✓ updated metadata config");
+    } else {
+      console.log("✓ metadata config already up to date");
+    }
   }
 
   if (cfg.encoding) {

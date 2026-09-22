@@ -74,6 +74,7 @@ pkgs.testers.runNixOSTest {
         publishedServerUriBySubnet = ["all=https://jellyfin.example.com"];
         requireHttps = false;
       };
+      metadata.useFileCreationTimeForDateAdded = false;
       system = {
         corsHosts = ["*"];
         enableFolderView = false;

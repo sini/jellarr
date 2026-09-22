@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SystemConfigType } from "./system";
+import { MetadataConfigType } from "./metadata";
 import { EncodingOptionsConfigType } from "./encoding-options";
 import { LibraryConfigType } from "./library";
 import { BrandingOptionsConfigType } from "./branding-options";
@@ -13,6 +14,7 @@ export const RootConfigType: z.ZodObject<{
   version: z.ZodNumber;
   base_url: z.ZodURL;
   system: typeof SystemConfigType;
+  metadata: z.ZodOptional<typeof MetadataConfigType>;
   encoding: z.ZodOptional<typeof EncodingOptionsConfigType>;
   library: z.ZodOptional<typeof LibraryConfigType>;
   branding: z.ZodOptional<typeof BrandingOptionsConfigType>;
@@ -26,6 +28,7 @@ export const RootConfigType: z.ZodObject<{
     version: z.number().int().positive("Version must be a positive integer"),
     base_url: z.url({ message: "Base URL must be a valid URL" }),
     system: SystemConfigType,
+    metadata: MetadataConfigType.optional(),
     encoding: EncodingOptionsConfigType.optional(),
     library: LibraryConfigType.optional(),
     branding: BrandingOptionsConfigType.optional(),

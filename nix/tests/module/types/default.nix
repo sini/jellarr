@@ -9,6 +9,7 @@
     ++ (import ./branding-options.nix testArgs)
     ++ (import ./encoding-options.nix testArgs)
     ++ (import ./networking.nix testArgs)
+    ++ (import ./metadata.nix testArgs)
     ++ (import ./library.nix testArgs)
     ++ (import ./plugins.nix testArgs)
     ++ (import ./root.nix testArgs)

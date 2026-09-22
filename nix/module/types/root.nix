@@ -8,6 +8,7 @@
     encodingOptions = import ./encoding-options.nix {inherit lib;};
     library = import ./library.nix {inherit lib;};
     networking = import ./networking.nix {inherit lib;};
+    metadata = import ./metadata.nix {inherit lib;};
     plugins = import ./plugins.nix {inherit lib;};
     startup = import ./startup.nix {inherit lib;};
     system = import ./system.nix {inherit lib;};
@@ -28,6 +29,11 @@
         type = nullOr subTypes.system.systemConfigType;
         default = null;
         description = "System configuration.";
+      };
+      metadata = mkOption {
+        type = nullOr subTypes.metadata.metadataConfigType;
+        default = null;
+        description = "Metadata configuration.";
       };
       encoding = mkOption {
         type = nullOr subTypes.encodingOptions.encodingOptionsConfigType;
@@ -80,6 +86,9 @@
       }
       // optionalAttrs (cfg ? system && cfg.system != null) {
         system = subTypes.system.mkSystemConfig cfg.system;
+      }
+      // optionalAttrs (cfg ? metadata && cfg.metadata != null) {
+        metadata = subTypes.metadata.mkMetadataConfig cfg.metadata;
       }
       // optionalAttrs (cfg ? encoding && cfg.encoding != null) {
         encoding = subTypes.encodingOptions.mkEncodingOptionsConfig cfg.encoding;
