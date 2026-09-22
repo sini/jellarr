@@ -4,6 +4,7 @@ import type {
   ServerConfigurationSchema,
   PluginRepositorySchema,
 } from "../types/schema/system";
+import type { MetadataConfigurationSchema } from "../types/schema/metadata";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
 import type {
   VirtualFolderInfoSchema,
@@ -34,6 +35,7 @@ export async function runDump(baseUrl: string): Promise<void> {
 
   const [
     systemConfig,
+    metadataConfig,
     encodingConfig,
     virtualFolders,
     brandingConfig,
@@ -41,6 +43,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     plugins,
   ]: [
     ServerConfigurationSchema,
+    MetadataConfigurationSchema,
     EncodingOptionsSchema,
     VirtualFolderInfoSchema[],
     BrandingOptionsDtoSchema,
@@ -48,6 +51,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     PluginInfoSchema[],
   ] = await Promise.all([
     client.getSystemConfiguration(),
+    client.getMetadataConfiguration(),
     client.getEncodingConfiguration(),
     client.getVirtualFolders(),
     client.getBrandingConfiguration(),
@@ -117,6 +121,11 @@ export async function runDump(baseUrl: string): Promise<void> {
         enableHwEncoding: systemConfig.TrickplayOptions?.EnableHwEncoding,
         processThreads: systemConfig.TrickplayOptions?.ProcessThreads,
       },
+    },
+
+    metadata: {
+      useFileCreationTimeForDateAdded:
+        metadataConfig.UseFileCreationTimeForDateAdded,
     },
 
     encoding: {

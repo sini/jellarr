@@ -11,6 +11,7 @@
     version = 1;
     base_url = "http://10.0.0.76:8096";
     system = null;
+    metadata = null;
     encoding = null;
     library = null;
     branding = null;
@@ -108,6 +109,28 @@ in [
     version = 1;
     base_url = "http://10.0.0.76:8096";
     system = {};
+  })
+
+  (assertEq "with metadata section" (mkConfig (nullConfig
+    // {
+      system = nullSystemConfig;
+      metadata = {useFileCreationTimeForDateAdded = false;};
+    })) {
+    version = 1;
+    base_url = "http://10.0.0.76:8096";
+    system = {};
+    metadata = {useFileCreationTimeForDateAdded = false;};
+  })
+
+  (assertEq "empty metadata section" (mkConfig (nullConfig
+    // {
+      system = nullSystemConfig;
+      metadata = {useFileCreationTimeForDateAdded = null;};
+    })) {
+    version = 1;
+    base_url = "http://10.0.0.76:8096";
+    system = {};
+    metadata = {};
   })
 
   (assertEq "with library section" (mkConfig (nullConfig
@@ -395,6 +418,7 @@ in [
           };
         };
       encoding = nullEncodingConfig // {enableHardwareEncoding = true;};
+      metadata = {useFileCreationTimeForDateAdded = false;};
       library = {
         virtualFolders = [
           {
@@ -446,6 +470,7 @@ in [
         trickplayOptions = {enableHwAcceleration = true;};
       };
       encoding = {enableHardwareEncoding = true;};
+      metadata = {useFileCreationTimeForDateAdded = false;};
       library = {
         virtualFolders = [
           {
