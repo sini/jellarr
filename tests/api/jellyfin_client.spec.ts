@@ -512,7 +512,7 @@ describe("api/jf Branding façade", () => {
     vi.restoreAllMocks();
   });
 
-  it("when GET /System/Configuration/Branding returns JSON then it returns the parsed object", async (): Promise<void> => {
+  it("when GET /Branding/Configuration returns JSON then it returns the parsed object", async (): Promise<void> => {
     // Arrange
     const payload: BrandingOptionsDtoSchema = {
       LoginDisclaimer: "Welcome to our server",
@@ -534,7 +534,7 @@ describe("api/jf Branding façade", () => {
 
     const req: Request = getLastRequest();
     expect(req.method).toBe("GET");
-    expect(req.url).toMatch(/\/System\/Configuration\/Branding$/);
+    expect(req.url).toMatch(/\/Branding\/Configuration$/);
     expect(req.headers.get("Authorization")).toContain(`Token="${apiKey}"`);
   });
 
@@ -564,7 +564,7 @@ describe("api/jf Branding façade", () => {
     expect(bodyText).toContain("SplashscreenEnabled");
   });
 
-  it("when GET /System/Configuration/Branding fails then it throws an error with status", async (): Promise<void> => {
+  it("when GET /Branding/Configuration fails then it throws an error with status", async (): Promise<void> => {
     // Arrange
     fetchMock = vi
       .spyOn(global, "fetch")
@@ -578,7 +578,7 @@ describe("api/jf Branding façade", () => {
 
     // Assert
     await expect(jellyfinClient.getBrandingConfiguration()).rejects.toThrow(
-      /GET \/System\/Configuration\/Branding failed/i,
+      /GET \/Branding\/Configuration failed/i,
     );
   });
 

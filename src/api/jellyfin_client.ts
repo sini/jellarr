@@ -234,19 +234,18 @@ export function createJellyfinClient(
 
     async getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema> {
       const res: GetBrandingConfigurationResponse = await client.GET(
-        "/System/Configuration/{key}",
-        {
-          params: {
-            path: {
-              key: "Branding",
-            },
-          },
-        },
+        "/Branding/Configuration",
       );
 
       if (!res.response.ok) {
         throw new Error(
-          `GET /System/Configuration/Branding failed: ${res.response.status.toString()}`,
+          `GET /Branding/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      if (!res.data) {
+        throw new Error(
+          "GET /Branding/Configuration returned no body - the branding route moved again",
         );
       }
 
