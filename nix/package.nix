@@ -22,6 +22,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   CI = "true";
+  __darwinAllowLocalNetworking = true;
 
   doCheck = true;
 

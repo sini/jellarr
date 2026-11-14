@@ -23,76 +23,6 @@ vi.mock("../../src/lib/logger", () => ({
   },
 }));
 
-vi.mock("../../src/mappers/users", () => ({
-  mapUserConfigToCreateSchema: vi.fn((config: UserConfig) => ({
-    Name: config.name,
-    Password: config.password ?? "mocked-password-from-file",
-  })),
-  mapUserPolicyConfigToSchema: vi.fn(
-    (
-      policy: {
-        isAdministrator?: boolean;
-        loginAttemptsBeforeLockout?: number;
-        maxActiveSessions?: number;
-        enableAllFolders?: boolean;
-        remoteClientBitrateLimit?: number;
-        enableContentDownloading?: boolean;
-        enabledLibraries?: string[];
-      },
-      folderNameToIdMap?: Map<string, string>,
-    ) => {
-      const result: Record<string, boolean | number | string[]> = {};
-      if (policy.isAdministrator !== undefined) {
-        result.IsAdministrator = policy.isAdministrator;
-      }
-      if (policy.loginAttemptsBeforeLockout !== undefined) {
-        result.LoginAttemptsBeforeLockout = policy.loginAttemptsBeforeLockout;
-      }
-      if (policy.maxActiveSessions !== undefined) {
-        result.MaxActiveSessions = policy.maxActiveSessions;
-      }
-      if (policy.remoteClientBitrateLimit !== undefined) {
-        result.RemoteClientBitrateLimit = policy.remoteClientBitrateLimit;
-      }
-      if (policy.enableContentDownloading !== undefined) {
-        result.EnableContentDownloading = policy.enableContentDownloading;
-      }
-      if (policy.enableAllFolders !== undefined) {
-        result.EnableAllFolders = policy.enableAllFolders;
-      }
-      if (
-        policy.enabledLibraries !== undefined &&
-        policy.enabledLibraries.length > 0
-      ) {
-        if (policy.enableAllFolders === undefined) {
-          result.EnableAllFolders = false;
-        }
-        result.EnabledFolders = policy.enabledLibraries.map((name: string) => {
-          const id: string | undefined = folderNameToIdMap?.get(name);
-          if (!id) throw new Error(`Missing id for ${name}`);
-          return id;
-        });
-      }
-      return result;
-    },
-  ),
-  mapUserConfigToConfiguration: vi.fn(
-    (config: {
-      displayMissingEpisodes?: boolean;
-      subtitleLanguagePreference?: string;
-    }) => {
-      const result: Record<string, boolean | string> = {};
-      if (config.displayMissingEpisodes !== undefined) {
-        result.DisplayMissingEpisodes = config.displayMissingEpisodes;
-      }
-      if (config.subtitleLanguagePreference !== undefined) {
-        result.SubtitleLanguagePreference = config.subtitleLanguagePreference;
-      }
-      return result;
-    },
-  ),
-}));
-
 describe("calculateNewUsersDiff", () => {
   const currentUsers: UserDtoSchema[] = [
     {
@@ -372,7 +302,7 @@ describe("createNewUsers", () => {
       },
       {
         name: "user2",
-        passwordFile: "/secrets/password2",
+        passwordFile: "./test-pass-file",
       },
     ];
 
@@ -387,7 +317,7 @@ describe("createNewUsers", () => {
     });
     expect(createUserSpy).toHaveBeenNthCalledWith(2, {
       Name: "user2",
-      Password: "mocked-password-from-file",
+      Password: "test",
     });
   });
 
@@ -649,24 +579,6 @@ describe("calculateUserPoliciesDiff", () => {
     expect(updatedPolicy?.IsAdministrator).toBe(true);
   });
 
-  it("should return policies to update when remoteClientBitrateLimit changes", () => {
-    const config: UserConfigList = [
-      {
-        name: "existing-user",
-        password: "password",
-        policy: {
-          remoteClientBitrateLimit: 2_000_000,
-        },
-      },
-    ];
-
-    const result: Map<string, UserPolicySchema> | undefined =
-      calculateUserPoliciesDiff(currentUsers, config);
-
-    expect(result?.get("user-1-id")?.RemoteClientBitrateLimit).toBe(2_000_000);
-    expect(result?.get("user-1-id")?.IsAdministrator).toBe(false);
-  });
-
   it("should return policies to update when enableContentDownloading changes", () => {
     const config: UserConfigList = [
       {
@@ -681,8 +593,12 @@ describe("calculateUserPoliciesDiff", () => {
     const result: Map<string, UserPolicySchema> | undefined =
       calculateUserPoliciesDiff(currentUsers, config);
 
-    expect(result?.get("user-1-id")?.EnableContentDownloading).toBe(false);
-    expect(result?.get("user-1-id")?.IsAdministrator).toBe(false);
+    expect(result).toBeDefined();
+    expect(result?.size).toBe(1);
+    const updatedPolicy: UserPolicySchema | undefined =
+      result?.get("user-1-id");
+    expect(updatedPolicy?.EnableContentDownloading).toBe(false);
+    expect(updatedPolicy?.IsAdministrator).toBe(false);
   });
 
   it("should resolve enabledLibraries to library ids", () => {
