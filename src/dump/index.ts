@@ -88,7 +88,7 @@ export async function runDump(baseUrl: string): Promise<void> {
       ),
   );
 
-  const resolveEnabledFolders = (
+  const resolveLibraryNames = (
     enabledFolderIds: string[] | null | undefined,
   ): string[] | undefined => {
     if (!enabledFolderIds) return undefined;
@@ -195,8 +195,9 @@ export async function runDump(baseUrl: string): Promise<void> {
         enableContentDownloading: user.Policy?.EnableContentDownloading,
         maxActiveSessions: user.Policy?.MaxActiveSessions,
         remoteClientBitrateLimit: user.Policy?.RemoteClientBitrateLimit,
-        enabledLibraries: resolveEnabledFolders(user.Policy?.EnabledFolders),
+        enabledLibraries: resolveLibraryNames(user.Policy?.EnabledFolders),
       },
+      orderedLibraries: resolveLibraryNames(user.Configuration?.OrderedViews),
       displayMissingEpisodes: user.Configuration?.DisplayMissingEpisodes,
       audioLanguagePreference: user.Configuration?.AudioLanguagePreference,
       playDefaultAudioTrack: user.Configuration?.PlayDefaultAudioTrack,
