@@ -45,6 +45,9 @@ export type GetUsersResponse = ApiResponse<UserDtoSchema[]>;
 export type PostNewUserResponse = ApiResponse<UserDtoSchema>;
 export type PostUserPolicyResponse = ApiResponse<void>;
 export type PostStartupCompleteResponse = ApiResponse<void>;
+export type PostAuthenticateByNameResponse = ApiResponse<{
+  AccessToken?: string | null;
+}>;
 export type GetSystemInfoResponse = ApiResponse<{ Version?: string | null }>;
 export type GetPluginsResponse = ApiResponse<PluginInfoSchema[]>;
 export type GetPackagesResponse = ApiResponse<PackageInfoSchema[]>;
@@ -65,6 +68,8 @@ export interface InstallPackageOptions {
 }
 
 export interface JellyfinClient {
+  setAccessToken(accessToken: string): void;
+  authenticateByName(username: string, password: string): Promise<string>;
   getServerVersion(): Promise<string>;
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
   updateSystemConfiguration(

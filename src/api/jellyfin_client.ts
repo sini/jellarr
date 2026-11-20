@@ -44,8 +44,10 @@ import type {
   PostPluginConfigurationResponse,
   GetApiKeysResponse,
   PostApiKeyResponse,
+  PostAuthenticateByNameResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
+import { JellyfinHttpError } from "./errors";
 import type { paths } from "../../generated/schema";
 import type { Client } from "openapi-fetch";
 import {
@@ -57,11 +59,45 @@ import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 
 export function createJellyfinClient(
   baseUrl: string,
-  apiKey: string,
+  apiKey?: string,
 ): JellyfinClient {
-  const client: Client<paths> = makeClient(baseUrl, apiKey);
+  let token: string | undefined = apiKey;
+  const client: Client<paths> = makeClient(
+    baseUrl,
+    (): string | undefined => token,
+  );
 
   return {
+    setAccessToken(accessToken: string): void {
+      token = accessToken;
+    },
+
+    async authenticateByName(
+      username: string,
+      password: string,
+    ): Promise<string> {
+      const res: PostAuthenticateByNameResponse = await client.POST(
+        "/Users/AuthenticateByName",
+        {
+          body: { Username: username, Pw: password },
+          headers: { "content-type": "application/json" },
+        },
+      );
+      if (!res.response.ok) {
+        throw new JellyfinHttpError(
+          `POST /Users/AuthenticateByName failed: ${res.response.status.toString()}`,
+          res.response.status,
+        );
+      }
+      const accessToken: string | null | undefined = res.data?.AccessToken;
+      if (!accessToken) {
+        throw new Error(
+          "POST /Users/AuthenticateByName succeeded but returned no AccessToken",
+        );
+      }
+      return accessToken;
+    },
+
     async getServerVersion(): Promise<string> {
       const res: GetSystemInfoResponse = await client.GET("/System/Info");
       if (!res.response.ok) {
@@ -82,8 +118,9 @@ export function createJellyfinClient(
       );
 
       if (!res.response.ok) {
-        throw new Error(
+        throw new JellyfinHttpError(
           `GET /System/Configuration failed: ${res.response.status.toString()}`,
+          res.response.status,
         );
       }
 

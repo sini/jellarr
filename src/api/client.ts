@@ -1,7 +1,13 @@
 import createClient, { type Client } from "openapi-fetch";
 import type { paths } from "../../generated/schema";
 
-export function makeClient(baseUrl: string, apiKey: string): Client<paths> {
+export type TokenSource = string | (() => string | undefined);
+
+export function makeClient(
+  baseUrl: string,
+  token?: TokenSource,
+  deviceId: string = "jellarr",
+): Client<paths> {
   const client: Client<paths> = createClient<paths>({
     baseUrl: baseUrl.replace(/\/+$/, ""),
   });
@@ -9,9 +15,12 @@ export function makeClient(baseUrl: string, apiKey: string): Client<paths> {
   client.use({
     onRequest({ request }: { request: Request }): Request {
       const headers: Headers = new Headers(request.headers);
+      const current: string | undefined =
+        typeof token === "function" ? token() : token;
+      const tokenPart: string = current ? `Token="${current}", ` : "";
       headers.set(
         "Authorization",
-        `MediaBrowser Token="${apiKey}", Client="jellarr", Device="cli", DeviceId="jellarr", Version="0.1.0"`,
+        `MediaBrowser ${tokenPart}Client="jellarr", Device="cli", DeviceId="${deviceId}", Version="0.1.0"`,
       );
       return new Request(request, { headers });
     },

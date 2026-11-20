@@ -559,6 +559,16 @@ curl -s -H "X-Emby-Token: $API_KEY" \
 
 ---
 
+## Authentication
+
+`JELLARR_API_KEY` is the primary credential. Jellarr falls back to signing in by
+name (`POST /Users/AuthenticateByName`) when the variable is unset, or when the
+first authenticated call is answered with 401. It signs in as the first entry of
+`users` whose `policy.isAdministrator` is `true`, with that user's `password` or
+`passwordFile`, uses the returned access token for the rest of the run, and logs
+a warning that the fallback was used. With no API key and no such admin the run
+fails.
+
 ## Startup Wait
 
 Before its first API call Jellarr polls `GET /health` until Jellyfin answers

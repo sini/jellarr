@@ -34,4 +34,59 @@ describe("api/client", () => {
       spy.mockRestore();
     }
   });
+
+  it("whenNoTokenGiven_thenHeaderOmitsTokenAndCarriesDeviceId()", async () => {
+    // Arrange
+    const spy: Mock = vi
+      .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+
+    try {
+      // Act
+      const jf: Client<paths> = makeClient(
+        "http://example:8096",
+        undefined,
+        "probe",
+      );
+      await jf.GET("/System/Info/Public");
+
+      // Assert
+      const req: Request = spy.mock.calls[0]?.[0] as Request;
+      expect(req.headers.get("Authorization")).toBe(
+        'MediaBrowser Client="jellarr", Device="cli", DeviceId="probe", Version="0.1.0"',
+      );
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("whenTokenSourceIsFunction_thenLatestValueIsUsedPerRequest()", async () => {
+    // Arrange
+    const spy: Mock = vi
+      .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
+      .mockImplementation(() =>
+        Promise.resolve(new Response("{}", { status: 200 })),
+      );
+    let token: string = "one";
+
+    try {
+      const jf: Client<paths> = makeClient(
+        "http://example:8096",
+        (): string => token,
+      );
+
+      // Act
+      await jf.GET("/System/Info/Public");
+      token = "two";
+      await jf.GET("/System/Info/Public");
+
+      // Assert
+      const auth: (call: number) => string | null = (call: number) =>
+        (spy.mock.calls[call]?.[0] as Request).headers.get("Authorization");
+      expect(auth(0)).toContain('Token="one"');
+      expect(auth(1)).toContain('Token="two"');
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });

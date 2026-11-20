@@ -56,6 +56,11 @@ import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { ApiKeyConfig } from "../types/config/api-keys";
 import { calculateMetadataDiff, applyMetadata } from "../apply/metadata";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
+import {
+  authenticateAsAdmin,
+  isUnauthorized,
+  type AdminCredentials,
+} from "../apply/auth";
 import { resolveValue } from "../lib/file-refs";
 import { waitForHealth, resolveWaitTimeoutMs } from "../lib/health";
 
@@ -81,7 +86,6 @@ export async function runPipeline(
   const cfg: RootConfig = validationResult.data;
 
   const apiKey: string | undefined = process.env.JELLARR_API_KEY;
-  if (!apiKey) throw new Error("JELLARR_API_KEY required");
 
   const jellyfinClient: JellyfinClient = createJellyfinClient(
     cfg.base_url,
@@ -95,8 +99,29 @@ export async function runPipeline(
   await waitForHealth(cfg.base_url, { timeoutMs: waitTimeoutMs });
   console.log("✓ Jellyfin is healthy");
 
-  const currentServerConfigurationSchema: ServerConfigurationSchema =
-    await jellyfinClient.getSystemConfiguration();
+  let verifiedAdmin: AdminCredentials | undefined;
+  if (!apiKey) {
+    verifiedAdmin = await authenticateAsAdmin(
+      jellyfinClient,
+      cfg,
+      "JELLARR_API_KEY is not set",
+    );
+  }
+
+  let currentServerConfigurationSchema: ServerConfigurationSchema;
+  try {
+    currentServerConfigurationSchema =
+      await jellyfinClient.getSystemConfiguration();
+  } catch (error) {
+    if (verifiedAdmin || !isUnauthorized(error)) throw error;
+    verifiedAdmin = await authenticateAsAdmin(
+      jellyfinClient,
+      cfg,
+      "JELLARR_API_KEY was rejected (401)",
+    );
+    currentServerConfigurationSchema =
+      await jellyfinClient.getSystemConfiguration();
+  }
   let currentVirtualFolders: VirtualFolderInfoSchema[] | undefined;
 
   const updatedServerConfigurationSchema:
