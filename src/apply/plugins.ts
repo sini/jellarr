@@ -470,7 +470,7 @@ export async function getPluginConfigurationSchemaByName(
   > = new Map();
 
   for (const pluginInfo of current) {
-    if (pluginInfo.Id && pluginInfo.Name) {
+    if (pluginInfo.Id && pluginInfo.Name && required.has(pluginInfo.Name)) {
       try {
         pluginConfigurationSchemaByName.set(pluginInfo.Name, {
           id: pluginInfo.Id,

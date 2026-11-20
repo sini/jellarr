@@ -169,3 +169,32 @@ describe("waitForInstalledPluginsActive", () => {
     ).rejects.toThrow(/did not become active.*Example Plugin/);
   });
 });
+
+describe("only declared plugins are read", () => {
+  it("whenAnUnrelatedPluginFailsToRead_thenTheRunIsNotAffected", async () => {
+    // Arrange
+    const other: PluginInfoSchema = {
+      Name: "Other-Plugin",
+      Id: "other-id",
+    } as PluginInfoSchema;
+    const read: ReturnType<typeof vi.fn> = vi
+      .fn()
+      .mockImplementation((id: string) =>
+        id === "other-id"
+          ? Promise.reject(new Error("boom 500"))
+          : Promise.resolve({ A: 0 }),
+      );
+
+    // Act
+    const result: Map<string, unknown> =
+      await getPluginConfigurationSchemaByName(
+        clientReading(read),
+        [example, other],
+        [{ name: "Example-Plugin", configuration: { A: 1 } }],
+      );
+
+    // Assert
+    expect([...result.keys()]).toEqual(["Example-Plugin"]);
+    expect(read).not.toHaveBeenCalledWith("other-id");
+  });
+});

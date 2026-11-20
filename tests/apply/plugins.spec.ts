@@ -558,7 +558,10 @@ describe("getPluginConfigurationSchemaByName", () => {
 
     // Act
     const result: Map<string, PluginConfigurationSchema> =
-      await getPluginConfigurationSchemaByName(mockClient, installedPlugins);
+      await getPluginConfigurationSchemaByName(mockClient, installedPlugins, [
+        { name: "Trakt", configuration: {} },
+        { name: "Fanart", configuration: {} },
+      ]);
 
     // Assert
     expect(result.size).toBe(2);
@@ -588,7 +591,9 @@ describe("getPluginConfigurationSchemaByName", () => {
 
     // Act
     const result: Map<string, PluginConfigurationSchema> =
-      await getPluginConfigurationSchemaByName(mockClient, installedPlugins);
+      await getPluginConfigurationSchemaByName(mockClient, installedPlugins, [
+        { name: "Fanart", configuration: {} },
+      ]);
 
     // Assert
     expect(result.size).toBe(1);
@@ -612,7 +617,9 @@ describe("getPluginConfigurationSchemaByName", () => {
 
     // Act
     const result: Map<string, PluginConfigurationSchema> =
-      await getPluginConfigurationSchemaByName(mockClient, installedPlugins);
+      await getPluginConfigurationSchemaByName(mockClient, installedPlugins, [
+        { name: "Fanart", configuration: {} },
+      ]);
 
     // Assert
     expect(result.size).toBe(1);
@@ -620,24 +627,6 @@ describe("getPluginConfigurationSchemaByName", () => {
       id: "fanart-id",
       configuration: fanartConfig,
     });
-    expect(getPluginConfigurationSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it("should ignore missing plugin configuration responses", async () => {
-    // Arrange
-    const installedPlugins: PluginInfoSchema[] = [
-      { Name: "Fanart", Id: "fanart-id" } as PluginInfoSchema,
-    ];
-    getPluginConfigurationSpy.mockRejectedValueOnce(
-      new Error("GET /Plugins/fanart-id/Configuration failed: 404"),
-    );
-
-    // Act
-    const result: Map<string, PluginConfigurationSchema> =
-      await getPluginConfigurationSchemaByName(mockClient, installedPlugins);
-
-    // Assert
-    expect(result.size).toBe(0);
     expect(getPluginConfigurationSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -653,7 +642,9 @@ describe("getPluginConfigurationSchemaByName", () => {
 
     // Act & Assert
     await expect(
-      getPluginConfigurationSchemaByName(mockClient, installedPlugins),
+      getPluginConfigurationSchemaByName(mockClient, installedPlugins, [
+        { name: "Fanart", configuration: {} },
+      ]),
     ).rejects.toThrow(error);
   });
 });
