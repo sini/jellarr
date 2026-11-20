@@ -84,20 +84,15 @@ export async function runDump(baseUrl: string): Promise<void> {
   );
 
   const folderIdToNameMap: Map<string, string> = new Map(
-    virtualFolders
-      .map((folder: VirtualFolderInfoSchema) => {
-        const name: string | undefined = folder.Name ?? undefined;
+    virtualFolders.flatMap(
+      (folder: VirtualFolderInfoSchema): [string, string][] => {
         const id: string | undefined =
           (folder as { Id?: string }).Id ??
           (folder as { ItemId?: string | null }).ItemId ??
           undefined;
-        return name && id ? [id, name] : undefined;
-      })
-      .filter(
-        (
-          entry: [string, string] | undefined | [string, string | undefined],
-        ): entry is [string, string] => Array.isArray(entry),
-      ),
+        return folder.Name && id ? [[id, folder.Name]] : [];
+      },
+    ),
   );
 
   const resolveLibraryNames = (

@@ -94,18 +94,10 @@ export function calculateLibraryDiff(
   }
 
   const currentByName: Map<string, VirtualFolderInfoSchema> = new Map(
-    current
-      .map((folder: VirtualFolderInfoSchema) =>
-        folder.Name ? [folder.Name, folder] : undefined,
-      )
-      .filter(
-        (
-          entry:
-            | [string, VirtualFolderInfoSchema]
-            | undefined
-            | [string, VirtualFolderInfoSchema | undefined],
-        ): entry is [string, VirtualFolderInfoSchema] => Array.isArray(entry),
-      ),
+    current.flatMap(
+      (folder: VirtualFolderInfoSchema): [string, VirtualFolderInfoSchema][] =>
+        folder.Name ? [[folder.Name, folder]] : [],
+    ),
   );
 
   const next: VirtualFolderInfoSchema[] = desired.map(

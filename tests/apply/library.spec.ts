@@ -245,7 +245,7 @@ describe("apply/library", () => {
             AutomaticallyAddToCollection: false,
             EnableTrickplayImageExtraction: false,
             MetadataSavers: [],
-          } as LibraryOptionsSchema,
+          } as unknown as LibraryOptionsSchema,
         },
       ];
       const desired: LibraryConfig = {
@@ -654,7 +654,7 @@ describe("apply/library", () => {
               TypeOptions: [
                 { type: "Movie", metadataFetchers: [], imageFetchers: [] },
               ],
-            } as LibraryOptionsSchema,
+            } as unknown as LibraryOptionsSchema,
           },
         ],
       };
