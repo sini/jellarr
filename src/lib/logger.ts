@@ -4,11 +4,16 @@ export interface Logger {
   error: (msg: string) => void;
 }
 
-let secretValues: ReadonlySet<string> = new Set();
+let secretValues: Set<string> = new Set();
 
 /** Masks these values (resolved from `_file` or `${VAR}`) in every log line. */
-export function maskSecrets(values: ReadonlySet<string>): void {
+export function maskSecrets(values: Set<string>): void {
   secretValues = values;
+}
+
+/** Adds one more value to the set being masked. */
+export function addSecret(value: string): void {
+  secretValues.add(value);
 }
 
 function masked(msg: string): string {

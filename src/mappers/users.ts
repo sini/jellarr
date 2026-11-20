@@ -1,4 +1,5 @@
 import { readFileSync } from "fs";
+import { addSecret } from "../lib/logger";
 import { type UserConfig, type UserPolicyConfig } from "../types/config/users";
 import {
   type CreateUserByNameSchema,
@@ -12,11 +13,20 @@ export function getPlaintextPassword(config: UserConfig): string | undefined {
 
 export function getPasswordFromFile(config: UserConfig): string | undefined {
   if (config.passwordFile === undefined) return undefined;
-  return readFileSync(config.passwordFile, "utf8").trim();
+  const contents: string = readFileSync(config.passwordFile, "utf8").trim();
+  addSecret(contents);
+  return contents;
 }
 
 export function getPassword(config: UserConfig): string {
-  return getPlaintextPassword(config) ?? getPasswordFromFile(config) ?? "";
+  const password: string =
+    getPlaintextPassword(config) ?? getPasswordFromFile(config) ?? "";
+  if (password.trim() === "") {
+    throw new Error(
+      `Password for user ${config.name} is empty${config.passwordFile === undefined ? "" : ` (passwordFile ${config.passwordFile} has no content)`}`,
+    );
+  }
+  return password;
 }
 
 export function mapUserConfigToCreateSchema(

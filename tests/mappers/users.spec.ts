@@ -173,17 +173,14 @@ describe("mappers/users", () => {
       expect(result).toBe("plaintext-password");
     });
 
-    it("should return empty string when neither password nor passwordFile present", () => {
+    it("should throw when neither password nor passwordFile present", () => {
       // Arrange
       const config: UserConfig = {
         name: "test-user",
       } as UserConfig;
 
-      // Act
-      const result: string = getPassword(config);
-
-      // Assert
-      expect(result).toBe("");
+      // Act + Assert
+      expect(() => getPassword(config)).toThrow(/empty/);
     });
   });
 
@@ -227,21 +224,14 @@ describe("mappers/users", () => {
       });
     });
 
-    it("should handle empty password when neither source available", () => {
+    it("should throw when neither password source is available", () => {
       // Arrange
       const userConfig: UserConfig = {
         name: "test-user",
       } as UserConfig;
 
-      // Act
-      const result: CreateUserByNameSchema =
-        mapUserConfigToCreateSchema(userConfig);
-
-      // Assert
-      expect(result).toEqual({
-        Name: "test-user",
-        Password: "",
-      });
+      // Act + Assert
+      expect(() => mapUserConfigToCreateSchema(userConfig)).toThrow(/empty/);
     });
   });
 

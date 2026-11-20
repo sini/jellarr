@@ -21,6 +21,7 @@ vi.mock("../../src/lib/logger", () => ({
     warn: vi.fn(),
     error: vi.fn(),
   },
+  addSecret: vi.fn(),
 }));
 
 describe("calculateNewUsersDiff", () => {
