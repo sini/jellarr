@@ -1,6 +1,18 @@
 import { describe, it, expect } from "vitest";
-import { mapVirtualFolderConfigToSchema } from "../../src/mappers/library";
-import type { VirtualFolderConfig } from "../../src/types/config/library";
+import {
+  LIBRARY_OPTION_FIELDS,
+  mapVirtualFolderConfigToSchema,
+  withIgnoredLibraryOptions,
+} from "../../src/mappers/library";
+import {
+  LIBRARY_OPTION_NAMES,
+  LibraryOptionsConfigType,
+  VirtualFolderConfigType,
+} from "../../src/types/config/library";
+import type {
+  LibraryOptionName,
+  VirtualFolderConfig,
+} from "../../src/types/config/library";
 import type { VirtualFolderInfoSchema } from "../../src/types/schema/library";
 
 describe("mappers/library", () => {
@@ -392,5 +404,56 @@ describe("mappers/library", () => {
       expect(lo?.CustomTagDelimiters).toEqual([";"]);
       expect(lo?.DelimiterWhitelist).toEqual([";"]);
     });
+  });
+
+  describe("ignoreChanges coverage", () => {
+    it("derives the ignorable options from the libraryOptions schema", () => {
+      // Assert
+      expect([...LIBRARY_OPTION_NAMES].sort()).toEqual(
+        Object.keys(LibraryOptionsConfigType.shape).sort(),
+      );
+      expect(Object.keys(LIBRARY_OPTION_FIELDS).sort()).toEqual(
+        [...LIBRARY_OPTION_NAMES].sort(),
+      );
+    });
+
+    it("maps every option to a distinct LibraryOptions field", () => {
+      // Assert
+      const fields: string[] = Object.values(LIBRARY_OPTION_FIELDS);
+      expect(new Set(fields).size).toBe(fields.length);
+    });
+
+    it.each([...LIBRARY_OPTION_NAMES])(
+      "accepts %s in ignoreChanges and keeps the server value",
+      (option: LibraryOptionName) => {
+        // Arrange
+        const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse({
+          name: "Movies",
+          collectionType: "movies",
+          libraryOptions: { pathInfos: [{ path: "/data/movies" }] },
+          ignoreChanges: [option],
+        });
+        const field: string = LIBRARY_OPTION_FIELDS[option];
+        const desired: Partial<VirtualFolderInfoSchema> = {
+          Name: "Movies",
+          LibraryOptions: { [field]: "desired" } as never,
+        };
+        const current: VirtualFolderInfoSchema = {
+          Name: "Movies",
+          LibraryOptions: { [field]: "server" } as never,
+        } as VirtualFolderInfoSchema;
+
+        // Act
+        const result: Partial<VirtualFolderInfoSchema> =
+          withIgnoredLibraryOptions(
+            desired,
+            current,
+            parsed.ignoreChanges ?? [],
+          );
+
+        // Assert
+        expect(result.LibraryOptions).toEqual({ [field]: "server" });
+      },
+    );
   });
 });
