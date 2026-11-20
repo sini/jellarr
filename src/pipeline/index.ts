@@ -51,17 +51,13 @@ import {
 } from "../apply/plugins";
 import { calculateMetadataDiff, applyMetadata } from "../apply/metadata";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
-import type {
-  PluginConfig,
-  ResolvedPluginConfigList,
-} from "../types/config/plugins";
-import { resolveFileReferences } from "../lib/file-refs";
+import { resolveValue } from "../lib/file-refs";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
 
   const validationResult: ZodSafeParseResult<RootConfig> =
-    RootConfigType.safeParse(YAML.parse(raw));
+    RootConfigType.safeParse(await resolveValue(YAML.parse(raw)));
   if (!validationResult.success) {
     const errorMessages: string = validationResult.error.issues
       .map((err: z.core.$ZodIssue) => `${err.path.join(".")}: ${err.message}`)
@@ -252,18 +248,6 @@ export async function runPipeline(path: string): Promise<void> {
       installedPlugins = await jellyfinClient.getPlugins();
     }
 
-    const resolvedPlugins: ResolvedPluginConfigList = await Promise.all(
-      cfg.plugins.map(async (plugin: PluginConfig) => {
-        if (plugin.configuration) {
-          return {
-            ...plugin,
-            configuration: await resolveFileReferences(plugin.configuration),
-          };
-        }
-        return plugin;
-      }),
-    );
-
     const pluginConfigurationsToUpdate:
       Map<string, BasePluginConfigurationSchema> | undefined =
       calculatePluginConfigurationsDiff(
@@ -271,7 +255,7 @@ export async function runPipeline(path: string): Promise<void> {
           jellyfinClient,
           installedPlugins,
         ),
-        resolveInstalledPluginNames(installedPlugins, catalog, resolvedPlugins),
+        resolveInstalledPluginNames(installedPlugins, catalog, cfg.plugins),
       );
 
     if (pluginConfigurationsToUpdate) {

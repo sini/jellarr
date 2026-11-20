@@ -425,6 +425,29 @@ plugins:
 - Only specified configuration fields are updated; unspecified fields are
   preserved
 
+**Secrets: `_file` and `${VAR}`**
+
+Both forms work anywhere in the config, not only in plugin `configuration`. They
+are resolved on the parsed YAML, so a secret cannot change the structure of the
+config.
+
+```yaml
+plugins:
+    - name: "Trakt"
+      configuration:
+          ApiKey:
+              _file: "/run/secrets/trakt-api-key" # contents, whitespace trimmed
+          Endpoint: "https://${TRAKT_HOST}/api" # environment variable
+```
+
+- `{ _file: "<path>" }` is replaced by the file's contents with surrounding
+  whitespace trimmed
+- `${VAR}` is replaced by the environment variable, including inside a longer
+  string; `$$` is a literal `$`
+- A missing file or an undefined variable fails the run
+- Substituted values are always strings, so `${VAR}` cannot fill a numeric or
+  boolean field
+
 **Finding plugin configuration keys:**
 
 To discover available configuration options for a plugin, you can query the

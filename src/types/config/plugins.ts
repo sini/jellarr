@@ -30,9 +30,3 @@ export const PluginConfigListType: z.ZodArray<typeof PluginConfigType> =
   z.array(PluginConfigType);
 
 export type PluginConfigList = z.infer<typeof PluginConfigListType>;
-
-/** PluginConfig after all `{ _file: "..." }` references have been resolved to their file contents. */
-export type ResolvedPluginConfig = PluginConfig;
-
-/** PluginConfigList after all `{ _file: "..." }` references have been resolved to their file contents. */
-export type ResolvedPluginConfigList = ResolvedPluginConfig[];
