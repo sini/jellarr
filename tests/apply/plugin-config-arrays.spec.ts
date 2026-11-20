@@ -5,7 +5,7 @@ import type { PluginConfigurationConfig } from "../../src/types/config/plugins";
 
 function withProviders(roles: string[]): BasePluginConfigurationSchema {
   return {
-    Other: { keep: true },
+    Extras: {},
     Providers: { primary: { Roles: roles, Enabled: true, Hand: "set" } },
   } as unknown as BasePluginConfigurationSchema;
 }
@@ -78,7 +78,7 @@ describe("plugin configuration arrays are replaced whole", () => {
       desiredRoles(["a"]),
     );
     expect(result).toEqual({
-      Other: { keep: true },
+      Extras: {},
       Other: [1, 2],
       Providers: { primary: { Roles: ["a"], Enabled: true, Hand: "set" } },
     });
