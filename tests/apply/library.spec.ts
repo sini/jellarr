@@ -42,12 +42,12 @@ describe("apply/library", () => {
 
   describe("calculateLibraryDiff", () => {
     it("should return undefined when no virtual folders specified", () => {
-      const result = calculateLibraryDiff([], []);
+      const result: LibraryDiff | undefined = calculateLibraryDiff([], []);
       expect(result).toBeUndefined();
     });
 
     it("should return undefined when empty virtual folders array", () => {
-      const result = calculateLibraryDiff([], []);
+      const result: LibraryDiff | undefined = calculateLibraryDiff([], []);
       expect(result).toBeUndefined();
     });
 
@@ -65,7 +65,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -105,7 +105,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -144,7 +144,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -219,7 +219,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -263,7 +263,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -312,7 +312,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -361,7 +361,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -395,7 +395,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -427,7 +427,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         [],
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -557,7 +557,7 @@ describe("apply/library", () => {
         ],
       };
 
-      const result = calculateLibraryDiff(
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
         currentVirtualFolders,
         desired.virtualFolders as VirtualFolderConfig[],
       );
@@ -591,7 +591,7 @@ describe("apply/library", () => {
     });
 
     it("should skip entries without Name", async () => {
-      const diff = {
+      const diff: LibraryDiff = {
         toCreate: [
           {
             CollectionType: "movies",
@@ -612,7 +612,7 @@ describe("apply/library", () => {
     });
 
     it("should create new virtual folder", async () => {
-      const diff = {
+      const diff: LibraryDiff = {
         toCreate: [
           {
             Name: "Movies",
@@ -644,7 +644,7 @@ describe("apply/library", () => {
     });
 
     it("should update library options for existing folder", async () => {
-      const diff = {
+      const diff: LibraryDiff = {
         toUpdate: [
           {
             id: "movies-id",

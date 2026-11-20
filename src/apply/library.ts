@@ -95,7 +95,9 @@ export function calculateLibraryDiff(
 
   const currentByName: Map<string, VirtualFolderInfoSchema> = new Map(
     current.flatMap(
-      (folder: VirtualFolderInfoSchema): Array<[string, VirtualFolderInfoSchema]> =>
+      (
+        folder: VirtualFolderInfoSchema,
+      ): Array<[string, VirtualFolderInfoSchema]> =>
         folder.Name ? [[folder.Name, folder]] : [],
     ),
   );
@@ -180,7 +182,7 @@ export async function applyLibrary(
 ): Promise<void> {
   if (!diffResult) return;
 
-  const { toCreate, toUpdate } = diffResult;
+  const { toCreate, toUpdate }: LibraryDiff = diffResult;
 
   if (!toCreate && !toUpdate) return;
 

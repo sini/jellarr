@@ -11,4 +11,5 @@ export type CollectionTypeSchema = NonNullable<
   VirtualFolderInfoSchema["CollectionType"]
 >;
 export type LibraryOptionsSchema = components["schemas"]["LibraryOptions"];
+export type TypeOptionsSchema = components["schemas"]["TypeOptions"];
 export type MediaPathInfoSchema = components["schemas"]["MediaPathInfo"];

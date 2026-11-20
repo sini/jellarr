@@ -10,6 +10,7 @@ import type { NetworkConfigurationSchema } from "../types/schema/networking";
 import type {
   VirtualFolderInfoSchema,
   MediaPathInfoSchema,
+  TypeOptionsSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type { UserDtoSchema } from "../types/schema/users";
@@ -95,7 +96,9 @@ export async function runDump(baseUrl: string): Promise<void> {
     ),
   );
 
-  const resolveLibraryNames = (
+  const resolveLibraryNames: (
+    enabledFolderIds: string[] | null | undefined,
+  ) => string[] | undefined = (
     enabledFolderIds: string[] | null | undefined,
   ): string[] | undefined => {
     if (!enabledFolderIds) return undefined;
@@ -288,13 +291,15 @@ export async function runDump(baseUrl: string): Promise<void> {
             folder.LibraryOptions?.PathInfos?.map((p: MediaPathInfoSchema) => ({
               path: p.Path ?? "",
             })) ?? [],
-          typeOptions: folder.LibraryOptions?.TypeOptions?.map((typeOpt) => ({
-            type: typeOpt.Type ?? "",
-            metadataFetchers: typeOpt.MetadataFetchers ?? [],
-            metadataFetcherOrder: typeOpt.MetadataFetcherOrder ?? undefined,
-            imageFetchers: typeOpt.ImageFetchers ?? [],
-            imageFetcherOrder: typeOpt.ImageFetcherOrder ?? undefined,
-          })),
+          typeOptions: folder.LibraryOptions?.TypeOptions?.map(
+            (typeOpt: TypeOptionsSchema) => ({
+              type: typeOpt.Type ?? "",
+              metadataFetchers: typeOpt.MetadataFetchers ?? [],
+              metadataFetcherOrder: typeOpt.MetadataFetcherOrder ?? undefined,
+              imageFetchers: typeOpt.ImageFetchers ?? [],
+              imageFetcherOrder: typeOpt.ImageFetcherOrder ?? undefined,
+            }),
+          ),
           automaticallyAddToCollection:
             folder.LibraryOptions?.AutomaticallyAddToCollection,
           enableChapterImageExtraction:

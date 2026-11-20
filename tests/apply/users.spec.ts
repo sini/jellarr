@@ -5,7 +5,6 @@ import {
   calculateUserPoliciesDiff,
   applyUserPolicies,
   calculateUserConfigurationsDiff,
-  applyUserConfigurations,
 } from "../../src/apply/users";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type { UserConfig, UserConfigList } from "../../src/types/config/users";
@@ -443,7 +442,8 @@ describe("calculateUserPoliciesDiff", () => {
         } as UserConfig,
       ];
 
-      const result = calculateUserConfigurationsDiff(current, desired);
+      const result: Map<string, UserConfigurationSchema> | undefined =
+        calculateUserConfigurationsDiff(current, desired);
 
       expect(result?.get("1")).toEqual({
         DisplayMissingEpisodes: true,
@@ -700,7 +700,8 @@ describe("calculateUserPoliciesDiff", () => {
       } as UserDtoSchema,
     ];
 
-    const result = calculateUserPoliciesDiff(current, config, virtualFolders);
+    const result: Map<string, UserPolicySchema> | undefined =
+      calculateUserPoliciesDiff(current, config, virtualFolders);
     const payload: UserPolicySchema | undefined = result?.get("user-1-id");
 
     expect(payload).toEqual(

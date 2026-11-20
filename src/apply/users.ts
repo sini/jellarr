@@ -93,7 +93,10 @@ export function calculateUserPoliciesDiff(
       (userConfig: UserConfig) =>
         userConfig.policy?.enabledLibraries ?? undefined,
     )
-    .filter((names): names is string[] => typeof names !== "undefined")
+    .filter(
+      (names: string[] | undefined): names is string[] =>
+        typeof names !== "undefined",
+    )
     .flat();
 
   const hasEnabledFoldersDefined: boolean = desired.some(
@@ -128,7 +131,8 @@ export function calculateUserPoliciesDiff(
 
     if (currentUserDtoSchema?.Id && hasPolicyUpdates) {
       const currentPolicy: UserPolicySchema =
-        (currentUserDtoSchema.Policy as UserPolicySchema) ?? {};
+        (currentUserDtoSchema.Policy as UserPolicySchema | undefined) ??
+        ({} as UserPolicySchema);
       const desiredPolicy: UserPolicyConfig = {
         ...(userConfig.policy ?? {}),
         ...(typeof userConfig.maxActiveSessions !== "undefined"
@@ -176,7 +180,8 @@ export function calculateUserConfigurationsDiff(
 
     if (currentUserDtoSchema?.Id) {
       const currentConfig: UserConfigurationSchema =
-        (currentUserDtoSchema.Configuration as UserConfigurationSchema) ?? {};
+        (currentUserDtoSchema.Configuration as
+          UserConfigurationSchema | undefined) ?? {};
       const desiredConfig: Partial<UserConfigurationSchema> =
         mapUserConfigToConfiguration(userConfig, folderNameToIdMap);
 

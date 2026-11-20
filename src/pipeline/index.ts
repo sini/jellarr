@@ -29,7 +29,11 @@ import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { type BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import { type NetworkConfigurationSchema } from "../types/schema/networking";
-import type { UserDtoSchema, UserPolicySchema } from "../types/schema/users";
+import type {
+  UserConfigurationSchema,
+  UserDtoSchema,
+  UserPolicySchema,
+} from "../types/schema/users";
 import type { UserConfig } from "../types/config/users";
 import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
@@ -371,11 +375,13 @@ export async function runPipeline(
 
     const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
       calculateUserPoliciesDiff(currentUsers, cfg.users, currentVirtualFolders);
-    const userConfigurationsToUpdate = calculateUserConfigurationsDiff(
-      currentUsers,
-      cfg.users,
-      currentVirtualFolders,
-    );
+    const userConfigurationsToUpdate:
+      Map<string, UserConfigurationSchema> | undefined =
+      calculateUserConfigurationsDiff(
+        currentUsers,
+        cfg.users,
+        currentVirtualFolders,
+      );
 
     const userById: (id: string) => UserDtoSchema | undefined = (
       id: string,
