@@ -260,6 +260,8 @@
     };
   };
 
+  libraryOptionNames = lib.remove "_module" (builtins.attrNames (libraryOptionsConfigType.getSubOptions []));
+
   virtualFolderConfigType = types.submodule {
     options = {
       name = mkOption {
@@ -283,6 +285,11 @@
         type = libraryOptionsConfigType;
         description = "Library options including paths.";
       };
+      ignoreChanges = mkOption {
+        type = types.listOf (types.enum libraryOptionNames);
+        default = [];
+        description = "Library options applied only when the library is created; later changes on the server are left alone.";
+      };
     };
   };
 
@@ -304,147 +311,151 @@
         >= 1
         || throw "Library '${folder.name}' must have at least one path in pathInfos"; let
           lo = folder.libraryOptions;
-        in {
-          inherit (folder) name collectionType;
-          libraryOptions =
-            {
-              pathInfos =
-                map (pathInfo: {inherit (pathInfo) path;})
-                lo.pathInfos;
-            }
-            // optionalAttrs (lo ? automaticallyAddToCollection && lo.automaticallyAddToCollection != null) {
-              inherit (lo) automaticallyAddToCollection;
-            }
-            // optionalAttrs (lo ? enableChapterImageExtraction && lo.enableChapterImageExtraction != null) {
-              inherit (lo) enableChapterImageExtraction;
-            }
-            // optionalAttrs (lo ? extractChapterImagesDuringLibraryScan && lo.extractChapterImagesDuringLibraryScan != null) {
-              inherit (lo) extractChapterImagesDuringLibraryScan;
-            }
-            // optionalAttrs (lo ? extractTrickplayImagesDuringLibraryScan && lo.extractTrickplayImagesDuringLibraryScan != null) {
-              inherit (lo) extractTrickplayImagesDuringLibraryScan;
-            }
-            // optionalAttrs (lo ? enableEmbeddedEpisodeInfos && lo.enableEmbeddedEpisodeInfos != null) {
-              inherit (lo) enableEmbeddedEpisodeInfos;
-            }
-            // optionalAttrs (lo ? enableEmbeddedExtraTitles && lo.enableEmbeddedExtraTitles != null) {
-              inherit (lo) enableEmbeddedExtraTitles;
-            }
-            // optionalAttrs (lo ? enableTrickplayImageExtraction && lo.enableTrickplayImageExtraction != null) {
-              inherit (lo) enableTrickplayImageExtraction;
-            }
-            // optionalAttrs (lo ? saveTrickplayWithMedia && lo.saveTrickplayWithMedia != null) {
-              inherit (lo) saveTrickplayWithMedia;
-            }
-            // optionalAttrs (lo ? metadataSavers && lo.metadataSavers != null) {
-              inherit (lo) metadataSavers;
-            }
-            // optionalAttrs (lo ? saveLocalMetadata && lo.saveLocalMetadata != null) {
-              inherit (lo) saveLocalMetadata;
-            }
-            // optionalAttrs (lo ? automaticRefreshIntervalDays && lo.automaticRefreshIntervalDays != null) {
-              inherit (lo) automaticRefreshIntervalDays;
-            }
-            // optionalAttrs (lo ? enableRealtimeMonitor && lo.enableRealtimeMonitor != null) {
-              inherit (lo) enableRealtimeMonitor;
-            }
-            // optionalAttrs (lo ? enabled && lo.enabled != null) {
-              inherit (lo) enabled;
-            }
-            // optionalAttrs (lo ? enablePhotos && lo.enablePhotos != null) {
-              inherit (lo) enablePhotos;
-            }
-            // optionalAttrs (lo ? enableLUFSScan && lo.enableLUFSScan != null) {
-              inherit (lo) enableLUFSScan;
-            }
-            // optionalAttrs (lo ? enableAutomaticSeriesGrouping && lo.enableAutomaticSeriesGrouping != null) {
-              inherit (lo) enableAutomaticSeriesGrouping;
-            }
-            // optionalAttrs (lo ? enableEmbeddedTitles && lo.enableEmbeddedTitles != null) {
-              inherit (lo) enableEmbeddedTitles;
-            }
-            // optionalAttrs (lo ? skipSubtitlesIfEmbeddedSubtitlesPresent && lo.skipSubtitlesIfEmbeddedSubtitlesPresent != null) {
-              inherit (lo) skipSubtitlesIfEmbeddedSubtitlesPresent;
-            }
-            // optionalAttrs (lo ? skipSubtitlesIfAudioTrackMatches && lo.skipSubtitlesIfAudioTrackMatches != null) {
-              inherit (lo) skipSubtitlesIfAudioTrackMatches;
-            }
-            // optionalAttrs (lo ? requirePerfectSubtitleMatch && lo.requirePerfectSubtitleMatch != null) {
-              inherit (lo) requirePerfectSubtitleMatch;
-            }
-            // optionalAttrs (lo ? saveSubtitlesWithMedia && lo.saveSubtitlesWithMedia != null) {
-              inherit (lo) saveSubtitlesWithMedia;
-            }
-            // optionalAttrs (lo ? saveLyricsWithMedia && lo.saveLyricsWithMedia != null) {
-              inherit (lo) saveLyricsWithMedia;
-            }
-            // optionalAttrs (lo ? preferNonstandardArtistsTag && lo.preferNonstandardArtistsTag != null) {
-              inherit (lo) preferNonstandardArtistsTag;
-            }
-            // optionalAttrs (lo ? useCustomTagDelimiters && lo.useCustomTagDelimiters != null) {
-              inherit (lo) useCustomTagDelimiters;
-            }
-            // optionalAttrs (lo ? preferredMetadataLanguage && lo.preferredMetadataLanguage != null) {
-              inherit (lo) preferredMetadataLanguage;
-            }
-            // optionalAttrs (lo ? metadataCountryCode && lo.metadataCountryCode != null) {
-              inherit (lo) metadataCountryCode;
-            }
-            // optionalAttrs (lo ? seasonZeroDisplayName && lo.seasonZeroDisplayName != null) {
-              inherit (lo) seasonZeroDisplayName;
-            }
-            // optionalAttrs (lo ? allowEmbeddedSubtitles && lo.allowEmbeddedSubtitles != null) {
-              inherit (lo) allowEmbeddedSubtitles;
-            }
-            // optionalAttrs (lo ? disabledLocalMetadataReaders && lo.disabledLocalMetadataReaders != null) {
-              inherit (lo) disabledLocalMetadataReaders;
-            }
-            // optionalAttrs (lo ? localMetadataReaderOrder && lo.localMetadataReaderOrder != null) {
-              inherit (lo) localMetadataReaderOrder;
-            }
-            // optionalAttrs (lo ? disabledSubtitleFetchers && lo.disabledSubtitleFetchers != null) {
-              inherit (lo) disabledSubtitleFetchers;
-            }
-            // optionalAttrs (lo ? subtitleFetcherOrder && lo.subtitleFetcherOrder != null) {
-              inherit (lo) subtitleFetcherOrder;
-            }
-            // optionalAttrs (lo ? disabledMediaSegmentProviders && lo.disabledMediaSegmentProviders != null) {
-              inherit (lo) disabledMediaSegmentProviders;
-            }
-            // optionalAttrs (lo ? mediaSegmentProviderOrder && lo.mediaSegmentProviderOrder != null) {
-              inherit (lo) mediaSegmentProviderOrder;
-            }
-            // optionalAttrs (lo ? subtitleDownloadLanguages && lo.subtitleDownloadLanguages != null) {
-              inherit (lo) subtitleDownloadLanguages;
-            }
-            // optionalAttrs (lo ? disabledLyricFetchers && lo.disabledLyricFetchers != null) {
-              inherit (lo) disabledLyricFetchers;
-            }
-            // optionalAttrs (lo ? lyricFetcherOrder && lo.lyricFetcherOrder != null) {
-              inherit (lo) lyricFetcherOrder;
-            }
-            // optionalAttrs (lo ? customTagDelimiters && lo.customTagDelimiters != null) {
-              inherit (lo) customTagDelimiters;
-            }
-            // optionalAttrs (lo ? delimiterWhitelist && lo.delimiterWhitelist != null) {
-              inherit (lo) delimiterWhitelist;
-            }
-            // optionalAttrs ((lo.typeOptions or []) != []) {
-              typeOptions =
-                map (typeOpt: {
-                  inherit (typeOpt) type metadataFetchers imageFetchers;
-                  metadataFetcherOrder =
-                    if (typeOpt.metadataFetcherOrder or null) != null
-                    then typeOpt.metadataFetcherOrder
-                    else typeOpt.metadataFetchers;
-                  imageFetcherOrder =
-                    if (typeOpt.imageFetcherOrder or null) != null
-                    then typeOpt.imageFetcherOrder
-                    else typeOpt.imageFetchers;
-                })
-                (folder.libraryOptions.typeOptions or []);
-            };
-        })
+        in
+          {
+            inherit (folder) name collectionType;
+            libraryOptions =
+              {
+                pathInfos =
+                  map (pathInfo: {inherit (pathInfo) path;})
+                  lo.pathInfos;
+              }
+              // optionalAttrs (lo ? automaticallyAddToCollection && lo.automaticallyAddToCollection != null) {
+                inherit (lo) automaticallyAddToCollection;
+              }
+              // optionalAttrs (lo ? enableChapterImageExtraction && lo.enableChapterImageExtraction != null) {
+                inherit (lo) enableChapterImageExtraction;
+              }
+              // optionalAttrs (lo ? extractChapterImagesDuringLibraryScan && lo.extractChapterImagesDuringLibraryScan != null) {
+                inherit (lo) extractChapterImagesDuringLibraryScan;
+              }
+              // optionalAttrs (lo ? extractTrickplayImagesDuringLibraryScan && lo.extractTrickplayImagesDuringLibraryScan != null) {
+                inherit (lo) extractTrickplayImagesDuringLibraryScan;
+              }
+              // optionalAttrs (lo ? enableEmbeddedEpisodeInfos && lo.enableEmbeddedEpisodeInfos != null) {
+                inherit (lo) enableEmbeddedEpisodeInfos;
+              }
+              // optionalAttrs (lo ? enableEmbeddedExtraTitles && lo.enableEmbeddedExtraTitles != null) {
+                inherit (lo) enableEmbeddedExtraTitles;
+              }
+              // optionalAttrs (lo ? enableTrickplayImageExtraction && lo.enableTrickplayImageExtraction != null) {
+                inherit (lo) enableTrickplayImageExtraction;
+              }
+              // optionalAttrs (lo ? saveTrickplayWithMedia && lo.saveTrickplayWithMedia != null) {
+                inherit (lo) saveTrickplayWithMedia;
+              }
+              // optionalAttrs (lo ? metadataSavers && lo.metadataSavers != null) {
+                inherit (lo) metadataSavers;
+              }
+              // optionalAttrs (lo ? saveLocalMetadata && lo.saveLocalMetadata != null) {
+                inherit (lo) saveLocalMetadata;
+              }
+              // optionalAttrs (lo ? automaticRefreshIntervalDays && lo.automaticRefreshIntervalDays != null) {
+                inherit (lo) automaticRefreshIntervalDays;
+              }
+              // optionalAttrs (lo ? enableRealtimeMonitor && lo.enableRealtimeMonitor != null) {
+                inherit (lo) enableRealtimeMonitor;
+              }
+              // optionalAttrs (lo ? enabled && lo.enabled != null) {
+                inherit (lo) enabled;
+              }
+              // optionalAttrs (lo ? enablePhotos && lo.enablePhotos != null) {
+                inherit (lo) enablePhotos;
+              }
+              // optionalAttrs (lo ? enableLUFSScan && lo.enableLUFSScan != null) {
+                inherit (lo) enableLUFSScan;
+              }
+              // optionalAttrs (lo ? enableAutomaticSeriesGrouping && lo.enableAutomaticSeriesGrouping != null) {
+                inherit (lo) enableAutomaticSeriesGrouping;
+              }
+              // optionalAttrs (lo ? enableEmbeddedTitles && lo.enableEmbeddedTitles != null) {
+                inherit (lo) enableEmbeddedTitles;
+              }
+              // optionalAttrs (lo ? skipSubtitlesIfEmbeddedSubtitlesPresent && lo.skipSubtitlesIfEmbeddedSubtitlesPresent != null) {
+                inherit (lo) skipSubtitlesIfEmbeddedSubtitlesPresent;
+              }
+              // optionalAttrs (lo ? skipSubtitlesIfAudioTrackMatches && lo.skipSubtitlesIfAudioTrackMatches != null) {
+                inherit (lo) skipSubtitlesIfAudioTrackMatches;
+              }
+              // optionalAttrs (lo ? requirePerfectSubtitleMatch && lo.requirePerfectSubtitleMatch != null) {
+                inherit (lo) requirePerfectSubtitleMatch;
+              }
+              // optionalAttrs (lo ? saveSubtitlesWithMedia && lo.saveSubtitlesWithMedia != null) {
+                inherit (lo) saveSubtitlesWithMedia;
+              }
+              // optionalAttrs (lo ? saveLyricsWithMedia && lo.saveLyricsWithMedia != null) {
+                inherit (lo) saveLyricsWithMedia;
+              }
+              // optionalAttrs (lo ? preferNonstandardArtistsTag && lo.preferNonstandardArtistsTag != null) {
+                inherit (lo) preferNonstandardArtistsTag;
+              }
+              // optionalAttrs (lo ? useCustomTagDelimiters && lo.useCustomTagDelimiters != null) {
+                inherit (lo) useCustomTagDelimiters;
+              }
+              // optionalAttrs (lo ? preferredMetadataLanguage && lo.preferredMetadataLanguage != null) {
+                inherit (lo) preferredMetadataLanguage;
+              }
+              // optionalAttrs (lo ? metadataCountryCode && lo.metadataCountryCode != null) {
+                inherit (lo) metadataCountryCode;
+              }
+              // optionalAttrs (lo ? seasonZeroDisplayName && lo.seasonZeroDisplayName != null) {
+                inherit (lo) seasonZeroDisplayName;
+              }
+              // optionalAttrs (lo ? allowEmbeddedSubtitles && lo.allowEmbeddedSubtitles != null) {
+                inherit (lo) allowEmbeddedSubtitles;
+              }
+              // optionalAttrs (lo ? disabledLocalMetadataReaders && lo.disabledLocalMetadataReaders != null) {
+                inherit (lo) disabledLocalMetadataReaders;
+              }
+              // optionalAttrs (lo ? localMetadataReaderOrder && lo.localMetadataReaderOrder != null) {
+                inherit (lo) localMetadataReaderOrder;
+              }
+              // optionalAttrs (lo ? disabledSubtitleFetchers && lo.disabledSubtitleFetchers != null) {
+                inherit (lo) disabledSubtitleFetchers;
+              }
+              // optionalAttrs (lo ? subtitleFetcherOrder && lo.subtitleFetcherOrder != null) {
+                inherit (lo) subtitleFetcherOrder;
+              }
+              // optionalAttrs (lo ? disabledMediaSegmentProviders && lo.disabledMediaSegmentProviders != null) {
+                inherit (lo) disabledMediaSegmentProviders;
+              }
+              // optionalAttrs (lo ? mediaSegmentProviderOrder && lo.mediaSegmentProviderOrder != null) {
+                inherit (lo) mediaSegmentProviderOrder;
+              }
+              // optionalAttrs (lo ? subtitleDownloadLanguages && lo.subtitleDownloadLanguages != null) {
+                inherit (lo) subtitleDownloadLanguages;
+              }
+              // optionalAttrs (lo ? disabledLyricFetchers && lo.disabledLyricFetchers != null) {
+                inherit (lo) disabledLyricFetchers;
+              }
+              // optionalAttrs (lo ? lyricFetcherOrder && lo.lyricFetcherOrder != null) {
+                inherit (lo) lyricFetcherOrder;
+              }
+              // optionalAttrs (lo ? customTagDelimiters && lo.customTagDelimiters != null) {
+                inherit (lo) customTagDelimiters;
+              }
+              // optionalAttrs (lo ? delimiterWhitelist && lo.delimiterWhitelist != null) {
+                inherit (lo) delimiterWhitelist;
+              }
+              // optionalAttrs ((lo.typeOptions or []) != []) {
+                typeOptions =
+                  map (typeOpt: {
+                    inherit (typeOpt) type metadataFetchers imageFetchers;
+                    metadataFetcherOrder =
+                      if (typeOpt.metadataFetcherOrder or null) != null
+                      then typeOpt.metadataFetcherOrder
+                      else typeOpt.metadataFetchers;
+                    imageFetcherOrder =
+                      if (typeOpt.imageFetcherOrder or null) != null
+                      then typeOpt.imageFetcherOrder
+                      else typeOpt.imageFetchers;
+                  })
+                  (folder.libraryOptions.typeOptions or []);
+              };
+          }
+          // optionalAttrs ((folder.ignoreChanges or []) != []) {
+            inherit (folder) ignoreChanges;
+          })
       cfg.virtualFolders;
     };
 in {
