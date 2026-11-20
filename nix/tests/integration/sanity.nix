@@ -1,8 +1,14 @@
-{pkgs}:
+{
+  pkgs,
+  jellyfinPackage,
+  ...
+}:
 pkgs.testers.runNixOSTest {
   extraPythonPackages = p: [p.pyhamcrest];
 
   globalTimeout = 600;
+
+  skipTypeCheck = true;
 
   name = "jellarr-sanity-full-config";
 
@@ -10,6 +16,8 @@ pkgs.testers.runNixOSTest {
     imports = [
       ./base.nix
     ];
+
+    services.jellyfin.package = jellyfinPackage;
 
     services.jellarr.config = {
       api_keys = [
