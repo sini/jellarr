@@ -1253,3 +1253,95 @@ describe("api/jf startup and sign-in façade", () => {
     );
   });
 });
+
+describe("api/jf password façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when POST /Users/Password is sent then userId is a query parameter and only NewPw is in the body", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    await createJellyfinClient(baseUrl, apiKey).updateUserPassword(
+      "user-1",
+      "pw",
+    );
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Users\/Password\?userId=user-1$/);
+    expect(await req.clone().json()).toEqual({ NewPw: "pw" });
+  });
+
+  it("when POST /Users/Password fails then it throws with the status", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(403);
+
+    // Act + Assert
+    await expect(
+      createJellyfinClient(baseUrl, apiKey).updateUserPassword("u", "p"),
+    ).rejects.toThrow(/failed: 403/);
+  });
+
+  it("when the probe sign-in succeeds then it uses its own device id and signs the probe out", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ AccessToken: "probe-tok" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    // Act
+    const result: string = await createJellyfinClient(
+      baseUrl,
+      apiKey,
+    ).checkUserPassword("alice", "pw");
+
+    // Assert
+    expect(result).toBe("valid");
+    const login: Request = fetchMock.mock.calls[0]?.[0] as Request;
+    const logout: Request = fetchMock.mock.calls[1]?.[0] as Request;
+    expect(login.headers.get("Authorization")).toContain(
+      'DeviceId="jellarr-password-check"',
+    );
+    expect(login.headers.get("Authorization")).not.toContain("Token=");
+    expect(logout.url).toMatch(/\/Sessions\/Logout$/);
+    expect(logout.headers.get("Authorization")).toContain('Token="probe-tok"');
+  });
+
+  it.each([
+    [401, "invalid"],
+    [403, "unverifiable"],
+  ])(
+    "when the probe sign-in answers %s then the check is %s",
+    async (status: number, expected: string): Promise<void> => {
+      // Arrange
+      mockFetchNoContent(status);
+
+      // Act + Assert
+      expect(
+        await createJellyfinClient(baseUrl, apiKey).checkUserPassword(
+          "alice",
+          "pw",
+        ),
+      ).toBe(expected);
+    },
+  );
+
+  it("when the probe sign-in answers 500 then it throws instead of guessing", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(500);
+
+    // Act + Assert
+    await expect(
+      createJellyfinClient(baseUrl, apiKey).checkUserPassword("alice", "pw"),
+    ).rejects.toThrow(/failed: 500/);
+  });
+});

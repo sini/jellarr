@@ -10,12 +10,14 @@ const client: {
   authenticateByName: ReturnType<typeof vi.fn>;
   getUsers: ReturnType<typeof vi.fn>;
   updateUserPolicy: ReturnType<typeof vi.fn>;
+  checkUserPassword: ReturnType<typeof vi.fn>;
 } = {
   getSystemConfiguration: vi.fn(),
   setAccessToken: vi.fn(),
   authenticateByName: vi.fn(),
   getUsers: vi.fn(),
   updateUserPolicy: vi.fn(),
+  checkUserPassword: vi.fn(),
 };
 
 vi.mock("../../src/api/jellyfin_client", () => ({
@@ -71,6 +73,7 @@ describe("pipeline/auth fallback", () => {
       },
     ]);
     client.updateUserPolicy.mockReset();
+    client.checkUserPassword.mockReset().mockResolvedValue("valid");
     vi.spyOn(console, "log").mockImplementation(() => undefined);
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
   });
@@ -90,6 +93,7 @@ describe("pipeline/auth fallback", () => {
 
     // Assert
     expect(client.authenticateByName).not.toHaveBeenCalled();
+    expect(client.checkUserPassword).toHaveBeenCalledWith("root", "hunter2");
   });
 
   it("whenApiKeyAbsent_thenSignsInAsConfiguredAdminAndWarns", async () => {
@@ -102,6 +106,7 @@ describe("pipeline/auth fallback", () => {
     // Assert
     expect(client.authenticateByName).toHaveBeenCalledWith("root", "hunter2");
     expect(client.setAccessToken).toHaveBeenCalledWith("tok");
+    expect(client.checkUserPassword).not.toHaveBeenCalled();
     expect(console.warn).toHaveBeenCalledWith(
       expect.stringContaining("JELLARR_API_KEY is not set"),
     );

@@ -47,6 +47,8 @@ import type {
   PostAuthenticateByNameResponse,
   GetPublicSystemInfoResponse,
   PostStartupStepResponse,
+  PostUserPasswordResponse,
+  PasswordCheck,
   GetStartupUserResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
@@ -79,6 +81,54 @@ export function createJellyfinClient(
   return {
     setAccessToken(accessToken: string): void {
       token = accessToken;
+    },
+
+    async checkUserPassword(
+      username: string,
+      password: string,
+    ): Promise<PasswordCheck> {
+      const probeId: string = "jellarr-password-check";
+      const probe: Client<paths> = makeClient(baseUrl, undefined, probeId);
+      const res: PostAuthenticateByNameResponse = await probe.POST(
+        "/Users/AuthenticateByName",
+        {
+          body: { Username: username, Pw: password },
+          headers: { "content-type": "application/json" },
+        },
+      );
+      if (res.response.status === 401) return "invalid";
+      if (res.response.status === 403) return "unverifiable";
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Users/AuthenticateByName failed: ${res.response.status.toString()}`,
+        );
+      }
+      const probeToken: string | null | undefined = res.data?.AccessToken;
+      if (probeToken) {
+        await makeClient(baseUrl, probeToken, probeId)
+          .POST("/Sessions/Logout")
+          .catch(() => undefined);
+      }
+      return "valid";
+    },
+
+    async updateUserPassword(
+      userId: string,
+      newPassword: string,
+    ): Promise<void> {
+      const res: PostUserPasswordResponse = await client.POST(
+        "/Users/Password",
+        {
+          params: { query: { userId } },
+          body: { NewPw: newPassword },
+          headers: { "content-type": "application/json" },
+        },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Users/Password failed: ${res.response.status.toString()}`,
+        );
+      }
     },
 
     async authenticateByName(

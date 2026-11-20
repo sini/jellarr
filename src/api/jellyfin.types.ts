@@ -54,6 +54,7 @@ export type PostUserPolicyResponse = ApiResponse<void>;
 export type PostStartupCompleteResponse = ApiResponse<void>;
 export type GetPublicSystemInfoResponse = ApiResponse<PublicSystemInfoSchema>;
 export type GetStartupUserResponse = ApiResponse<StartupUserDtoSchema>;
+export type PostUserPasswordResponse = ApiResponse<void>;
 export type PostStartupStepResponse = ApiResponse<void>;
 export type PostAuthenticateByNameResponse = ApiResponse<{
   AccessToken?: string | null;
@@ -77,7 +78,11 @@ export interface InstallPackageOptions {
   repositoryUrl?: string;
 }
 
+export type PasswordCheck = "valid" | "invalid" | "unverifiable";
+
 export interface JellyfinClient {
+  checkUserPassword(username: string, password: string): Promise<PasswordCheck>;
+  updateUserPassword(userId: string, newPassword: string): Promise<void>;
   setAccessToken(accessToken: string): void;
   authenticateByName(username: string, password: string): Promise<string>;
   getServerVersion(): Promise<string>;

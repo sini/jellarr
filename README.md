@@ -406,6 +406,17 @@ it.
 - **Exactly one required**: Each user must specify either `password` or
   `passwordFile` (not both)
 
+**Password reconciliation:** on every run, an existing user whose password
+differs from the configured one has it set (`POST /Users/Password`). Jellarr
+finds out by signing in as that user under its own device id and signing out
+again, which creates no lasting session. A failed sign-in counts towards
+Jellyfin's `loginAttemptsBeforeLockout`, so a user for whom one more failure
+would reach the limit is not probed; their password is set without a check. A
+user whose sign-in is forbidden (disabled, parental schedule, remote access off)
+is left unchanged with a warning. Setting a password signs the user out of their
+other devices, which is why Jellarr only does it when the password differs. The
+admin Jellarr signed in as by name is already verified and is not probed.
+
 **sops-nix Integration:**
 
 ```nix

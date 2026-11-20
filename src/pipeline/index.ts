@@ -22,6 +22,7 @@ import {
   createNewUsers,
   calculateUserConfigurationsDiff,
   applyUserConfigurations,
+  reconcileUserPasswords,
 } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
@@ -242,6 +243,7 @@ export async function runPipeline(
     }
 
     let currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
+    const existingUsers: UserDtoSchema[] = currentUsers;
 
     const usersToCreate: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
@@ -254,6 +256,16 @@ export async function runPipeline(
       console.log("✓ created users");
       currentUsers = await jellyfinClient.getUsers();
     }
+
+    await reconcileUserPasswords(
+      jellyfinClient,
+      existingUsers,
+      cfg.users,
+      new Set([
+        ...(usersToCreate ?? []).map((user: UserConfig) => user.name),
+        ...(verifiedAdmin ? [verifiedAdmin.name] : []),
+      ]),
+    );
 
     const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
       calculateUserPoliciesDiff(currentUsers, cfg.users, currentVirtualFolders);

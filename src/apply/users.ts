@@ -1,4 +1,4 @@
-import type { JellyfinClient } from "../api/jellyfin.types";
+import type { JellyfinClient, PasswordCheck } from "../api/jellyfin.types";
 import { logger } from "../lib/logger";
 import type {
   UserConfig,
@@ -14,6 +14,7 @@ import {
   mapUserConfigToCreateSchema,
   mapUserPolicyConfigToSchema,
   mapUserConfigToConfiguration,
+  getPassword,
 } from "../mappers/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 
@@ -206,5 +207,62 @@ export async function applyUserConfigurations(
 
   for (const [userId, configuration] of configurations) {
     await client.updateUserConfiguration(userId, configuration);
+  }
+}
+
+/**
+ * Whether one failed sign-in is safe for this user. Jellyfin counts a failed
+ * AuthenticateByName and disables the account once the count reaches its
+ * LoginAttemptsBeforeLockout policy (-1: never), so a probe is only made
+ * while the count after a failure would stay below the limit.
+ */
+export function isProbeSafe(
+  policy: UserPolicySchema | null | undefined,
+): boolean {
+  const limit: number = policy?.LoginAttemptsBeforeLockout ?? -1;
+  if (limit < 0) return true;
+  return (policy?.InvalidLoginAttemptCount ?? 0) + 1 < limit;
+}
+
+/**
+ * Sets the password of existing users whose current password differs from
+ * the configured one. Setting a password revokes the user's other tokens, so
+ * it is only done after a probe sign-in (own device id, signed out again)
+ * fails; a user too close to lockout to probe is set unconditionally.
+ */
+export async function reconcileUserPasswords(
+  client: JellyfinClient,
+  current: UserDtoSchema[],
+  desired: UserConfigList,
+  skip: ReadonlySet<string>,
+): Promise<void> {
+  for (const userConfig of desired) {
+    if (skip.has(userConfig.name)) continue;
+    const user: UserDtoSchema | undefined = current.find(
+      (candidate: UserDtoSchema) => candidate.Name === userConfig.name,
+    );
+    if (!user?.Id) continue;
+    const password: string = getPassword(userConfig);
+
+    if (isProbeSafe(user.Policy)) {
+      const check: PasswordCheck = await client.checkUserPassword(
+        userConfig.name,
+        password,
+      );
+      if (check === "valid") continue;
+      if (check === "unverifiable") {
+        logger.warn(
+          `Cannot verify the password of user ${userConfig.name} (sign-in forbidden); leaving it unchanged`,
+        );
+        continue;
+      }
+    } else {
+      logger.warn(
+        `User ${userConfig.name} is close to lockout; setting the password without a sign-in check`,
+      );
+    }
+
+    logger.info(`Setting password: ${userConfig.name}`);
+    await client.updateUserPassword(user.Id, password);
   }
 }
