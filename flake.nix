@@ -40,6 +40,9 @@
             module-package-override = import ./nix/tests/module {
               inherit nixpkgs pkgs system;
             };
+            module-bootstrap = import ./nix/tests/module/bootstrap.nix {
+              inherit nixpkgs pkgs system;
+            };
             module-types = import ./nix/tests/module/types {inherit pkgs;};
           }
           // import ./nix/tests/integration {inherit pkgs;};

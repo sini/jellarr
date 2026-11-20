@@ -114,6 +114,14 @@ in {
               sleep 1
             done
 
+            # Jellyfin 10.11 schema; refuse to write into anything else
+            cols=$(sqlite3 "$DB" "SELECT group_concat(name) FROM (SELECT name FROM pragma_table_info('ApiKeys') ORDER BY name);")
+            expected="AccessToken,DateCreated,DateLastActivity,Id,Name"
+            if [ "$cols" != "$expected" ]; then
+              echo "ApiKeys schema mismatch: got '$cols', expected '$expected'" >&2
+              exit 1
+            fi
+
             # Check if key exists and matches current value
             existing_token=$(sqlite3 "$DB" "SELECT AccessToken FROM ApiKeys WHERE Name='$API_KEY_NAME';")
             if [ "$existing_token" = "$API_KEY" ]; then
@@ -131,11 +139,12 @@ in {
 
             sleep 5
 
-            sqlite3 "$DB" <<SQL
+            sqlite3 -bail "$DB" <<SQL
             BEGIN IMMEDIATE;
-            DELETE FROM ApiKeys WHERE Name='$API_KEY_NAME';
+            UPDATE ApiKeys SET AccessToken='$API_KEY', DateLastActivity=datetime('now') WHERE Name='$API_KEY_NAME';
             INSERT INTO ApiKeys (AccessToken, Name, DateCreated, DateLastActivity)
-            VALUES ('$API_KEY', '$API_KEY_NAME', datetime('now'), datetime('now'));
+            SELECT '$API_KEY', '$API_KEY_NAME', datetime('now'), datetime('now')
+            WHERE NOT EXISTS (SELECT 1 FROM ApiKeys WHERE Name='$API_KEY_NAME');
             COMMIT;
             SQL
 
