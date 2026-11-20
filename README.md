@@ -718,14 +718,21 @@ Jellyfin's database:
 }
 ```
 
+**When you need it:** only if you have no other way to create the first API key.
+Skip it when you provision the key yourself (Jellyfin UI, or a Jellyfin on
+another host) and pass it through `environmentFile`.
+
 **How it works:**
 
-1. The `jellarr-api-key-bootstrap` systemd service runs after Jellyfin starts
-2. It waits for Jellyfin's database to exist
-3. If the API key doesn't already exist, it stops Jellyfin, inserts the key into
-   the SQLite database, and restarts Jellyfin
-4. The `jellarr` service has `After=jellarr-api-key-bootstrap.service`, ensuring
-   proper ordering
+1. The `jellarr-api-key-bootstrap` service is pulled in by `jellarr.service`
+   (`requiredBy` and `before`), so it runs only as part of a jellarr run and
+   never blocks activation on its own
+2. It waits for Jellyfin's database to exist and checks that the `ApiKeys` table
+   has the columns Jellyfin 10.11 uses; on any other schema it exits non-zero
+   without writing
+3. If a key with this name already holds the configured value, it does nothing.
+   Otherwise it stops Jellyfin, upserts the row by name (a rotated key replaces
+   the old value instead of adding a row) and restarts Jellyfin
 
 **Important notes:**
 
@@ -733,10 +740,34 @@ Jellyfin's database:
   requires direct access to Jellyfin's database file
 - The bootstrap service runs as `root` (required for stopping/starting Jellyfin
   and writing to the database)
-- The insertion is idempotent - if a key with the same name exists, it skips
 - For deployments where Jellarr runs on a **different host** than Jellyfin, you
   must provision the API key manually (via Jellyfin's web UI or a separate
   script) and provide it via `environmentFile`
+
+### When the NixOS module runs
+
+`jellarr.service` is a oneshot. It runs on the `services.jellarr.schedule` timer
+and also at every `nixos-rebuild switch` (it is wanted by `multi-user.target`
+and restarts when the rendered config changes), so a config change is applied
+without waiting for the timer. The unit does not set `RemainAfterExit`, which
+would stop the timer from running it again.
+
+### Library `ignoreChanges` (NixOS)
+
+Each entry of `services.jellarr.config.library.virtualFolders` accepts
+`ignoreChanges`, a list of `libraryOptions` names (for example `"pathInfos"`)
+that are applied only when the library is created:
+
+```nix
+services.jellarr.config.library.virtualFolders = [
+  {
+    name = "Anime";
+    collectionType = "tvshows";
+    libraryOptions.pathInfos = [{ path = "/data/anime"; }];
+    ignoreChanges = [ "pathInfos" ];
+  }
+];
+```
 
 ---
 
