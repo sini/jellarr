@@ -57,8 +57,16 @@ import type { ApiKeyConfig } from "../types/config/api-keys";
 import { calculateMetadataDiff, applyMetadata } from "../apply/metadata";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
 import { resolveValue } from "../lib/file-refs";
+import { waitForHealth, resolveWaitTimeoutMs } from "../lib/health";
 
-export async function runPipeline(path: string): Promise<void> {
+export interface PipelineOptions {
+  waitTimeoutSeconds?: number;
+}
+
+export async function runPipeline(
+  path: string,
+  options: PipelineOptions = {},
+): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
 
   const validationResult: ZodSafeParseResult<RootConfig> =
@@ -79,6 +87,13 @@ export async function runPipeline(path: string): Promise<void> {
     cfg.base_url,
     apiKey,
   );
+
+  const waitTimeoutMs: number = resolveWaitTimeoutMs(
+    options.waitTimeoutSeconds,
+  );
+  console.log("→ waiting for Jellyfin to become healthy");
+  await waitForHealth(cfg.base_url, { timeoutMs: waitTimeoutMs });
+  console.log("✓ Jellyfin is healthy");
 
   const currentServerConfigurationSchema: ServerConfigurationSchema =
     await jellyfinClient.getSystemConfiguration();

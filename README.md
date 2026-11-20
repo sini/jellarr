@@ -559,6 +559,18 @@ curl -s -H "X-Emby-Token: $API_KEY" \
 
 ---
 
+## Startup Wait
+
+Before its first API call Jellarr polls `GET /health` until Jellyfin answers
+200, so a one-shot Job (for example a Kubernetes Job) can start alongside the
+server. The wait defaults to 300 seconds and fails with a clear error when it
+expires. Set it with `--waitTimeout <seconds>` or `JELLARR_WAIT_TIMEOUT`; the
+flag wins.
+
+```bash
+JELLARR_WAIT_TIMEOUT=600 jellarr --configFile config.yml
+```
+
 ## Secret Management
 
 ### With sops-nix (nix only)

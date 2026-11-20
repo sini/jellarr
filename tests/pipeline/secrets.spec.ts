@@ -17,6 +17,12 @@ vi.mock("../../src/api/jellyfin_client", () => ({
   createJellyfinClient: (): typeof client => client,
 }));
 
+vi.mock("../../src/lib/health", () => ({
+  waitForHealth: (): Promise<void> => Promise.resolve(),
+  waitForRestart: (): Promise<void> => Promise.resolve(),
+  resolveWaitTimeoutMs: (): number => 1000,
+}));
+
 import { runPipeline } from "../../src/pipeline";
 
 describe("pipeline/secrets", () => {

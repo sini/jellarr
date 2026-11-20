@@ -5,6 +5,7 @@ import { runDump } from "../dump";
 
 interface ApplyOptions {
   configFile: string;
+  waitTimeout?: number;
 }
 
 interface DumpOptions {
@@ -25,8 +26,18 @@ program
       "config/config.yml",
     ),
   )
+  .addOption(
+    new Option(
+      "--waitTimeout <seconds>",
+      "seconds to wait for Jellyfin /health (default 300, or JELLARR_WAIT_TIMEOUT)",
+    ).argParser(Number),
+  )
   .action(async (opts: ApplyOptions): Promise<void> => {
-    await runPipeline(opts.configFile);
+    await runPipeline(opts.configFile, {
+      ...(opts.waitTimeout !== undefined
+        ? { waitTimeoutSeconds: opts.waitTimeout }
+        : {}),
+    });
     console.log("✅ jellarr apply complete");
   });
 
