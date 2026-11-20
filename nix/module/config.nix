@@ -117,7 +117,12 @@ in {
             done
 
             # Jellyfin 10.11 schema; refuse to write into anything else
-            cols=$(sqlite3 "$DB" "SELECT group_concat(name) FROM (SELECT name FROM pragma_table_info('ApiKeys') ORDER BY name);")
+            # the file appears before Jellyfin's migrations create the table
+            for _ in $(seq 1 180); do
+              cols=$(sqlite3 "$DB" "SELECT group_concat(name) FROM (SELECT name FROM pragma_table_info('ApiKeys') ORDER BY name);" || true)
+              [ -n "$cols" ] && break
+              sleep 1
+            done
             expected="AccessToken,DateCreated,DateLastActivity,Id,Name"
             if [ "$cols" != "$expected" ]; then
               echo "ApiKeys schema mismatch: got '$cols', expected '$expected'" >&2
