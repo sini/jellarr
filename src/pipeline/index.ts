@@ -51,17 +51,15 @@ import {
   type PluginInstall,
   type PluginRemoval,
 } from "../apply/plugins";
-import { substituteEnvVars } from "../lib/env-substitution";
 import { calculateApiKeysToCreate, createApiKeys } from "../apply/api-keys";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { ApiKeyConfig } from "../types/config/api-keys";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
-  const expanded: string = substituteEnvVars(raw);
 
   const validationResult: ZodSafeParseResult<RootConfig> =
-    RootConfigType.safeParse(YAML.parse(expanded));
+    RootConfigType.safeParse(YAML.parse(raw));
   if (!validationResult.success) {
     const errorMessages: string = validationResult.error.issues
       .map((err: z.core.$ZodIssue) => `${err.path.join(".")}: ${err.message}`)
