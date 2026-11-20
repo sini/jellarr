@@ -43,6 +43,9 @@
             module-bootstrap = import ./nix/tests/module/bootstrap.nix {
               inherit nixpkgs pkgs system;
             };
+            module-options = import ./nix/tests/module/options.nix {
+              inherit nixpkgs pkgs system;
+            };
             module-types = import ./nix/tests/module/types {inherit pkgs;};
           }
           // import ./nix/tests/integration {inherit pkgs;};

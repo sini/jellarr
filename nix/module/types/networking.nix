@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -6,7 +7,7 @@
   networkingConfigType = types.submodule {
     options = {
       baseUrl = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Base URL for the Jellyfin server.";
       };
@@ -61,12 +62,12 @@
         description = "Treat the remote IP filter as a blacklist rather than a whitelist.";
       };
       certificatePath = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to the SSL certificate file.";
       };
       certificatePassword = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Password for the SSL certificate.";
       };
@@ -91,32 +92,32 @@
         description = "Public HTTPS port.";
       };
       localNetworkSubnets = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of local network subnets.";
       };
       localNetworkAddresses = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of local network addresses to bind to.";
       };
       knownProxies = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of known proxy addresses.";
       };
       virtualInterfaceNames = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of virtual interface names to ignore.";
       };
       publishedServerUriBySubnet = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of published server URIs by subnet.";
       };
       remoteIPFilter = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of remote IP addresses to filter.";
       };

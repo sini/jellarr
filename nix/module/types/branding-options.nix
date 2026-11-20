@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -6,12 +7,12 @@
   brandingOptionsConfigType = types.submodule {
     options = {
       loginDisclaimer = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Custom login disclaimer text (supports HTML).";
       };
       customCss = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Custom CSS to apply to the Jellyfin web interface.";
       };

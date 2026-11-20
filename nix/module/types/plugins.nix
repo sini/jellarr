@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -6,11 +7,11 @@
   pluginConfigType = types.submodule {
     options = {
       name = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Plugin name, as listed in the plugin catalog.";
       };
       version = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = ''
           Version to install and hold the plugin at. When unset, the newest

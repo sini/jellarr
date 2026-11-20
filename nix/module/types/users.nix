@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -6,12 +7,12 @@
   userPolicyConfigType = types.submodule {
     options = {
       allowedTags = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Only show items with these tags. An empty list removes the restriction.";
       };
       blockedTags = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Hide items with these tags. An empty list removes the restriction.";
       };
@@ -26,7 +27,7 @@
         description = "Number of login attempts before lockout (minimum 1).";
       };
       enabledLibraries = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of library names the user can access.";
       };
@@ -61,16 +62,16 @@
   userConfigType = types.submodule {
     options = {
       name = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "User name.";
       };
       password = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "User password (plaintext, for development only).";
       };
       passwordFile = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to file containing user password.";
       };
@@ -85,12 +86,12 @@
         description = "Show missing episodes for the user.";
       };
       orderedLibraries = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Library names in home screen order. Omit to preserve the order, or use an empty list to reset it.";
       };
       subtitleLanguagePreference = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Subtitle language preference code.";
       };
@@ -106,7 +107,7 @@
         description = "Subtitle playback mode for the user.";
       };
       audioLanguagePreference = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Audio language preference code.";
       };

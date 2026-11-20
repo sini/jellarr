@@ -1,10 +1,11 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption;
 
   apiKeyConfigType = types.submodule {
     options = {
       name = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Name (AppName) of the API key to create.";
       };
     };

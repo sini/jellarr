@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
   inherit (types) nullOr;
 
@@ -22,7 +23,7 @@
         description = "Configuration version (must be positive).";
       };
       base_url = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Jellyfin server base URL.";
       };
       system = mkOption {
