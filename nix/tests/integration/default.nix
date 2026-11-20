@@ -1,5 +1,5 @@
 {pkgs}: let
-  tests = ["sanity"];
+  tests = ["sanity" "switch-apply"];
 in
   builtins.listToAttrs (map (name: {
       inherit name;
