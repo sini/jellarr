@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import { Command, Option } from "commander";
-import { runPipeline } from "../pipeline";
+import { runPipeline, type PipelineResult } from "../pipeline";
 import { runDump } from "../dump";
 
 interface ApplyOptions {
   configFile: string;
   waitTimeout?: number;
+  dryRun?: boolean;
 }
 
 interface DumpOptions {
@@ -32,12 +33,23 @@ program
       "seconds to wait for Jellyfin /health (default 300, or JELLARR_WAIT_TIMEOUT)",
     ).argParser(Number),
   )
+  .addOption(
+    new Option(
+      "--dry-run",
+      "print the planned changes without changing anything (or JELLARR_DRY_RUN=1); exit 2 when changes are pending",
+    ),
+  )
   .action(async (opts: ApplyOptions): Promise<void> => {
-    await runPipeline(opts.configFile, {
+    const result: PipelineResult = await runPipeline(opts.configFile, {
+      ...(opts.dryRun ? { dryRun: true } : {}),
       ...(opts.waitTimeout !== undefined
         ? { waitTimeoutSeconds: opts.waitTimeout }
         : {}),
     });
+    if (result.dryRun) {
+      process.exitCode = result.pending ? 2 : 0;
+      return;
+    }
     console.log("✅ jellarr apply complete");
   });
 

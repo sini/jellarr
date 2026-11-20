@@ -624,6 +624,28 @@ flag wins.
 JELLARR_WAIT_TIMEOUT=600 jellarr --configFile config.yml
 ```
 
+## Dry Run
+
+`jellarr --dry-run` (or `JELLARR_DRY_RUN=1`) prints what an apply would change
+and changes nothing. It issues only GET requests and never signs in: it requires
+`JELLARR_API_KEY`, and a rejected key or a missing one is an error, not a
+fallback. It skips the first-boot wizard (reporting that it would run), plugin
+installs and removals, the restart and the password probe (users are reported as
+`password not verified (dry run)`). The client is wrapped so any write attempted
+in dry-run throws.
+
+Each section lists its planned changes as `path: current → desired`; users and
+libraries to create, plugin installs and upgrades, and API keys are listed as
+actions. Plugin configuration diffs are shown for installed plugins only. Values
+that came from `_file` or `${VAR}` are printed as `***`, and are masked in every
+log line, dry run or not.
+
+| Exit code | Meaning              |
+| --------- | -------------------- |
+| 0         | nothing would change |
+| 2         | changes are pending  |
+| 1         | error                |
+
 ## Secret Management
 
 ### With sops-nix (nix only)

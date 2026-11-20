@@ -23,7 +23,10 @@ export function calculateBrandingOptionsDiff(
 
   if (patch.length != 0) {
     logger.info(JSON.stringify(patch));
-    return applyChangeset(current, patch) as BrandingOptionsDtoSchema;
+    return applyChangeset(
+      structuredClone(current),
+      patch,
+    ) as BrandingOptionsDtoSchema;
   }
 
   return undefined;

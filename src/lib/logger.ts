@@ -4,14 +4,29 @@ export interface Logger {
   error: (msg: string) => void;
 }
 
+let secretValues: ReadonlySet<string> = new Set();
+
+/** Masks these values (resolved from `_file` or `${VAR}`) in every log line. */
+export function maskSecrets(values: ReadonlySet<string>): void {
+  secretValues = values;
+}
+
+function masked(msg: string): string {
+  let out: string = msg;
+  for (const secret of secretValues) {
+    if (secret !== "") out = out.split(secret).join("***");
+  }
+  return out;
+}
+
 export const logger: Logger = {
   info: (msg: string): void => {
-    console.log(msg);
+    console.log(masked(msg));
   },
   warn: (msg: string): void => {
-    console.warn(msg);
+    console.warn(masked(msg));
   },
   error: (msg: string): void => {
-    console.error(msg);
+    console.error(masked(msg));
   },
 };

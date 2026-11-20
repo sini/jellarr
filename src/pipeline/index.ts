@@ -66,21 +66,42 @@ import {
   type AdminCredentials,
 } from "../apply/auth";
 import { applyStartupWizard } from "../apply/startup";
+import { Plan } from "../lib/plan";
+import { maskSecrets } from "../lib/logger";
+import { guardReadOnly } from "../api/read-only";
+import type { PublicSystemInfoSchema } from "../types/schema/startup";
+import type { PluginConfig } from "../types/config/plugins";
+import type { PluginConfigurationSchema } from "../types/schema/plugins";
 import { resolveValue } from "../lib/file-refs";
 import { waitForHealth, resolveWaitTimeoutMs } from "../lib/health";
 
 export interface PipelineOptions {
   waitTimeoutSeconds?: number;
+  dryRun?: boolean;
+}
+
+export interface PipelineResult {
+  dryRun: boolean;
+  /** Dry run only: whether any change is pending. */
+  pending: boolean;
+}
+
+function wantsDryRun(flag: boolean | undefined): boolean {
+  return flag ?? /^(1|true)$/i.test(process.env.JELLARR_DRY_RUN ?? "");
 }
 
 export async function runPipeline(
   path: string,
   options: PipelineOptions = {},
-): Promise<void> {
+): Promise<PipelineResult> {
   const raw: string = await fs.readFile(path, "utf8");
+  const dryRun: boolean = wantsDryRun(options.dryRun);
+  const secrets: Set<string> = new Set();
+  const plan: Plan | undefined = dryRun ? new Plan(secrets) : undefined;
+  maskSecrets(secrets);
 
   const validationResult: ZodSafeParseResult<RootConfig> =
-    RootConfigType.safeParse(await resolveValue(YAML.parse(raw)));
+    RootConfigType.safeParse(await resolveValue(YAML.parse(raw), secrets));
   if (!validationResult.success) {
     const errorMessages: string = validationResult.error.issues
       .map((err: z.core.$ZodIssue) => `${err.path.join(".")}: ${err.message}`)
@@ -92,10 +113,17 @@ export async function runPipeline(
 
   const apiKey: string | undefined = process.env.JELLARR_API_KEY;
 
-  const jellyfinClient: JellyfinClient = createJellyfinClient(
-    cfg.base_url,
-    apiKey,
-  );
+  if (dryRun && !apiKey) {
+    throw new Error(
+      "--dry-run requires JELLARR_API_KEY: a dry run never signs in",
+    );
+  }
+
+  const liveClient: JellyfinClient = createJellyfinClient(cfg.base_url, apiKey);
+  const jellyfinClient: JellyfinClient = dryRun
+    ? guardReadOnly(liveClient)
+    : liveClient;
+  if (dryRun) console.log("DRY RUN: nothing will be changed");
 
   const waitTimeoutMs: number = resolveWaitTimeoutMs(
     options.waitTimeoutSeconds,
@@ -104,9 +132,17 @@ export async function runPipeline(
   await waitForHealth(cfg.base_url, { timeoutMs: waitTimeoutMs });
   console.log("✓ Jellyfin is healthy");
 
-  const wizardRan: boolean = cfg.startup
-    ? await applyStartupWizard(jellyfinClient, cfg.startup)
-    : false;
+  if (plan && cfg.startup) {
+    const info: PublicSystemInfoSchema =
+      await jellyfinClient.getPublicSystemInfo();
+    if (info.StartupWizardCompleted === false) {
+      plan.action("startup: the first-boot wizard would run");
+    }
+  }
+  const wizardRan: boolean =
+    cfg.startup && !dryRun
+      ? await applyStartupWizard(jellyfinClient, cfg.startup)
+      : false;
 
   let verifiedAdmin: AdminCredentials | undefined;
   if (wizardRan || !apiKey) {
@@ -125,6 +161,11 @@ export async function runPipeline(
       await jellyfinClient.getSystemConfiguration();
   } catch (error) {
     if (verifiedAdmin || !isUnauthorized(error)) throw error;
+    if (dryRun) {
+      throw new Error(
+        "JELLARR_API_KEY was rejected (401); a dry run never signs in",
+      );
+    }
     verifiedAdmin = await authenticateAsAdmin(
       jellyfinClient,
       cfg,
@@ -141,7 +182,13 @@ export async function runPipeline(
     cfg.system,
   );
 
-  if (updatedServerConfigurationSchema) {
+  if (updatedServerConfigurationSchema && plan) {
+    plan.change(
+      "system",
+      currentServerConfigurationSchema,
+      updatedServerConfigurationSchema,
+    );
+  } else if (updatedServerConfigurationSchema) {
     console.log("→ updating system config");
     await applySystem(jellyfinClient, updatedServerConfigurationSchema);
     console.log("✓ updated system config");
@@ -159,7 +206,13 @@ export async function runPipeline(
       cfg.metadata,
     );
 
-    if (updatedMetadataConfigurationSchema) {
+    if (updatedMetadataConfigurationSchema && plan) {
+      plan.change(
+        "metadata",
+        currentMetadataConfigurationSchema,
+        updatedMetadataConfigurationSchema,
+      );
+    } else if (updatedMetadataConfigurationSchema) {
       console.log("→ updating metadata config");
       await applyMetadata(jellyfinClient, updatedMetadataConfigurationSchema);
       console.log("✓ updated metadata config");
@@ -175,7 +228,13 @@ export async function runPipeline(
     const updatedEncodingOptionsSchema: EncodingOptionsSchema | undefined =
       calculateEncodingDiff(currentEncodingOptionsSchema, cfg.encoding);
 
-    if (updatedEncodingOptionsSchema) {
+    if (updatedEncodingOptionsSchema && plan) {
+      plan.change(
+        "encoding",
+        currentEncodingOptionsSchema,
+        updatedEncodingOptionsSchema,
+      );
+    } else if (updatedEncodingOptionsSchema) {
       console.log("→ updating encoding config");
       await applyEncoding(jellyfinClient, updatedEncodingOptionsSchema);
       console.log("✓ updated encoding config");
@@ -191,7 +250,20 @@ export async function runPipeline(
       cfg.library.virtualFolders,
     );
 
-    if (libraryDiff) {
+    if (libraryDiff && plan) {
+      for (const folder of libraryDiff.toCreate ?? []) {
+        plan.action(`library ${folder.Name ?? "?"}: would be created`);
+      }
+      for (const update of libraryDiff.toUpdate ?? []) {
+        plan.change(
+          `library ${update.name}`,
+          currentVirtualFolders.find(
+            (folder: VirtualFolderInfoSchema) => folder.Name === update.name,
+          )?.LibraryOptions,
+          update.libraryOptions,
+        );
+      }
+    } else if (libraryDiff) {
       console.log("→ updating library config");
       await applyLibrary(jellyfinClient, libraryDiff);
       console.log("✓ updated library config");
@@ -208,7 +280,9 @@ export async function runPipeline(
     const updatedBrandingSchema: BrandingOptionsDtoSchema | undefined =
       calculateBrandingOptionsDiff(currentBrandingSchema, cfg.branding);
 
-    if (updatedBrandingSchema) {
+    if (updatedBrandingSchema && plan) {
+      plan.change("branding", currentBrandingSchema, updatedBrandingSchema);
+    } else if (updatedBrandingSchema) {
       console.log("→ updating branding config");
       await applyBrandingOptions(jellyfinClient, updatedBrandingSchema);
       console.log("✓ updated branding config");
@@ -224,7 +298,13 @@ export async function runPipeline(
     const updatedNetworkingSchema: NetworkConfigurationSchema | undefined =
       calculateNetworkingDiff(currentNetworkingSchema, cfg.networking);
 
-    if (updatedNetworkingSchema) {
+    if (updatedNetworkingSchema && plan) {
+      plan.change(
+        "networking",
+        currentNetworkingSchema,
+        updatedNetworkingSchema,
+      );
+    } else if (updatedNetworkingSchema) {
       console.log("→ updating networking config");
       await applyNetworking(jellyfinClient, updatedNetworkingSchema);
       console.log("✓ updated networking config");
@@ -253,22 +333,36 @@ export async function runPipeline(
       cfg.users,
     );
 
-    if (usersToCreate) {
+    if (usersToCreate && plan) {
+      for (const user of usersToCreate) {
+        plan.action(`user ${user.name}: would be created`);
+      }
+    } else if (usersToCreate) {
       console.log("→ creating users");
       await createNewUsers(jellyfinClient, usersToCreate);
       console.log("✓ created users");
       currentUsers = await jellyfinClient.getUsers();
     }
 
-    await reconcileUserPasswords(
-      jellyfinClient,
-      existingUsers,
-      cfg.users,
-      new Set([
-        ...(usersToCreate ?? []).map((user: UserConfig) => user.name),
-        ...(verifiedAdmin ? [verifiedAdmin.name] : []),
-      ]),
-    );
+    if (plan) {
+      for (const user of existingUsers) {
+        if (cfg.users.some((wanted: UserConfig) => wanted.name === user.Name)) {
+          plan.note(
+            `user ${user.Name ?? "?"}: password not verified (dry run)`,
+          );
+        }
+      }
+    } else {
+      await reconcileUserPasswords(
+        jellyfinClient,
+        existingUsers,
+        cfg.users,
+        new Set([
+          ...(usersToCreate ?? []).map((user: UserConfig) => user.name),
+          ...(verifiedAdmin ? [verifiedAdmin.name] : []),
+        ]),
+      );
+    }
 
     const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
       calculateUserPoliciesDiff(currentUsers, cfg.users, currentVirtualFolders);
@@ -278,7 +372,17 @@ export async function runPipeline(
       currentVirtualFolders,
     );
 
-    if (userPoliciesToUpdate) {
+    const userById: (id: string) => UserDtoSchema | undefined = (
+      id: string,
+    ): UserDtoSchema | undefined =>
+      currentUsers.find((user: UserDtoSchema) => user.Id === id);
+
+    if (userPoliciesToUpdate && plan) {
+      for (const [id, policy] of userPoliciesToUpdate) {
+        const user: UserDtoSchema | undefined = userById(id);
+        plan.change(`user ${user?.Name ?? id}.policy`, user?.Policy, policy);
+      }
+    } else if (userPoliciesToUpdate) {
       console.log("→ updating user policies");
       await applyUserPolicies(jellyfinClient, userPoliciesToUpdate);
       console.log("✓ updated user policies");
@@ -286,7 +390,16 @@ export async function runPipeline(
       console.log("✓ user policies already up to date");
     }
 
-    if (userConfigurationsToUpdate) {
+    if (userConfigurationsToUpdate && plan) {
+      for (const [id, configuration] of userConfigurationsToUpdate) {
+        const user: UserDtoSchema | undefined = userById(id);
+        plan.change(
+          `user ${user?.Name ?? id}.configuration`,
+          user?.Configuration,
+          configuration,
+        );
+      }
+    } else if (userConfigurationsToUpdate) {
       console.log("→ updating user configurations");
       await applyUserConfigurations(jellyfinClient, userConfigurationsToUpdate);
       console.log("✓ updated user configurations");
@@ -307,7 +420,13 @@ export async function runPipeline(
       await jellyfinClient.getServerVersion(),
     );
 
-    if (pluginInstalls) {
+    if (pluginInstalls && plan) {
+      for (const install of pluginInstalls) {
+        plan.action(
+          `plugin ${install.name}: ${install.installedVersion ? `upgrade ${install.installedVersion} →` : "install"} ${install.version}`,
+        );
+      }
+    } else if (pluginInstalls) {
       console.log("→ installing plugins");
       await installPlugins(jellyfinClient, pluginInstalls);
       console.log("✓ installed plugins");
@@ -329,7 +448,13 @@ export async function runPipeline(
       cfg.plugins,
     );
 
-    if (pluginRemovals) {
+    if (pluginRemovals && plan) {
+      for (const removal of pluginRemovals) {
+        plan.action(
+          `plugin ${removal.name}: remove superseded ${removal.version}`,
+        );
+      }
+    } else if (pluginRemovals) {
       console.log("→ removing superseded plugin versions");
       await removePlugins(jellyfinClient, pluginRemovals);
       console.log("✓ removed superseded plugin versions");
@@ -339,23 +464,43 @@ export async function runPipeline(
       console.log("✓ restarted Jellyfin");
     }
 
-    const desiredPlugins: PluginConfigList = resolveInstalledPluginNames(
+    const renamedPlugins: PluginConfigList = resolveInstalledPluginNames(
       installedPlugins,
       catalog,
       cfg.plugins,
     );
+    const desiredPlugins: PluginConfigList = dryRun
+      ? renamedPlugins.filter((wanted: PluginConfig) =>
+          installedPlugins.some(
+            (installed: PluginInfoSchema) => installed.Name === wanted.name,
+          ),
+        )
+      : renamedPlugins;
+    const currentPluginConfigurations: Map<string, PluginConfigurationSchema> =
+      await getPluginConfigurationSchemaByName(
+        jellyfinClient,
+        installedPlugins,
+        desiredPlugins,
+      );
     const pluginConfigurationsToUpdate:
       Map<string, BasePluginConfigurationSchema> | undefined =
       calculatePluginConfigurationsDiff(
-        await getPluginConfigurationSchemaByName(
-          jellyfinClient,
-          installedPlugins,
-          desiredPlugins,
-        ),
+        currentPluginConfigurations,
         desiredPlugins,
       );
 
-    if (pluginConfigurationsToUpdate) {
+    if (pluginConfigurationsToUpdate && plan) {
+      for (const [name, current] of currentPluginConfigurations) {
+        const next: BasePluginConfigurationSchema | undefined =
+          pluginConfigurationsToUpdate.get(current.id);
+        if (next)
+          plan.change(
+            `plugin ${name}.configuration`,
+            current.configuration,
+            next,
+          );
+      }
+    } else if (pluginConfigurationsToUpdate) {
       console.log("→ updating plugin configurations");
       await applyPluginConfigurations(
         jellyfinClient,
@@ -374,7 +519,11 @@ export async function runPipeline(
       currentApiKeys,
       cfg.api_keys,
     );
-    if (keysToCreate) {
+    if (keysToCreate && plan) {
+      for (const key of keysToCreate) {
+        plan.action(`api key ${key.name}: would be created`);
+      }
+    } else if (keysToCreate) {
       console.log("→ creating API keys");
       await createApiKeys(jellyfinClient, keysToCreate);
       console.log("✓ created API keys");
@@ -382,4 +531,13 @@ export async function runPipeline(
       console.log("✓ API keys already up to date");
     }
   }
+
+  if (plan) {
+    console.log(
+      plan.pending
+        ? "DRY RUN: changes are pending"
+        : "DRY RUN: nothing would change",
+    );
+  }
+  return { dryRun, pending: plan?.pending ?? false };
 }

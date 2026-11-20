@@ -25,7 +25,10 @@ export function calculateMetadataDiff(
 
   if (patch.length !== 0) {
     logger.info(JSON.stringify(patch));
-    return applyChangeset(current, patch) as MetadataConfigurationSchema;
+    return applyChangeset(
+      structuredClone(current),
+      patch,
+    ) as MetadataConfigurationSchema;
   }
 
   return undefined;
