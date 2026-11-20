@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { resolveFileReferences } from "../../src/lib/file-refs";
+import { resolveFileReferences, resolveValue } from "../../src/lib/file-refs";
+import YAML from "yaml";
 import { promises as fs } from "fs";
 
 vi.mock("fs", () => ({
@@ -205,5 +206,37 @@ describe("resolveFileReferences", () => {
     // Assert
     expect(result).toStrictEqual({});
     expect(mockReadFile).not.toHaveBeenCalled();
+  });
+});
+
+describe("env substitution", () => {
+  it("expands ${VAR} inside strings, with $$ as a literal dollar", async () => {
+    process.env.JF_TEST_HOST = "example.org";
+    const result: Record<string, unknown> = await resolveFileReferences({
+      url: "https://${JF_TEST_HOST}/x",
+      price: "$$5",
+      list: ["${JF_TEST_HOST}"],
+      n: 3,
+    });
+    expect(result).toEqual({
+      url: "https://example.org/x",
+      price: "$5",
+      list: ["example.org"],
+      n: 3,
+    });
+  });
+
+  it("throws on an undefined variable", async () => {
+    await expect(
+      resolveFileReferences({ a: "${JF_TEST_UNDEFINED_VAR}" }),
+    ).rejects.toThrow(/JF_TEST_UNDEFINED_VAR/);
+  });
+
+  it("keeps structure when a secret contains YAML syntax", async () => {
+    const nasty: string = 'x: y # z\n- "q"\n"lead';
+    process.env.JF_TEST_NASTY = nasty;
+    const parsed: unknown = YAML.parse('a: "${JF_TEST_NASTY}"\nb: 1\n');
+    const result: unknown = await resolveValue(parsed);
+    expect(result).toEqual({ a: nasty, b: 1 });
   });
 });
