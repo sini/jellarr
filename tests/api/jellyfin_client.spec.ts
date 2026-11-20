@@ -1144,4 +1144,20 @@ describe("api/jf Plugins façade", () => {
       jellyfinClient.updatePluginConfiguration("plugin-id-123", configBody),
     ).rejects.toThrow(/POST \/Plugins\/plugin-id-123\/Configuration failed/i);
   });
+  it("when a write fails with an empty body then it still throws", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(401);
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Act & Assert
+    await expect(
+      jellyfinClient.updateLibraryOptions("lib-1", {}),
+    ).rejects.toThrow(/LibraryOptions failed: 401/i);
+    await expect(
+      jellyfinClient.updateMetadataConfiguration({}),
+    ).rejects.toThrow(/metadata failed: 401/i);
+  });
 });
