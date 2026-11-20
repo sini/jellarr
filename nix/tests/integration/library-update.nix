@@ -1,4 +1,8 @@
-{pkgs}:
+{
+  pkgs,
+  jellyfinPackage,
+  ...
+}:
 pkgs.testers.runNixOSTest {
   extraPythonPackages = p: [p.pyhamcrest];
 
@@ -10,6 +14,8 @@ pkgs.testers.runNixOSTest {
     imports = [
       ./base.nix
     ];
+
+    services.jellyfin.package = jellyfinPackage;
 
     services.jellarr.config = {
       base_url = "http://localhost:8096";
