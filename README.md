@@ -712,8 +712,7 @@ Jellyfin's database:
       # Optional settings (showing defaults):
       # apiKeyName = "jellarr";
       # jellyfinDataDir = "/var/lib/jellyfin";
-      # jellyfinService = "jellyfin.service";
-    };
+          };
   };
 }
 ```
@@ -743,6 +742,37 @@ another host) and pass it through `environmentFile`.
 - For deployments where Jellarr runs on a **different host** than Jellyfin, you
   must provision the API key manually (via Jellyfin's web UI or a separate
   script) and provide it via `environmentFile`
+
+### NixOS module options
+
+All options live under `services.jellarr`.
+
+| Option                      | Default              | Meaning                                                                                                          |
+| --------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `enable`                    | `false`              | Enable the service and timer                                                                                     |
+| `package`                   | packaged jellarr     | Package whose binary runs                                                                                        |
+| `config`                    | `null`               | Typed configuration; set exactly one of `config` and `configFile`                                                |
+| `configFile`                | `null`               | Path to a YAML or JSON config used as is (share one settings set with another consumer)                          |
+| `apiKeyFile`                | `null`               | API key file, delivered by systemd `LoadCredential` as `JELLARR_API_KEY_FILE`; do not also set `JELLARR_API_KEY` |
+| `environmentFile`           | `null`               | systemd environment file (for `JELLARR_API_KEY` and `${VAR}` secrets)                                            |
+| `jellyfinService`           | `"jellyfin.service"` | Unit jellarr runs after and wants; `null` when Jellyfin is elsewhere. Was `bootstrap.jellyfinService` (renamed)  |
+| `waitTimeout`               | `300`                | Seconds to wait for Jellyfin `/health` (`JELLARR_WAIT_TIMEOUT`)                                                  |
+| `schedule`                  | `"daily"`            | Timer `OnCalendar` for periodic runs                                                                             |
+| `user` / `group`            | `"jellarr"`          | Service user and group                                                                                           |
+| `dataDir`                   | `/var/lib/jellarr`   | Working directory; the config is installed to `config/config.yml`                                                |
+| `bootstrap.enable`          | `false`              | Seed the API key into Jellyfin's database (same host only)                                                       |
+| `bootstrap.apiKeyFile`      | `apiKeyFile`         | File with the key to seed                                                                                        |
+| `bootstrap.apiKeyName`      | `"jellarr"`          | Name of the key row; the upsert key                                                                              |
+| `bootstrap.jellyfinDataDir` | Jellyfin `dataDir`   | Directory holding `data/jellyfin.db`                                                                             |
+
+Inside `config`, every string option also accepts `{ _file = "/path"; }`, which
+jellarr reads at run time, so secrets stay out of the Nix store:
+
+```nix
+services.jellarr.config.networking.certificatePassword = {
+  _file = "/run/secrets/cert-password";
+};
+```
 
 ### When the NixOS module runs
 
