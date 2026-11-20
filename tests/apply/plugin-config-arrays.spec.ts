@@ -83,4 +83,56 @@ describe("plugin configuration arrays are replaced whole", () => {
       Providers: { primary: { Roles: ["a"], Enabled: true, Hand: "set" } },
     });
   });
+
+  describe("arrays of objects whose elements the server extends", () => {
+    const serverState: BasePluginConfigurationSchema = {
+      Items: [
+        { Name: "a", Added: 1 },
+        { Name: "b", Added: 2 },
+      ],
+      Hand: "set",
+    } as unknown as BasePluginConfigurationSchema;
+
+    it("two runs with an unchanged config send nothing", () => {
+      const desired: PluginConfigurationConfig = {
+        Items: [{ Name: "a" }, { Name: "b" }],
+      };
+      const first: BasePluginConfigurationSchema | undefined =
+        calculatePluginConfigurationDiff(
+          { Items: [{ Name: "a" }], Hand: "set" } as never,
+          desired,
+        );
+      expect(first).toEqual({
+        Items: [{ Name: "a" }, { Name: "b" }],
+        Hand: "set",
+      });
+      expect(
+        calculatePluginConfigurationDiff(serverState, desired),
+      ).toBeUndefined();
+    });
+
+    it("a changed element is sent as the declared array whole", () => {
+      expect(
+        calculatePluginConfigurationDiff(serverState, {
+          Items: [{ Name: "a" }, { Name: "c" }],
+        }),
+      ).toEqual({ Items: [{ Name: "a" }, { Name: "c" }], Hand: "set" });
+    });
+
+    it("a reorder is a change and drops no field onto the wrong element", () => {
+      expect(
+        calculatePluginConfigurationDiff(serverState, {
+          Items: [{ Name: "b" }, { Name: "a" }],
+        }),
+      ).toEqual({ Items: [{ Name: "b" }, { Name: "a" }], Hand: "set" });
+    });
+
+    it("a different length is a change", () => {
+      expect(
+        calculatePluginConfigurationDiff(serverState, {
+          Items: [{ Name: "a" }],
+        }),
+      ).toEqual({ Items: [{ Name: "a" }], Hand: "set" });
+    });
+  });
 });

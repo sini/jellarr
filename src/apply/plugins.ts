@@ -436,14 +436,43 @@ export async function getPluginConfigurationSchemaByName(
   return pluginConfigurationSchemaByName;
 }
 
+/**
+ * Whether current already satisfies desired. Objects are compared as a
+ * subset (fields desired omits, such as ones the server adds, are ignored);
+ * arrays match when the lengths are equal and each declared element is
+ * satisfied by the element at the same index.
+ */
+function satisfies(current: unknown, desired: unknown): boolean {
+  if (Array.isArray(desired)) {
+    return (
+      Array.isArray(current) &&
+      current.length === desired.length &&
+      desired.every((item: unknown, index: number) =>
+        satisfies(current[index], item),
+      )
+    );
+  }
+  if (typeof desired === "object" && desired !== null) {
+    return (
+      typeof current === "object" &&
+      current !== null &&
+      !Array.isArray(current) &&
+      Object.entries(desired).every(
+        ([key, value]: [string, unknown]) =>
+          value === undefined ||
+          satisfies((current as Record<string, unknown>)[key], value),
+      )
+    );
+  }
+  return deepEqual(current, desired);
+}
+
 export function calculatePluginConfigurationDiff(
   current: BasePluginConfigurationSchema,
   desired: PluginConfigurationConfig,
 ): BasePluginConfigurationSchema | undefined {
-  const next: unknown = overlay(current, desired);
-  return deepEqual(next, current)
-    ? undefined
-    : (next as BasePluginConfigurationSchema);
+  if (satisfies(current, desired)) return undefined;
+  return overlay(current, desired) as BasePluginConfigurationSchema;
 }
 
 export function calculatePluginConfigurationsDiff(
