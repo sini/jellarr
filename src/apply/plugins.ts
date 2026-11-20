@@ -308,8 +308,10 @@ export async function restartJellyfin(
   baseUrl: string,
   timeoutMs: number,
 ): Promise<void> {
+  const readMarker: () => Promise<string> = async (): Promise<string> =>
+    String(await client.getPendingRestart());
   await client.restartServer();
-  await waitForRestart(baseUrl, { timeoutMs });
+  await waitForRestart(baseUrl, { timeoutMs, readMarker });
 }
 
 /**

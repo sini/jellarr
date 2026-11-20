@@ -74,3 +74,59 @@ describe("lib/health", () => {
     ).toThrow(/Invalid wait timeout/);
   });
 });
+
+describe("lib/health restart observation", () => {
+  const healthy: () => Promise<Response> = (): Promise<Response> =>
+    Promise.resolve(new Response("", { status: 200 }));
+
+  it("whenTimeoutIsZero_thenItIsRejected", () => {
+    expect(() => resolveWaitTimeoutMs(0, {})).toThrow(/Invalid wait timeout/);
+    expect(() => resolveWaitTimeoutMs(undefined, { [ENV_KEY]: "0" })).toThrow(
+      /Invalid wait timeout/,
+    );
+  });
+
+  it("whenHealthNeverGoesDownButMarkerChanges_thenItIsObservedWithoutWarning", async () => {
+    // Arrange
+    const warn: Mock = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
+    const readMarker: Mock = vi
+      .fn()
+      .mockResolvedValueOnce("true")
+      .mockResolvedValue("false");
+
+    // Act
+    await waitForRestart("http://jf:8096", {
+      timeoutMs: 5000,
+      intervalMs: 1,
+      readMarker,
+      fetchFn: healthy as unknown as typeof fetch,
+    });
+
+    // Assert
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("whenNeitherDownNorMarkerChangeIsSeen_thenItWarnsAndContinues", async () => {
+    // Arrange
+    const warn: Mock = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
+
+    // Act
+    await waitForRestart("http://jf:8096", {
+      timeoutMs: 30,
+      intervalMs: 5,
+      readMarker: () => Promise.resolve("same"),
+      fetchFn: healthy as unknown as typeof fetch,
+    });
+
+    // Assert
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("did not observe the restart"),
+    );
+    warn.mockRestore();
+  });
+});

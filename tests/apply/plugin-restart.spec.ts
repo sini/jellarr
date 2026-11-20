@@ -117,6 +117,7 @@ describe("restartJellyfin", () => {
     expect(order).toEqual(["restart", "wait"]);
     expect(waitForRestart).toHaveBeenCalledWith("http://jf:8096", {
       timeoutMs: 1234,
+      readMarker: expect.any(Function) as unknown,
     });
   });
 });

@@ -87,6 +87,7 @@ export interface JellyfinClient {
   setAccessToken(accessToken: string): void;
   authenticateByName(username: string, password: string): Promise<string>;
   getServerVersion(): Promise<string>;
+  getPendingRestart(): Promise<boolean>;
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
   updateSystemConfiguration(
     body: Partial<ServerConfigurationSchema>,

@@ -171,6 +171,20 @@ export function createJellyfinClient(
       return version;
     },
 
+    async getPendingRestart(): Promise<boolean> {
+      const res: GetSystemInfoResponse = await client.GET("/System/Info");
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /System/Info failed: ${res.response.status.toString()}`,
+        );
+      }
+      // NOTE: the generated SystemInfo type omits HasPendingRestart, which the server sends.
+      return (
+        (res.data as { HasPendingRestart?: boolean } | undefined)
+          ?.HasPendingRestart === true
+      );
+    },
+
     async getSystemConfiguration(): Promise<ServerConfigurationSchema> {
       const res: GetSystemConfigurationResponse = await client.GET(
         "/System/Configuration",

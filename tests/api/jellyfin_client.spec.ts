@@ -1008,6 +1008,21 @@ describe("api/jf Plugins façade", () => {
     expect(getLastRequest().url).toMatch(/\/Packages$/);
   });
 
+  it("when GET /System/Info reports HasPendingRestart then getPendingRestart returns it", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({ Version: "12.2.0", HasPendingRestart: true });
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(jellyfinClient.getPendingRestart()).resolves.toBe(true);
+    expect(getLastRequest().url).toMatch(/\/System\/Info$/);
+  });
+
   it("when GET /System/Info returns a version then it returns it", async (): Promise<void> => {
     // Arrange
     mockFetchJson({ Version: "12.2.0" });
