@@ -3,8 +3,8 @@ import type { JellyfinClient } from "../api/jellyfin.types";
 import { mapEncodingOptionsConfigToSchema } from "../mappers/encoding-options";
 import { type EncodingOptionsConfig } from "../types/config/encoding-options";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
-import { applyChangeset, diff, type IChange } from "json-diff-ts";
-import { ChangeSetBuilder } from "../lib/changeset";
+import { deepEqual } from "fast-equals";
+import { overlay } from "../lib/objects";
 
 export function calculateEncodingDiff(
   current: EncodingOptionsSchema,
@@ -13,24 +13,15 @@ export function calculateEncodingDiff(
   const next: Partial<EncodingOptionsSchema> =
     mapEncodingOptionsConfigToSchema(desired);
 
-  const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, next, {
-      embeddedObjKeys: {
-        HardwareDecodingCodecs: "$value",
-        AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: "$value",
-      },
-      treatTypeChangeAsReplace: false,
-    }),
-  )
-    .withoutRemoves()
-    .toArray();
+  const updated: EncodingOptionsSchema = overlay(
+    current,
+    next,
+  ) as EncodingOptionsSchema;
 
-  if (patch.length != 0) {
-    logger.info(JSON.stringify(patch));
-    return applyChangeset(current, patch) as EncodingOptionsSchema;
-  }
+  if (deepEqual(updated, current)) return undefined;
 
-  return undefined;
+  logger.info(JSON.stringify(next));
+  return updated;
 }
 
 export async function applyEncoding(

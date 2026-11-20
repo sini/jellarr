@@ -1,5 +1,6 @@
 import { logger } from "../lib/logger";
-import { ChangeSetBuilder } from "../lib/changeset";
+import { deepEqual } from "fast-equals";
+import { overlay } from "../lib/objects";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import type { VirtualFolderConfig } from "../types/config/library";
 import type {
@@ -14,7 +15,6 @@ import {
   mapVirtualFolderInfoSchemaToAddVirtualFolderDtoSchema,
   withIgnoredLibraryOptions,
 } from "../mappers/library";
-import { applyChangeset, diff, Operation, type IChange } from "json-diff-ts";
 
 export type LibraryDiff = {
   toCreate?: VirtualFolderInfoSchema[];
@@ -23,12 +23,6 @@ export type LibraryDiff = {
     name: string;
     libraryOptions: LibraryOptionsSchema;
   }[];
-};
-
-type ChangeWithValue = IChange & {
-  embeddedKey?: string | number;
-  value?: unknown;
-  path?: string;
 };
 
 function resolveFolderId(
@@ -40,41 +34,6 @@ function resolveFolderId(
     (folder as { ItemId?: string | null }).ItemId ??
     undefined
   );
-}
-
-/**
- * Resolve the folder Name a change belongs to. For atomized nested changes the
- * leaf key is the changed field (e.g. "Path"), while the owning folder Name
- * lives in the JSONPath as a `[?(@.Name=='<name>')]` filter segment, so the
- * path is consulted first before falling back to key/embeddedKey/value.Name.
- *
- * The capture uses a non-greedy `.+?` anchored on the closing `'")]` or `")]`
- * delimiter so that folder names containing apostrophes (e.g. `Kids' Movies`)
- * are captured in full rather than truncated at the inner quote.
- */
-function resolveChangeName(change: ChangeWithValue): string | undefined {
-  const path: string | undefined = change.path;
-  if (typeof path === "string") {
-    const match: RegExpExecArray | null = /@\.Name==['"](.+?)['"]\)\]/.exec(
-      path,
-    );
-    if (match) return match[1];
-  }
-  const key: string = change.key;
-  if (key !== "" && Number.isNaN(Number(key))) return key;
-  const embeddedKey: string | number | undefined = change.embeddedKey;
-  if (
-    typeof embeddedKey === "string" &&
-    embeddedKey !== "" &&
-    Number.isNaN(Number(embeddedKey))
-  ) {
-    return embeddedKey;
-  }
-  const value: unknown = change.value;
-  if (value && typeof value === "object" && "Name" in value) {
-    return (value as { Name?: string }).Name;
-  }
-  return undefined;
 }
 
 export function calculateLibraryDiff(
@@ -139,91 +98,34 @@ export function calculateLibraryDiff(
     }
   }
 
-  const changeSet: IChange[] = new ChangeSetBuilder(
-    diff(current, next, {
-      embeddedObjKeys: { ".": "Name" },
-      treatTypeChangeAsReplace: false,
-    }),
-  )
-    .atomize()
-    .withoutRemoves()
-    .toArray();
-
-  if (changeSet.length === 0) return undefined;
-
-  logger.info(JSON.stringify(changeSet));
-
-  /**
-   * An ADD whose resolved folder Name already exists is a nested field added to
-   * an existing folder (e.g. TypeOptions or a new MetadataSavers entry) and must
-   * drive an update, not a create. Only ADDs for folder names absent from the
-   * current state are genuine creates.
-   */
-  const addChanges: IChange[] = [];
-  const updateChanges: ChangeWithValue[] = [];
-
-  for (const change of changeSet as ChangeWithValue[]) {
-    if (change.type === Operation.ADD) {
-      const name: string | undefined = resolveChangeName(change);
-      if (name && currentByName.has(name)) {
-        updateChanges.push(change);
-      } else {
-        addChanges.push(change);
-      }
-    } else if (change.type === Operation.UPDATE) {
-      updateChanges.push(change);
-    }
-  }
-
-  const toCreate: VirtualFolderInfoSchema[] | undefined =
-    addChanges.length > 0
-      ? (applyChangeset([], addChanges) as VirtualFolderInfoSchema[])
-      : undefined;
-
-  const nextByName: Map<string, VirtualFolderInfoSchema> = new Map(
-    next
-      .map((folder: VirtualFolderInfoSchema) =>
-        folder.Name ? [folder.Name, folder] : undefined,
-      )
-      .filter(
-        (
-          entry:
-            | [string, VirtualFolderInfoSchema]
-            | undefined
-            | [string, VirtualFolderInfoSchema | undefined],
-        ): entry is [string, VirtualFolderInfoSchema] => Array.isArray(entry),
-      ),
+  const toCreate: VirtualFolderInfoSchema[] = next.filter(
+    (folder: VirtualFolderInfoSchema) =>
+      !!folder.Name && !currentByName.has(folder.Name),
   );
 
   const toUpdate: NonNullable<LibraryDiff["toUpdate"]> = [];
-  const seenUpdate: Set<string> = new Set();
-
-  for (const change of updateChanges) {
-    const name: string | undefined = resolveChangeName(change);
-    if (!name || seenUpdate.has(name)) continue;
-
-    const currentFolder: VirtualFolderInfoSchema | undefined =
-      currentByName.get(name);
-    const desiredFolder: VirtualFolderInfoSchema | undefined =
-      nextByName.get(name);
+  for (const folder of next) {
+    const name: string | undefined = folder.Name ?? undefined;
+    const currentFolder: VirtualFolderInfoSchema | undefined = name
+      ? currentByName.get(name)
+      : undefined;
     const existingId: string | undefined = resolveFolderId(currentFolder);
     const libraryOptions: LibraryOptionsSchema | undefined =
-      desiredFolder?.LibraryOptions as LibraryOptionsSchema | undefined;
+      folder.LibraryOptions as LibraryOptionsSchema | undefined;
+    if (!name || !existingId || !libraryOptions) continue;
 
-    if (!existingId || !libraryOptions) continue;
-
-    seenUpdate.add(name);
-    toUpdate.push({
-      id: existingId,
-      name,
-      libraryOptions,
-    });
+    const currentOptions: unknown = currentFolder?.LibraryOptions ?? {};
+    if (deepEqual(overlay(currentOptions, libraryOptions), currentOptions)) {
+      continue;
+    }
+    logger.info(`Library options differ: ${name}`);
+    toUpdate.push({ id: existingId, name, libraryOptions });
   }
 
-  if (!toCreate && toUpdate.length === 0) return undefined;
+  if (toCreate.length === 0 && toUpdate.length === 0) return undefined;
 
   return {
-    toCreate,
+    toCreate: toCreate.length > 0 ? toCreate : undefined,
     toUpdate: toUpdate.length > 0 ? toUpdate : undefined,
   };
 }

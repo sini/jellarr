@@ -3,17 +3,8 @@ import type { JellyfinClient } from "../api/jellyfin.types";
 import { mapNetworkingConfigToSchema } from "../mappers/networking";
 import { type NetworkingConfig } from "../types/config/networking";
 import { type NetworkConfigurationSchema } from "../types/schema/networking";
-import { applyChangeset, diff, type IChange } from "json-diff-ts";
-import { ChangeSetBuilder } from "../lib/changeset";
-
-const ARRAY_KEYS: Array<keyof NetworkConfigurationSchema> = [
-  "LocalNetworkSubnets",
-  "LocalNetworkAddresses",
-  "KnownProxies",
-  "VirtualInterfaceNames",
-  "PublishedServerUriBySubnet",
-  "RemoteIPFilter",
-];
+import { deepEqual } from "fast-equals";
+import { overlay } from "../lib/objects";
 
 export function calculateNetworkingDiff(
   current: NetworkConfigurationSchema,
@@ -22,23 +13,15 @@ export function calculateNetworkingDiff(
   const next: Partial<NetworkConfigurationSchema> =
     mapNetworkingConfigToSchema(desired);
 
-  const embeddedObjKeys: Record<string, string> = {};
-  for (const key of ARRAY_KEYS) {
-    embeddedObjKeys[key] = "$value";
-  }
+  const updated: NetworkConfigurationSchema = overlay(
+    current,
+    next,
+  ) as NetworkConfigurationSchema;
 
-  const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, next, { embeddedObjKeys, treatTypeChangeAsReplace: false }),
-  )
-    .withoutRemoves()
-    .toArray();
+  if (deepEqual(updated, current)) return undefined;
 
-  if (patch.length !== 0) {
-    logger.info(JSON.stringify(patch));
-    return applyChangeset(current, patch) as NetworkConfigurationSchema;
-  }
-
-  return undefined;
+  logger.info(JSON.stringify(next));
+  return updated;
 }
 
 export async function applyNetworking(
