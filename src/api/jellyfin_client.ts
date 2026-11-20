@@ -146,7 +146,7 @@ export function createJellyfinClient(
         },
       );
 
-      if (res.error) {
+      if (!res.response.ok) {
         throw new Error(
           `GET /System/Configuration/metadata failed: ${res.response.status.toString()}`,
         );
@@ -167,7 +167,7 @@ export function createJellyfinClient(
         },
       );
 
-      if (res.error) {
+      if (!res.response.ok) {
         throw new Error(
           `POST /System/Configuration/metadata failed: ${res.response.status.toString()}`,
         );
@@ -225,7 +225,7 @@ export function createJellyfinClient(
         headers: { "content-type": "application/json" },
       });
 
-      if (res.error) {
+      if (!res.response.ok) {
         throw new Error(
           `POST /Library/VirtualFolders/LibraryOptions failed: ${res.response.status.toString()}`,
         );
