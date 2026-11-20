@@ -10,6 +10,7 @@
 
   types = import ./types {inherit lib;};
   processedConfig = types.root.mkConfig cfg.config;
+  configFile = pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} processedConfig);
 in {
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
@@ -22,9 +23,7 @@ in {
             ]
             ++ lib.optional bootstrapEnabled "jellarr-api-key-bootstrap.service";
           description = "Run jellarr (packaged) once";
-          preStart = let
-            configFile = pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} processedConfig);
-          in
+          preStart =
             # sh
             ''
               install -D -m 0644 ${configFile} ${cfg.dataDir}/config/config.yml
@@ -47,7 +46,10 @@ in {
             User = cfg.user;
             WorkingDirectory = cfg.dataDir;
           };
+          restartTriggers = [configFile];
           wants = ["network-online.target"];
+          # Starting multi-user.target on switch runs the oneshot again; no RemainAfterExit, so the timer keeps re-running it.
+          wantedBy = ["multi-user.target"];
         };
 
         timers.jellarr = {
