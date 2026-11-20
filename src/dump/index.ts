@@ -85,7 +85,7 @@ export async function runDump(baseUrl: string): Promise<void> {
 
   const folderIdToNameMap: Map<string, string> = new Map(
     virtualFolders.flatMap(
-      (folder: VirtualFolderInfoSchema): [string, string][] => {
+      (folder: VirtualFolderInfoSchema): Array<[string, string]> => {
         const id: string | undefined =
           (folder as { Id?: string }).Id ??
           (folder as { ItemId?: string | null }).ItemId ??

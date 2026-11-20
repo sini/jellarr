@@ -16,14 +16,14 @@ import {
   withIgnoredLibraryOptions,
 } from "../mappers/library";
 
-export type LibraryDiff = {
+export interface LibraryDiff {
   toCreate?: VirtualFolderInfoSchema[];
-  toUpdate?: {
+  toUpdate?: Array<{
     id: string;
     name: string;
     libraryOptions: LibraryOptionsSchema;
-  }[];
-};
+  }>;
+}
 
 function resolveFolderId(
   folder: VirtualFolderInfoSchema | undefined,
@@ -95,7 +95,7 @@ export function calculateLibraryDiff(
 
   const currentByName: Map<string, VirtualFolderInfoSchema> = new Map(
     current.flatMap(
-      (folder: VirtualFolderInfoSchema): [string, VirtualFolderInfoSchema][] =>
+      (folder: VirtualFolderInfoSchema): Array<[string, VirtualFolderInfoSchema]> =>
         folder.Name ? [[folder.Name, folder]] : [],
     ),
   );
@@ -191,7 +191,7 @@ export async function applyLibrary(
         continue;
       }
 
-      const name: string = virtualFolder.Name as string;
+      const name: string = virtualFolder.Name;
       const collectionType: CollectionTypeSchema =
         virtualFolder.CollectionType as CollectionTypeSchema;
 
