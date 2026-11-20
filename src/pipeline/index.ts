@@ -75,6 +75,7 @@ import type { PublicSystemInfoSchema } from "../types/schema/startup";
 import type { PluginConfig } from "../types/config/plugins";
 import type { PluginConfigurationSchema } from "../types/schema/plugins";
 import { resolveValue } from "../lib/file-refs";
+import { resolveApiKey } from "../lib/api-key";
 import { waitForHealth, resolveWaitTimeoutMs } from "../lib/health";
 
 export interface PipelineOptions {
@@ -115,7 +116,7 @@ export async function runPipeline(
 
   const cfg: RootConfig = validationResult.data;
 
-  const apiKey: string | undefined = process.env.JELLARR_API_KEY;
+  const apiKey: string | undefined = resolveApiKey();
 
   if (dryRun && !apiKey) {
     throw new Error(
