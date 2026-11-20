@@ -49,9 +49,18 @@ export async function authenticateAsAdmin(
   logger.warn(
     `${reason}; falling back to signing in as admin "${admin.name}" with its password`,
   );
-  client.setAccessToken(
-    await client.authenticateByName(admin.name, admin.password),
-  );
+  try {
+    client.setAccessToken(
+      await client.authenticateByName(admin.name, admin.password),
+    );
+  } catch (error) {
+    const detail: string =
+      error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Signing in as admin "${admin.name}" failed (${detail}). Each failed sign-in counts toward the admin's lockout limit, so do not retry blindly; check the password first.`,
+      { cause: error },
+    );
+  }
   return admin;
 }
 

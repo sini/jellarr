@@ -52,6 +52,7 @@ import type {
   GetStartupUserResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
+import { logger } from "../lib/logger";
 import { JellyfinHttpError } from "./errors";
 import type { paths } from "../../generated/schema";
 import type { Client } from "openapi-fetch";
@@ -77,6 +78,9 @@ export function createJellyfinClient(
     baseUrl,
     (): string | undefined => token,
   );
+
+  // NOTE: /Startup/* is anonymous on a pristine server; a stale token there could only get it rejected.
+  const startup: Client<paths> = makeClient(baseUrl);
 
   return {
     setAccessToken(accessToken: string): void {
@@ -107,7 +111,11 @@ export function createJellyfinClient(
       if (probeToken) {
         await makeClient(baseUrl, probeToken, probeId)
           .POST("/Sessions/Logout")
-          .catch(() => undefined);
+          .catch((error: unknown) => {
+            logger.warn(
+              `Could not sign out the password-check session of ${username}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+          });
       }
       return "valid";
     },
@@ -482,7 +490,7 @@ export function createJellyfinClient(
 
     async completeStartupWizard(): Promise<void> {
       const res: PostStartupCompleteResponse =
-        await client.POST("/Startup/Complete");
+        await startup.POST("/Startup/Complete");
 
       if (!res.response.ok) {
         throw new Error(
@@ -506,7 +514,7 @@ export function createJellyfinClient(
     async updateStartupConfiguration(
       body: StartupConfigurationDtoSchema,
     ): Promise<void> {
-      const res: PostStartupStepResponse = await client.POST(
+      const res: PostStartupStepResponse = await startup.POST(
         "/Startup/Configuration",
         { body, headers: { "content-type": "application/json" } },
       );
@@ -518,7 +526,7 @@ export function createJellyfinClient(
     },
 
     async getStartupUser(): Promise<void> {
-      const res: GetStartupUserResponse = await client.GET("/Startup/User");
+      const res: GetStartupUserResponse = await startup.GET("/Startup/User");
       if (!res.response.ok) {
         throw new Error(
           `GET /Startup/User failed: ${res.response.status.toString()}`,
@@ -527,7 +535,7 @@ export function createJellyfinClient(
     },
 
     async updateStartupUser(body: StartupUserDtoSchema): Promise<void> {
-      const res: PostStartupStepResponse = await client.POST("/Startup/User", {
+      const res: PostStartupStepResponse = await startup.POST("/Startup/User", {
         body,
         headers: { "content-type": "application/json" },
       });
@@ -539,7 +547,7 @@ export function createJellyfinClient(
     },
 
     async setRemoteAccess(body: StartupRemoteAccessDtoSchema): Promise<void> {
-      const res: PostStartupStepResponse = await client.POST(
+      const res: PostStartupStepResponse = await startup.POST(
         "/Startup/RemoteAccess",
         { body, headers: { "content-type": "application/json" } },
       );

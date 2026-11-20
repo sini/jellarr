@@ -146,6 +146,19 @@ describe("pipeline/auth fallback", () => {
     expect(client.authenticateByName).not.toHaveBeenCalled();
   });
 
+  it("whenFallbackSignInFails_thenErrorWarnsRetriesCountTowardLockout", async () => {
+    // Arrange
+    await writeConfig(true);
+    client.authenticateByName.mockRejectedValue(
+      new JellyfinHttpError("POST /Users/AuthenticateByName failed: 401", 401),
+    );
+
+    // Act + Assert
+    await expect(runPipeline(cfgFile)).rejects.toThrow(
+      /counts toward the admin's lockout limit|toward the admin's lockout/,
+    );
+  });
+
   it("whenNoCredentialAvailable_thenHardError", async () => {
     // Arrange
     await writeConfig(false);

@@ -810,7 +810,7 @@ describe("api/jf Startup façade", () => {
     const req: Request = getLastRequest();
     expect(req.method).toBe("POST");
     expect(req.url).toMatch(/\/Startup\/Complete$/);
-    expect(req.headers.get("Authorization")).toContain(`Token="${apiKey}"`);
+    expect(req.headers.get("Authorization")).not.toContain("Token=");
   });
 
   it("when POST /Startup/Complete fails then it throws an error with status", async (): Promise<void> => {
@@ -1329,6 +1329,34 @@ describe("api/jf password façade", () => {
     expect(login.headers.get("Authorization")).not.toContain("Token=");
     expect(logout.url).toMatch(/\/Sessions\/Logout$/);
     expect(logout.headers.get("Authorization")).toContain('Token="probe-tok"');
+  });
+
+  it("when the probe logout fails then it warns and still reports valid", async (): Promise<void> => {
+    // Arrange
+    const warn: Mock = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ AccessToken: "probe-tok" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      )
+      .mockRejectedValueOnce(new Error("socket hang up"));
+
+    // Act
+    const result: string = await createJellyfinClient(
+      baseUrl,
+      apiKey,
+    ).checkUserPassword("alice", "pw");
+
+    // Assert
+    expect(result).toBe("valid");
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("Could not sign out the password-check session"),
+    );
   });
 
   it.each([
