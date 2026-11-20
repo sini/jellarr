@@ -77,7 +77,7 @@
         default = null;
         description = "Allow AV1 encoding.";
       };
-  
+
       # Bool options
       enableFallbackFont = mkOption {
         type = nullOr types.bool;

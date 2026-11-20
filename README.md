@@ -186,7 +186,9 @@ system:
     preferredMetadataLanguage: "en"
     metadataCountryCode: "US"
     uiCulture: "en-US"
-    corsHosts: ["*"] # CORS allowed origins; configure here, not under networking
+    corsHosts: [
+        "*",
+    ] # CORS allowed origins; configure here, not under networking
     imageSavingConvention: "Legacy" # Legacy | Compatible
     enableFolderView: false
     quickConnectAvailable: true
@@ -252,7 +254,7 @@ encoding:
     # subtitles and keyframes
     enableSubtitleExtraction: true
     allowOnDemandMetadataBasedKeyframeExtractionForExtensions:
-      - mkv
+        - mkv
 ```
 
 The full field set mirrors Jellyfin's `EncodingOptions` object.
@@ -265,15 +267,15 @@ Jellarr manages the full Jellyfin NetworkConfiguration via the `networking` key.
 version: 1
 base_url: "http://localhost:8096"
 networking:
-  internalHttpPort: 8096
-  publicHttpPort: 8096
-  enableIPv6: true
-  requireHttps: false
-  publishedServerUriBySubnet:
-    - "all=https://jellyfin.example.com"
-  knownProxies:
-    - "10.0.0.1"
-  certificatePassword: "changeme"
+    internalHttpPort: 8096
+    publicHttpPort: 8096
+    enableIPv6: true
+    requireHttps: false
+    publishedServerUriBySubnet:
+        - "all=https://jellyfin.example.com"
+    knownProxies:
+        - "10.0.0.1"
+    certificatePassword: "changeme"
 ```
 
 `certificatePassword` is a sensitive value; store it securely rather than
@@ -305,9 +307,9 @@ library:
               metadataCountryCode: "US"
               allowEmbeddedSubtitles: "AllowAll" # AllowAll|AllowText|AllowImage|AllowNone
               subtitleDownloadLanguages:
-                - "eng"
+                  - "eng"
               subtitleFetcherOrder:
-                - "Open Subtitles"
+                  - "Open Subtitles"
 ```
 
 `ignoreChanges` lists library options that are only applied when the library is
@@ -427,8 +429,8 @@ wizard.
 version: 1
 base_url: "http://localhost:8096"
 api_keys:
-  - name: "jellarr"
-  - name: "my-integration"
+    - name: "jellarr"
+    - name: "my-integration"
 ```
 
 Jellarr creates any API key whose name (`AppName`) doesn't already exist. It's
