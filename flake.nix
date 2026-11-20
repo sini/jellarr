@@ -4,6 +4,8 @@
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # checks only: supplies the Jellyfin 10.11 package for the VM tests
+    nixpkgs-jellyfin-10_11.url = "github:NixOS/nixpkgs/nixos-25.11";
     systems.url = "github:nix-systems/default";
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -48,7 +50,13 @@
             };
             module-types = import ./nix/tests/module/types {inherit pkgs;};
           }
-          // import ./nix/tests/integration {inherit pkgs;};
+          // import ./nix/tests/integration {
+            inherit pkgs;
+            jellyfinPackages = {
+              "10_11" = inputs.nixpkgs-jellyfin-10_11.legacyPackages.${system}.jellyfin;
+              "12" = pkgs.jellyfin;
+            };
+          };
 
         formatter = treefmtFormatEval.config.build.wrapper;
 
