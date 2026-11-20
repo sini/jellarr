@@ -13,8 +13,7 @@ import type {
   PluginConfigurationSchema,
 } from "../types/schema/plugins";
 import { waitForRestart } from "../lib/health";
-import { ChangeSetBuilder } from "../lib/changeset";
-import { applyChangeset, diff, type IChange } from "json-diff-ts";
+import { deepEqual } from "fast-equals";
 
 function isPluginConfigurationMissingError(error: unknown): boolean {
   if (typeof error === "object" && error !== null && "response" in error) {
@@ -436,23 +435,32 @@ export async function getPluginConfigurationSchemaByName(
   return pluginConfigurationSchemaByName;
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Overlays desired onto current: objects merge key by key, so keys desired
+ * does not mention survive; arrays and scalars desired declares replace the
+ * current value whole, so a shrunk, reordered or edited array lands exactly.
+ */
+function overlay(current: unknown, desired: unknown): unknown {
+  if (!isPlainObject(desired) || !isPlainObject(current)) return desired;
+  const merged: Record<string, unknown> = { ...current };
+  for (const [key, value] of Object.entries(desired)) {
+    merged[key] = overlay(current[key], value);
+  }
+  return merged;
+}
+
 export function calculatePluginConfigurationDiff(
   current: BasePluginConfigurationSchema,
   desired: PluginConfigurationConfig,
 ): BasePluginConfigurationSchema | undefined {
-  const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, desired as BasePluginConfigurationSchema),
-  )
-    .atomize()
-    .withoutRemoves()
-    .unatomize()
-    .toArray();
-
-  if (patch.length > 0) {
-    return applyChangeset(current, patch) as BasePluginConfigurationSchema;
-  }
-
-  return undefined;
+  const next: unknown = overlay(current, desired);
+  return deepEqual(next, current)
+    ? undefined
+    : (next as BasePluginConfigurationSchema);
 }
 
 export function calculatePluginConfigurationsDiff(
