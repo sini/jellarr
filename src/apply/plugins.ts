@@ -14,7 +14,6 @@ import type {
 } from "../types/schema/plugins";
 import { waitForRestart } from "../lib/health";
 import { deepEqual } from "fast-equals";
-import { overlay } from "../lib/objects";
 
 function isPluginConfigurationMissingError(error: unknown): boolean {
   if (typeof error === "object" && error !== null && "response" in error) {
@@ -487,11 +486,34 @@ export async function getPluginConfigurationSchemaByName(
   return pluginConfigurationSchemaByName;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * ${VAR} always yields strings, so a desired string is read as the type of
+ * the current number or boolean when it parses exactly ("8096", "true").
+ */
+function coerce(current: unknown, desired: unknown): unknown {
+  if (typeof desired !== "string") return desired;
+  if (typeof current === "number") {
+    const parsed: number = Number(desired);
+    return desired.trim() !== "" && String(parsed) === desired
+      ? parsed
+      : desired;
+  }
+  if (typeof current === "boolean") {
+    return desired === "true" ? true : desired === "false" ? false : desired;
+  }
+  return desired;
+}
+
 /**
  * Whether current already satisfies desired. Objects are compared as a
  * subset (fields desired omits, such as ones the server adds, are ignored);
  * arrays match when the lengths are equal and each declared element is
- * satisfied by the element at the same index.
+ * satisfied by the element at the same index. A desired null equals an
+ * absent value.
  */
 function satisfies(current: unknown, desired: unknown): boolean {
   if (Array.isArray(desired)) {
@@ -503,19 +525,48 @@ function satisfies(current: unknown, desired: unknown): boolean {
       )
     );
   }
-  if (typeof desired === "object" && desired !== null) {
+  if (isRecord(desired)) {
     return (
-      typeof current === "object" &&
-      current !== null &&
-      !Array.isArray(current) &&
+      isRecord(current) &&
       Object.entries(desired).every(
         ([key, value]: [string, unknown]) =>
-          value === undefined ||
-          satisfies((current as Record<string, unknown>)[key], value),
+          value === undefined || satisfies(current[key], value),
       )
     );
   }
-  return deepEqual(current, desired);
+  if (desired === null && current === undefined) return true;
+  return deepEqual(current, coerce(current, desired));
+}
+
+/**
+ * The value to write for desired over current. Objects merge key by key;
+ * an array becomes the declared elements in the declared order, each object
+ * element carrying the server fields of the first unused current element it
+ * satisfies, so a reorder or an edit elsewhere never erases them.
+ */
+function mergeDeclared(current: unknown, desired: unknown): unknown {
+  if (Array.isArray(desired)) {
+    const source: unknown[] = Array.isArray(current) ? current : [];
+    const used: Set<number> = new Set();
+    return desired.map((item: unknown) => {
+      if (!isRecord(item)) return item;
+      const index: number = source.findIndex(
+        (candidate: unknown, i: number) =>
+          !used.has(i) && satisfies(candidate, item),
+      );
+      if (index < 0) return item;
+      used.add(index);
+      return mergeDeclared(source[index], item);
+    });
+  }
+  if (isRecord(desired) && isRecord(current)) {
+    const merged: Record<string, unknown> = { ...current };
+    for (const [key, value] of Object.entries(desired)) {
+      if (value !== undefined) merged[key] = mergeDeclared(current[key], value);
+    }
+    return merged;
+  }
+  return coerce(current, desired);
 }
 
 export function calculatePluginConfigurationDiff(
@@ -523,7 +574,7 @@ export function calculatePluginConfigurationDiff(
   desired: PluginConfigurationConfig,
 ): BasePluginConfigurationSchema | undefined {
   if (satisfies(current, desired)) return undefined;
-  return overlay(current, desired) as BasePluginConfigurationSchema;
+  return mergeDeclared(current, desired) as BasePluginConfigurationSchema;
 }
 
 export function calculatePluginConfigurationsDiff(
