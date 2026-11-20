@@ -61,6 +61,7 @@ import {
   isUnauthorized,
   type AdminCredentials,
 } from "../apply/auth";
+import { applyStartupWizard } from "../apply/startup";
 import { resolveValue } from "../lib/file-refs";
 import { waitForHealth, resolveWaitTimeoutMs } from "../lib/health";
 
@@ -99,12 +100,18 @@ export async function runPipeline(
   await waitForHealth(cfg.base_url, { timeoutMs: waitTimeoutMs });
   console.log("✓ Jellyfin is healthy");
 
+  const wizardRan: boolean = cfg.startup
+    ? await applyStartupWizard(jellyfinClient, cfg.startup)
+    : false;
+
   let verifiedAdmin: AdminCredentials | undefined;
-  if (!apiKey) {
+  if (wizardRan || !apiKey) {
     verifiedAdmin = await authenticateAsAdmin(
       jellyfinClient,
       cfg,
-      "JELLARR_API_KEY is not set",
+      wizardRan
+        ? "The server was just set up by the startup wizard"
+        : "JELLARR_API_KEY is not set",
     );
   }
 
@@ -345,11 +352,5 @@ export async function runPipeline(
     } else {
       console.log("✓ API keys already up to date");
     }
-  }
-
-  if (cfg.startup?.completeStartupWizard) {
-    console.log("→ marking startup wizard as complete");
-    await jellyfinClient.completeStartupWizard();
-    console.log("✓ marked startup wizard as complete");
   }
 }

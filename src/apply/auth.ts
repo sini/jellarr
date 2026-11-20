@@ -11,12 +11,19 @@ export interface AdminCredentials {
 }
 
 /**
- * The admin Jellarr signs in as when it has no working API key: the first
- * user in `users` whose policy sets isAdministrator.
+ * The admin Jellarr signs in as when it has no working API key: the
+ * `startup.user` the first-boot wizard creates, else the first user in
+ * `users` whose policy sets isAdministrator.
  */
 export function resolveAdminCredentials(
   cfg: RootConfig,
 ): AdminCredentials | undefined {
+  if (cfg.startup?.user) {
+    return {
+      name: cfg.startup.user.name,
+      password: getPassword(cfg.startup.user),
+    };
+  }
   const admin: UserConfig | undefined = cfg.users?.find(
     (user: UserConfig) => user.policy?.isAdministrator === true,
   );

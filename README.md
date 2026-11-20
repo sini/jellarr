@@ -443,11 +443,27 @@ version: 1
 base_url: "http://localhost:8096"
 system: {}
 startup:
-    completeStartupWizard: true # Mark startup wizard as complete
+    serverName: "Home"
+    preferredMetadataLanguage: "en"
+    metadataCountryCode: "US"
+    uiCulture: "en-US"
+    remoteAccess:
+        enableRemoteAccess: false
+        enableAutomaticPortMapping: false
+    user:
+        name: "admin"
+        passwordFile: "/run/secrets/jellyfin-admin-password" # or `password`
+    completeStartupWizard: true # default; false leaves the wizard open
 ```
 
-Useful for automated deployments where you want to skip the interactive startup
-wizard.
+The first-boot wizard runs only against a pristine server, one whose
+`GET /System/Info/Public` reports `StartupWizardCompleted: false`. Jellarr then
+drives `/Startup/Configuration`, `/Startup/RemoteAccess`, `/Startup/User` and
+`/Startup/Complete`, creates the admin from `user`, and signs in as that admin
+for the rest of the run (see [Authentication](#authentication)). On a server
+whose wizard is already complete the block does nothing. Jellarr never creates
+or writes an API key here; supply `JELLARR_API_KEY` for later runs, or let it
+sign in as the admin each time.
 
 ### API Keys
 
@@ -563,11 +579,12 @@ curl -s -H "X-Emby-Token: $API_KEY" \
 
 `JELLARR_API_KEY` is the primary credential. Jellarr falls back to signing in by
 name (`POST /Users/AuthenticateByName`) when the variable is unset, or when the
-first authenticated call is answered with 401. It signs in as the first entry of
-`users` whose `policy.isAdministrator` is `true`, with that user's `password` or
-`passwordFile`, uses the returned access token for the rest of the run, and logs
-a warning that the fallback was used. With no API key and no such admin the run
-fails.
+first authenticated call is answered with 401. The admin it signs in as is
+`startup.user` when configured, otherwise the first entry of `users` whose
+`policy.isAdministrator` is `true`, with that user's `password` or
+`passwordFile`. It uses the returned access token for the rest of the run and
+logs a warning that the fallback was used. With no API key and no such admin the
+run fails.
 
 ## Startup Wait
 

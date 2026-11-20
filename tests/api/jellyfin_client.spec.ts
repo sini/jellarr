@@ -1161,3 +1161,95 @@ describe("api/jf Plugins façade", () => {
     ).rejects.toThrow(/metadata failed: 401/i);
   });
 });
+
+describe("api/jf startup and sign-in façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when GET /System/Info/Public returns JSON then StartupWizardCompleted is exposed", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({ StartupWizardCompleted: false });
+
+    // Act
+    const info: { StartupWizardCompleted?: boolean | null } =
+      await createJellyfinClient(baseUrl).getPublicSystemInfo();
+
+    // Assert
+    expect(info.StartupWizardCompleted).toBe(false);
+    expect(getLastRequest().headers.get("Authorization")).not.toContain(
+      "Token=",
+    );
+  });
+
+  it.each([
+    ["updateStartupConfiguration", "POST", /\/Startup\/Configuration$/],
+    ["updateStartupUser", "POST", /\/Startup\/User$/],
+    ["setRemoteAccess", "POST", /\/Startup\/RemoteAccess$/],
+    ["getStartupUser", "GET", /\/Startup\/User$/],
+  ] as const)(
+    "when %s is called then it sends %s to the right path and throws on failure",
+    async (method: string, verb: string, pattern: RegExp): Promise<void> => {
+      // Arrange
+      mockFetchNoContent(204);
+      const jf: Record<string, (body?: unknown) => Promise<void>> =
+        createJellyfinClient(baseUrl) as unknown as Record<
+          string,
+          (body?: unknown) => Promise<void>
+        >;
+
+      // Act
+      await jf[method]({ Name: "x", EnableRemoteAccess: true });
+
+      // Assert
+      const req: Request = getLastRequest();
+      expect(req.method).toBe(verb);
+      expect(req.url).toMatch(pattern);
+
+      // Arrange failure
+      mockFetchNoContent(500);
+      await expect(jf[method]({})).rejects.toThrow(/failed: 500/);
+    },
+  );
+
+  it("when AuthenticateByName succeeds then it returns the token and posts the credentials", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({ AccessToken: "tok-1" });
+
+    // Act
+    const token: string = await createJellyfinClient(
+      baseUrl,
+    ).authenticateByName("root", "pw");
+
+    // Assert
+    expect(token).toBe("tok-1");
+    const req: Request = getLastRequest();
+    expect(req.url).toMatch(/\/Users\/AuthenticateByName$/);
+    expect(await req.clone().json()).toEqual({ Username: "root", Pw: "pw" });
+  });
+
+  it("when AuthenticateByName is rejected then the error carries the status", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(401);
+
+    // Act + Assert
+    await expect(
+      createJellyfinClient(baseUrl).authenticateByName("root", "bad"),
+    ).rejects.toMatchObject({ status: 401 });
+  });
+
+  it("when a token is set after construction then later requests use it", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({});
+    const jf: JellyfinClient = createJellyfinClient(baseUrl, "old");
+
+    // Act
+    jf.setAccessToken("new");
+    await jf.getSystemConfiguration();
+
+    // Assert
+    expect(getLastRequest().headers.get("Authorization")).toContain(
+      'Token="new"',
+    );
+  });
+});

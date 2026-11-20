@@ -98,4 +98,51 @@ describe("StartupConfig", () => {
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });
+
+  it("should validate the first-boot wizard fields", () => {
+    // Arrange
+    const config: z.input<typeof StartupConfigType> = {
+      serverName: "Home",
+      preferredMetadataLanguage: "en",
+      metadataCountryCode: "US",
+      uiCulture: "en-US",
+      remoteAccess: {
+        enableRemoteAccess: true,
+        enableAutomaticPortMapping: false,
+      },
+      user: { name: "admin", passwordFile: "/run/secrets/pw" },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(config);
+
+    // Assert
+    expect(result.success).toBe(true);
+  });
+
+  it("should require exactly one of password and passwordFile on the user", () => {
+    // Arrange
+    const both: z.input<typeof StartupConfigType> = {
+      user: { name: "admin", password: "a", passwordFile: "/b" },
+    };
+    const neither: z.input<typeof StartupConfigType> = {
+      user: { name: "admin" },
+    };
+
+    // Act + Assert
+    expect(StartupConfigType.safeParse(both).success).toBe(false);
+    expect(StartupConfigType.safeParse(neither).success).toBe(false);
+  });
+
+  it("should reject apiKeyApp and apiKeyFile: Jellarr never writes API keys", () => {
+    // Arrange
+    const config: Record<string, unknown> = {
+      apiKeyApp: "jellarr",
+      apiKeyFile: "/run/key",
+    };
+
+    // Act + Assert
+    expect(StartupConfigType.safeParse(config).success).toBe(false);
+  });
 });

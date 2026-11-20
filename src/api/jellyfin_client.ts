@@ -45,6 +45,9 @@ import type {
   GetApiKeysResponse,
   PostApiKeyResponse,
   PostAuthenticateByNameResponse,
+  GetPublicSystemInfoResponse,
+  PostStartupStepResponse,
+  GetStartupUserResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import { JellyfinHttpError } from "./errors";
@@ -55,6 +58,12 @@ import {
   type PackageInfoSchema,
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type {
+  PublicSystemInfoSchema,
+  StartupConfigurationDtoSchema,
+  StartupUserDtoSchema,
+  StartupRemoteAccessDtoSchema,
+} from "../types/schema/startup";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 
 export function createJellyfinClient(
@@ -414,6 +423,65 @@ export function createJellyfinClient(
       if (!res.response.ok) {
         throw new Error(
           `POST /Startup/Complete failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getPublicSystemInfo(): Promise<PublicSystemInfoSchema> {
+      const res: GetPublicSystemInfoResponse = await client.GET(
+        "/System/Info/Public",
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /System/Info/Public failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data as PublicSystemInfoSchema;
+    },
+
+    async updateStartupConfiguration(
+      body: StartupConfigurationDtoSchema,
+    ): Promise<void> {
+      const res: PostStartupStepResponse = await client.POST(
+        "/Startup/Configuration",
+        { body, headers: { "content-type": "application/json" } },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Startup/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getStartupUser(): Promise<void> {
+      const res: GetStartupUserResponse = await client.GET("/Startup/User");
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /Startup/User failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async updateStartupUser(body: StartupUserDtoSchema): Promise<void> {
+      const res: PostStartupStepResponse = await client.POST("/Startup/User", {
+        body,
+        headers: { "content-type": "application/json" },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Startup/User failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async setRemoteAccess(body: StartupRemoteAccessDtoSchema): Promise<void> {
+      const res: PostStartupStepResponse = await client.POST(
+        "/Startup/RemoteAccess",
+        { body, headers: { "content-type": "application/json" } },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Startup/RemoteAccess failed: ${res.response.status.toString()}`,
         );
       }
     },

@@ -22,6 +22,13 @@ import {
 } from "../types/schema/plugins";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 
+import type {
+  PublicSystemInfoSchema,
+  StartupConfigurationDtoSchema,
+  StartupUserDtoSchema,
+  StartupRemoteAccessDtoSchema,
+} from "../types/schema/startup";
+
 export interface ApiResponse<T = unknown> {
   data?: T;
   error?: unknown;
@@ -45,6 +52,9 @@ export type GetUsersResponse = ApiResponse<UserDtoSchema[]>;
 export type PostNewUserResponse = ApiResponse<UserDtoSchema>;
 export type PostUserPolicyResponse = ApiResponse<void>;
 export type PostStartupCompleteResponse = ApiResponse<void>;
+export type GetPublicSystemInfoResponse = ApiResponse<PublicSystemInfoSchema>;
+export type GetStartupUserResponse = ApiResponse<StartupUserDtoSchema>;
+export type PostStartupStepResponse = ApiResponse<void>;
 export type PostAuthenticateByNameResponse = ApiResponse<{
   AccessToken?: string | null;
 }>;
@@ -109,6 +119,13 @@ export interface JellyfinClient {
     body: UserConfigurationSchema,
   ): Promise<void>;
   completeStartupWizard(): Promise<void>;
+  getPublicSystemInfo(): Promise<PublicSystemInfoSchema>;
+  updateStartupConfiguration(
+    body: StartupConfigurationDtoSchema,
+  ): Promise<void>;
+  getStartupUser(): Promise<void>;
+  updateStartupUser(body: StartupUserDtoSchema): Promise<void>;
+  setRemoteAccess(body: StartupRemoteAccessDtoSchema): Promise<void>;
   getPlugins(): Promise<PluginInfoSchema[]>;
   getPackages(): Promise<PackageInfoSchema[]>;
   installPackage(name: string, options?: InstallPackageOptions): Promise<void>;
