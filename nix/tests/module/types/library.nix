@@ -2,6 +2,7 @@
   lib,
   assertEq,
   assertThrows,
+  assertSucceeds,
   ...
 }: let
   types = import ../../../module/types {inherit lib;};
@@ -9,6 +10,66 @@
 
   nullConfig = {virtualFolders = null;};
 in [
+  (assertEq "ignoreChanges is emitted" (mkLibraryConfig {
+      virtualFolders = [
+        {
+          name = "Anime";
+          collectionType = "tvshows";
+          libraryOptions.pathInfos = [{path = "/data/anime";}];
+          ignoreChanges = ["pathInfos"];
+        }
+      ];
+    })
+    {
+      virtualFolders = [
+        {
+          name = "Anime";
+          collectionType = "tvshows";
+          libraryOptions.pathInfos = [{path = "/data/anime";}];
+          ignoreChanges = ["pathInfos"];
+        }
+      ];
+    })
+
+  (assertSucceeds "ignoreChanges accepts every library option" (let
+    folder = names:
+      lib.evalModules {
+        modules = [
+          {
+            options.f = lib.mkOption {type = types.library.libraryConfigType;};
+            config.f.virtualFolders = [
+              {
+                name = "x";
+                collectionType = "movies";
+                libraryOptions.pathInfos = [{path = "/x";}];
+                ignoreChanges = names;
+              }
+            ];
+          }
+        ];
+      };
+  in
+    (folder ["pathInfos" "enableRealtimeMonitor" "typeOptions"]).config.f))
+
+  (assertThrows "ignoreChanges rejects unknown option" (let
+    r = lib.evalModules {
+      modules = [
+        {
+          options.f = lib.mkOption {type = types.library.libraryConfigType;};
+          config.f.virtualFolders = [
+            {
+              name = "x";
+              collectionType = "movies";
+              libraryOptions.pathInfos = [{path = "/x";}];
+              ignoreChanges = ["bogus"];
+            }
+          ];
+        }
+      ];
+    };
+  in
+    r.config.f))
+
   (assertEq "empty config" (mkLibraryConfig nullConfig) {})
 
   (assertEq "valid virtual folder" (mkLibraryConfig {
