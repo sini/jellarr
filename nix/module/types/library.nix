@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -6,7 +7,7 @@
   pathInfoConfigType = types.submodule {
     options = {
       path = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Path to media folder.";
       };
     };
@@ -15,24 +16,24 @@
   typeOptionsConfigType = types.submodule {
     options = {
       type = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Type name. E.g., 'Movie', 'Series', etc.";
       };
       metadataFetchers = mkOption {
-        type = types.listOf types.str;
+        type = types.listOf secret.str;
         description = "List of metadata fetchers to use for this type.";
       };
       metadataFetcherOrder = mkOption {
-        type = types.nullOr (types.listOf types.str);
+        type = types.nullOr (types.listOf secret.str);
         description = "List defining the order of metadata fetchers for this type. Defaults to metadataFetchers if not set.";
         default = null;
       };
       imageFetchers = mkOption {
-        type = types.listOf types.str;
+        type = types.listOf secret.str;
         description = "List of image fetchers to use for this type.";
       };
       imageFetcherOrder = mkOption {
-        type = types.nullOr (types.listOf types.str);
+        type = types.nullOr (types.listOf secret.str);
         description = "List defining the order of image fetchers for this type. Defaults to imageFetchers if not set.";
         default = null;
       };
@@ -86,7 +87,7 @@
         description = "Save trickplay with media.";
       };
       metadataSavers = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of metadata savers.";
       };
@@ -166,17 +167,17 @@
         description = "Use custom tag delimiters.";
       };
       preferredMetadataLanguage = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Preferred metadata language code.";
       };
       metadataCountryCode = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Metadata country code.";
       };
       seasonZeroDisplayName = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Display name for season zero (specials).";
       };
@@ -191,57 +192,57 @@
         description = "Policy for allowing embedded subtitles.";
       };
       disabledLocalMetadataReaders = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of disabled local metadata readers.";
       };
       localMetadataReaderOrder = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Order of local metadata readers.";
       };
       disabledSubtitleFetchers = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of disabled subtitle fetchers.";
       };
       subtitleFetcherOrder = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Order of subtitle fetchers.";
       };
       disabledMediaSegmentProviders = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of disabled media segment providers.";
       };
       mediaSegmentProviderOrder = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Order of media segment providers.";
       };
       subtitleDownloadLanguages = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Languages for which to download subtitles.";
       };
       disabledLyricFetchers = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of disabled lyric fetchers.";
       };
       lyricFetcherOrder = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Order of lyric fetchers.";
       };
       customTagDelimiters = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Custom tag delimiters to use when splitting tags.";
       };
       delimiterWhitelist = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Whitelist of delimiters to preserve when splitting tags.";
       };
@@ -265,7 +266,7 @@
   virtualFolderConfigType = types.submodule {
     options = {
       name = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Library name.";
       };
       collectionType = mkOption {

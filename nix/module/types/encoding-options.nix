@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -25,12 +26,12 @@
         description = "Hardware acceleration type.";
       };
       vaapiDevice = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "VAAPI device path (e.g., /dev/dri/renderD128).";
       };
       qsvDevice = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "QSV device path (e.g., /dev/dri/renderD128).";
       };
@@ -211,22 +212,22 @@
 
       # String options
       transcodingTempPath = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to the transcoding temporary directory.";
       };
       fallbackFontPath = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to the fallback font file for subtitle rendering.";
       };
       encoderAppPath = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to the encoder application (e.g., ffmpeg).";
       };
       encoderAppPathDisplay = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Display path for the encoder application shown in the UI.";
       };
@@ -305,7 +306,7 @@
 
       # String array options
       allowOnDemandMetadataBasedKeyframeExtractionForExtensions = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "File extensions for which on-demand metadata-based keyframe extraction is allowed.";
       };

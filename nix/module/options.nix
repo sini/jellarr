@@ -6,6 +6,10 @@
 }: let
   types = import ./types {inherit lib;};
 in {
+  imports = [
+    (lib.mkRenamedOptionModule ["services" "jellarr" "bootstrap" "jellyfinService"] ["services" "jellarr" "jellyfinService"])
+  ];
+
   options.services.jellarr = {
     bootstrap = {
       enable = lib.mkEnableOption ''
@@ -22,7 +26,8 @@ in {
       '';
 
       apiKeyFile = lib.mkOption {
-        default = null;
+        default = config.services.jellarr.apiKeyFile;
+        defaultText = lib.literalExpression "config.services.jellarr.apiKeyFile";
         description = ''
           Path to a file containing the API key to insert into Jellyfin's database.
           The file should contain only the API key value (whitespace is trimmed).
@@ -51,17 +56,49 @@ in {
         '';
         type = lib.types.path;
       };
+    };
 
-      jellyfinService = lib.mkOption {
-        default = "jellyfin.service";
-        description = "Name of the Jellyfin systemd service.";
-        type = lib.types.str;
-      };
+    apiKeyFile = lib.mkOption {
+      default = null;
+      description = ''
+        File holding the API key jellarr authenticates with. It is delivered
+        through systemd `LoadCredential` and exposed as `JELLARR_API_KEY_FILE`,
+        so the service user needs no read access to the path. Do not also set
+        `JELLARR_API_KEY` in `environmentFile`. Also the default for
+        `bootstrap.apiKeyFile`.
+      '';
+      example = "/run/secrets/jellarr-api-key";
+      type = lib.types.nullOr lib.types.path;
     };
 
     config = lib.mkOption {
-      description = "Jellarr configuration.";
-      type = types.root.rootConfigType;
+      default = null;
+      description = "Jellarr configuration, as typed options. Set exactly one of `config` and `configFile`.";
+      type = lib.types.nullOr types.root.rootConfigType;
+    };
+
+    configFile = lib.mkOption {
+      default = null;
+      description = ''
+        Path to a YAML or JSON jellarr configuration, used as is instead of the
+        typed `config`. Set exactly one of `config` and `configFile`.
+      '';
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    jellyfinService = lib.mkOption {
+      default = "jellyfin.service";
+      description = ''
+        Jellyfin systemd unit that jellarr runs after and wants. Set to null
+        when Jellyfin runs elsewhere.
+      '';
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    waitTimeout = lib.mkOption {
+      default = 300;
+      description = "Seconds jellarr waits for Jellyfin to report healthy before giving up (`JELLARR_WAIT_TIMEOUT`).";
+      type = lib.types.ints.unsigned;
     };
 
     dataDir = lib.mkOption {

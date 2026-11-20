@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -6,11 +7,11 @@
   pluginRepositoryConfigType = types.submodule {
     options = {
       name = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Plugin repository name.";
       };
       url = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "Plugin repository URL.";
       };
       enabled = mkOption {
@@ -88,7 +89,7 @@
   systemConfigType = types.submodule {
     options = {
       serverName = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Server name shown in clients.";
       };
@@ -122,54 +123,54 @@
 
       # String array options
       sortReplaceCharacters = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Characters to replace when sorting.";
       };
       sortRemoveCharacters = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Characters to remove when sorting.";
       };
       sortRemoveWords = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "Words to remove when sorting.";
       };
       codecsUsed = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of codecs used by the server.";
       };
       corsHosts = mkOption {
-        type = nullOr (types.listOf types.str);
+        type = nullOr (types.listOf secret.str);
         default = null;
         description = "List of hosts allowed via CORS.";
       };
 
       # String options
       cachePath = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to the server cache directory.";
       };
       metadataPath = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to the metadata directory.";
       };
       preferredMetadataLanguage = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Preferred language for metadata fetching.";
       };
       metadataCountryCode = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Country code used for metadata fetching.";
       };
       uiCulture = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "UI culture/locale string.";
       };

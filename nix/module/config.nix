@@ -9,11 +9,20 @@
   bootstrapEnabled = cfg.enable && bootstrapCfg.enable;
 
   types = import ./types {inherit lib;};
-  processedConfig = types.root.mkConfig cfg.config;
-  configFile = pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} processedConfig);
+  configFile =
+    if cfg.configFile != null
+    then cfg.configFile
+    else pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} (types.root.mkConfig cfg.config));
 in {
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
+      assertions = [
+        {
+          assertion = (cfg.config != null) != (cfg.configFile != null);
+          message = "Exactly one of services.jellarr.config and services.jellarr.configFile must be set.";
+        }
+      ];
+
       systemd = {
         services.jellarr = {
           after =
@@ -21,6 +30,7 @@ in {
               "network-online.target"
               "systemd-tmpfiles-setup.service"
             ]
+            ++ lib.optional (cfg.jellyfinService != null) cfg.jellyfinService
             ++ lib.optional bootstrapEnabled "jellarr-api-key-bootstrap.service";
           description = "Run jellarr (packaged) once";
           preStart =
@@ -28,17 +38,12 @@ in {
             ''
               install -D -m 0644 ${configFile} ${cfg.dataDir}/config/config.yml
               chown ${cfg.user}:${cfg.group} ${cfg.dataDir}/config/config.yml
-
-              for i in $(seq 1 120); do
-                ${pkgs.curl}/bin/curl -sf ${processedConfig.base_url}/System/Info/Public >/dev/null && exit 0
-                sleep 1
-              done
-
-              echo "Jellyfin not running or not ready at ${processedConfig.base_url}"
-
-              exit 1
             '';
+          environment =
+            {JELLARR_WAIT_TIMEOUT = toString cfg.waitTimeout;}
+            // lib.optionalAttrs (cfg.apiKeyFile != null) {JELLARR_API_KEY_FILE = "%d/api-key";};
           serviceConfig = {
+            LoadCredential = lib.optional (cfg.apiKeyFile != null) "api-key:${cfg.apiKeyFile}";
             EnvironmentFile = lib.optional (cfg.environmentFile != null) cfg.environmentFile;
             ExecStart = lib.getExe cfg.package;
             Group = cfg.group;
@@ -47,7 +52,7 @@ in {
             WorkingDirectory = cfg.dataDir;
           };
           restartTriggers = [configFile];
-          wants = ["network-online.target"];
+          wants = ["network-online.target"] ++ lib.optional (cfg.jellyfinService != null) cfg.jellyfinService;
           # Starting multi-user.target on switch runs the oneshot again; no RemainAfterExit, so the timer keeps re-running it.
           wantedBy = ["multi-user.target"];
         };
@@ -89,12 +94,16 @@ in {
       assertions = [
         {
           assertion = bootstrapCfg.apiKeyFile != null;
-          message = "services.jellarr.bootstrap.apiKeyFile must be set when bootstrap is enabled.";
+          message = "services.jellarr.bootstrap.apiKeyFile (or services.jellarr.apiKeyFile) must be set when bootstrap is enabled.";
+        }
+        {
+          assertion = cfg.jellyfinService != null;
+          message = "services.jellarr.jellyfinService must be set when bootstrap is enabled.";
         }
       ];
 
       systemd.services.jellarr-api-key-bootstrap = {
-        after = [bootstrapCfg.jellyfinService];
+        after = [cfg.jellyfinService];
         description = "Bootstrap API key into Jellyfin database for Jellarr";
         path = [
           pkgs.coreutils
@@ -142,7 +151,7 @@ in {
             else
               echo "Inserting API key '$API_KEY_NAME' into Jellyfin database..."
             fi
-            systemctl stop ${bootstrapCfg.jellyfinService}
+            systemctl stop ${cfg.jellyfinService}
 
             sleep 5
 
@@ -155,7 +164,7 @@ in {
             COMMIT;
             SQL
 
-            systemctl start ${bootstrapCfg.jellyfinService}
+            systemctl start ${cfg.jellyfinService}
             echo "API key configured, Jellyfin restarted"
           '';
         serviceConfig = {
