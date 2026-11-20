@@ -50,6 +50,7 @@ import {
   applyPluginConfigurations,
   getPluginConfigurationSchemaByName,
   restartJellyfin,
+  calculatePendingPluginRestarts,
   waitForInstalledPluginsActive,
   type PluginInstall,
   type PluginRemoval,
@@ -439,7 +440,24 @@ export async function runPipeline(
       );
       console.log("✓ restarted Jellyfin; plugins loaded");
     } else {
-      console.log("✓ plugins already up to date");
+      const pendingRestarts: PluginInstall[] | undefined =
+        calculatePendingPluginRestarts(installedPlugins, catalog, cfg.plugins);
+      if (pendingRestarts && plan) {
+        for (const pending of pendingRestarts) {
+          plan.action(`plugin ${pending.name}: would restart to load it`);
+        }
+      } else if (pendingRestarts) {
+        console.log("→ restarting Jellyfin to load installed plugins");
+        await restartJellyfin(jellyfinClient, cfg.base_url, waitTimeoutMs);
+        installedPlugins = await waitForInstalledPluginsActive(
+          jellyfinClient,
+          pendingRestarts,
+          waitTimeoutMs,
+        );
+        console.log("✓ restarted Jellyfin; plugins loaded");
+      } else {
+        console.log("✓ plugins already up to date");
+      }
     }
 
     const pluginRemovals: PluginRemoval[] | undefined = calculatePluginRemovals(

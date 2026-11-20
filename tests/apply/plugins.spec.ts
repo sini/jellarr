@@ -14,6 +14,7 @@ import {
   resolveInstalledPluginNames,
   installPlugins,
   calculatePluginRemovals,
+  calculatePendingPluginRestarts,
   removePlugins,
   type PluginInstall,
   type PluginRemoval,
@@ -1123,5 +1124,59 @@ describe("applyPluginConfigurations", () => {
 
     // Assert
     expect(updatePluginConfigurationSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("calculatePendingPluginRestarts", () => {
+  const catalog: PackageInfoSchema[] = [
+    catalogEntry("Example Plugin", EXAMPLE_GUID, [{ version: "2.0.0.0" }]),
+  ];
+  const desired: PluginConfigList = [{ name: "Example Plugin" }];
+  const old: PluginInfoSchema = installedPlugin(
+    "Example-Plugin",
+    EXAMPLE_GUID,
+    "1.0.0.0",
+  );
+  const next: PluginInfoSchema = installedPlugin(
+    "Example-Plugin",
+    EXAMPLE_GUID,
+    "2.0.0.0",
+  );
+
+  it("whenACopyAwaitsRestartBesideAnActiveOne_thenItIsPending", () => {
+    const result: PluginInstall[] | undefined = calculatePendingPluginRestarts(
+      [old, withStatus(next, "Restart")],
+      catalog,
+      desired,
+    );
+    expect(result?.map((p: PluginInstall) => p.version)).toEqual(["2.0.0.0"]);
+  });
+
+  it("whenNoCopyIsActiveOrDisabled_thenItIsPending", () => {
+    const result: PluginInstall[] | undefined = calculatePendingPluginRestarts(
+      [withStatus(old, "Superseded")],
+      catalog,
+      desired,
+    );
+    expect(result).toHaveLength(1);
+  });
+
+  it.each(["Active", "Disabled", "Malfunctioned", "NotSupported"] as const)(
+    "whenTheOnlyCopyIs%s_thenNothingIsPending",
+    (status: PluginInfoSchema["Status"]) => {
+      expect(
+        calculatePendingPluginRestarts(
+          [withStatus(old, status)],
+          catalog,
+          desired,
+        ),
+      ).toBeUndefined();
+    },
+  );
+
+  it("whenThePluginIsNotInstalled_thenNothingIsPending", () => {
+    expect(
+      calculatePendingPluginRestarts([], catalog, desired),
+    ).toBeUndefined();
   });
 });

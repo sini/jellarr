@@ -221,6 +221,57 @@ export function calculatePluginInstalls(
   return installs.length > 0 ? installs : undefined;
 }
 
+/**
+ * Finds declared plugins that are on disk but not loaded: an installed copy
+ * whose Status is Restart (an interrupted install or upgrade), or a plugin
+ * with no copy that is Active, Disabled, Malfunctioned or NotSupported (those
+ * would not be fixed by another restart). Returns what to wait for after one
+ * restart.
+ */
+export function calculatePendingPluginRestarts(
+  installed: PluginInfoSchema[],
+  catalog: PackageInfoSchema[],
+  desired: PluginConfigList,
+): PluginInstall[] | undefined {
+  const pending: PluginInstall[] = [];
+
+  for (const plugin of desired) {
+    const copies: PluginInfoSchema[] = findInstalled(
+      installed,
+      findPackage(catalog, plugin),
+      plugin,
+    );
+    const awaiting: PluginInfoSchema[] = copies.filter(
+      (copy: PluginInfoSchema) => copy.Status === "Restart",
+    );
+    const settled: boolean = copies.some((copy: PluginInfoSchema) =>
+      ["Active", "Disabled", "Malfunctioned", "NotSupported"].includes(
+        copy.Status ?? "",
+      ),
+    );
+    const candidates: PluginInfoSchema[] =
+      awaiting.length > 0 ? awaiting : settled ? [] : copies;
+    const newest: PluginInfoSchema | undefined = candidates
+      .filter((copy: PluginInfoSchema) => copy.Id && copy.Version)
+      .sort((a: PluginInfoSchema, b: PluginInfoSchema) =>
+        compareVersions(a.Version as string, b.Version as string),
+      )
+      .at(-1);
+    if (!newest) continue;
+
+    logger.info(
+      `Plugin ${plugin.name} ${newest.Version as string} is installed but not loaded; a restart is needed`,
+    );
+    pending.push({
+      name: plugin.name,
+      guid: newest.Id as string,
+      version: newest.Version as string,
+    });
+  }
+
+  return pending.length > 0 ? pending : undefined;
+}
+
 export async function installPlugins(
   client: JellyfinClient,
   installs: PluginInstall[] | undefined,

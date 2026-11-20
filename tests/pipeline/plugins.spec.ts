@@ -151,6 +151,41 @@ describe("pipeline/plugin restart", () => {
     expect(order.indexOf("uninstall")).toBeLessThan(order.indexOf("restart"));
   });
 
+  it("whenInstalledCopyAwaitsRestart_thenRestartsAndWaitsForActive", async () => {
+    // Arrange
+    await writeConfig(true);
+    const pending: Record<string, string> = {
+      ...activeExample,
+      Status: "Restart",
+    };
+    client.getPlugins = vi
+      .fn()
+      .mockResolvedValueOnce([pending])
+      .mockResolvedValue([activeExample]);
+
+    // Act
+    await runPipeline(cfgFile);
+
+    // Assert
+    expect(client.installPackage).not.toHaveBeenCalled();
+    expect(client.restartServer).toHaveBeenCalledTimes(1);
+    expect(order.indexOf("restart")).toBeLessThan(order.indexOf("readConfig"));
+  });
+
+  it("whenDeclaredPluginIsDisabled_thenServerIsNotRestarted", async () => {
+    // Arrange
+    await writeConfig(false);
+    client.getPlugins = vi
+      .fn()
+      .mockResolvedValue([{ ...activeExample, Status: "Disabled" }]);
+
+    // Act
+    await runPipeline(cfgFile);
+
+    // Assert
+    expect(client.restartServer).not.toHaveBeenCalled();
+  });
+
   it("whenDeclaredConfigurationCannotBeReadAfterRestart_thenRunFails", async () => {
     // Arrange
     await writeConfig(true);
