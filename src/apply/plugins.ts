@@ -1,4 +1,5 @@
 import { logger } from "../lib/logger";
+import { say } from "../lib/mode";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import type {
   PluginConfig,
@@ -205,8 +206,14 @@ export function calculatePluginInstalls(
 
     logger.info(
       installedVersion
-        ? `Upgrading plugin ${plugin.name}: ${installedVersion} -> ${target.version}`
-        : `Installing plugin: ${plugin.name} ${target.version}`,
+        ? say(
+            `Upgrading plugin ${plugin.name}: ${installedVersion} -> ${target.version}`,
+            `Would upgrade plugin ${plugin.name}: ${installedVersion} -> ${target.version}`,
+          )
+        : say(
+            `Installing plugin: ${plugin.name} ${target.version}`,
+            `Would install plugin: ${plugin.name} ${target.version}`,
+          ),
     );
     installs.push({
       name: plugin.name,
@@ -397,7 +404,10 @@ export function calculatePluginRemovals(
       }
 
       logger.info(
-        `Removing plugin ${plugin.name} ${copy.Version}, superseded by ${newestActive}`,
+        say(
+          `Removing plugin ${plugin.name} ${copy.Version}, superseded by ${newestActive}`,
+          `Would remove plugin ${plugin.name} ${copy.Version}, superseded by ${newestActive}`,
+        ),
       );
       removals.push({ name: plugin.name, id: copy.Id, version: copy.Version });
     }
@@ -602,7 +612,10 @@ export function calculatePluginConfigurationsDiff(
 
         if (configurationDiff) {
           logger.info(
-            `Updating plugin configuration: ${desiredPluginConfiguration.name}`,
+            say(
+              `Updating plugin configuration: ${desiredPluginConfiguration.name}`,
+              `Would update plugin configuration: ${desiredPluginConfiguration.name}`,
+            ),
           );
           pluginConfigurationsToUpdate.set(
             currentPluginConfiguration.id,

@@ -1,4 +1,5 @@
 import type { JellyfinClient, PasswordCheck } from "../api/jellyfin.types";
+import { say } from "../lib/mode";
 import { logger } from "../lib/logger";
 import type {
   UserConfig,
@@ -143,7 +144,12 @@ export function calculateUserPoliciesDiff(
         );
 
       if (userPolicyDiff) {
-        logger.info(`Updating user policy: ${userConfig.name}`);
+        logger.info(
+          say(
+            `Updating user policy: ${userConfig.name}`,
+            `Would update user policy: ${userConfig.name}`,
+          ),
+        );
         userPoliciesToUpdate.set(currentUserDtoSchema.Id, userPolicyDiff);
       }
     }

@@ -175,12 +175,21 @@ describe("pipeline/dry run", () => {
       "plugin Installed-Plugin.configuration.Flag: false → true",
       "api key k: would be created",
       "startup: the first-boot wizard would run",
-      "DRY RUN: changes are pending",
+      "DRY RUN: changes are pending (passwords were not verified)",
+      "Would update user policy: bob",
+      "Would install plugin: New Plugin",
     ]) {
       expect(output).toContain(expected);
     }
     expect(output).not.toContain("s3cret");
     expect(output).not.toContain("Never");
+    for (const live of [
+      "Updating user policy",
+      "Installing plugin",
+      "Updating plugin configuration",
+    ]) {
+      expect(output).not.toContain(live);
+    }
   });
 
   it("whenNothingWouldChange_thenPendingIsFalse", async () => {
@@ -195,6 +204,7 @@ describe("pipeline/dry run", () => {
     // Assert
     expect(result).toEqual({ dryRun: true, pending: false });
     expect(output).toContain("DRY RUN: nothing would change");
+    expect(output).not.toContain("passwords were not verified");
   });
 
   it("whenEnvVarIsSet_thenDryRunIsOn", async () => {

@@ -69,6 +69,7 @@ import {
 import { applyStartupWizard } from "../apply/startup";
 import { Plan } from "../lib/plan";
 import { maskSecrets } from "../lib/logger";
+import { setDryRun } from "../lib/mode";
 import { guardReadOnly } from "../api/read-only";
 import type { PublicSystemInfoSchema } from "../types/schema/startup";
 import type { PluginConfig } from "../types/config/plugins";
@@ -100,6 +101,8 @@ export async function runPipeline(
   const secrets: Set<string> = new Set();
   const plan: Plan | undefined = dryRun ? new Plan(secrets) : undefined;
   maskSecrets(secrets);
+  setDryRun(dryRun);
+  let passwordsUnverified: boolean = false;
 
   const validationResult: ZodSafeParseResult<RootConfig> =
     RootConfigType.safeParse(await resolveValue(YAML.parse(raw), secrets));
@@ -348,6 +351,7 @@ export async function runPipeline(
     if (plan) {
       for (const user of existingUsers) {
         if (cfg.users.some((wanted: UserConfig) => wanted.name === user.Name)) {
+          passwordsUnverified = true;
           plan.note(
             `user ${user.Name ?? "?"}: password not verified (dry run)`,
           );
@@ -552,9 +556,7 @@ export async function runPipeline(
 
   if (plan) {
     console.log(
-      plan.pending
-        ? "DRY RUN: changes are pending"
-        : "DRY RUN: nothing would change",
+      `${plan.pending ? "DRY RUN: changes are pending" : "DRY RUN: nothing would change"}${passwordsUnverified ? " (passwords were not verified)" : ""}`,
     );
   }
   return { dryRun, pending: plan?.pending ?? false };
