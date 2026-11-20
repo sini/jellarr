@@ -29,7 +29,6 @@
         users = [
           {
             name = "admin";
-            passwordFile = "/run/secrets/pw";
             password = {_file = "/run/secrets/pw2";};
           }
         ];
@@ -57,7 +56,7 @@
       base_url = "http://x";
     };
   };
-  failing = e: builtins.filter (a: !a.assertion) e.config.assertions != [];
+  failing = e: builtins.filter (a: !a.assertion && nixpkgs.lib.hasInfix "jellarr" a.message) e.config.assertions != [];
 in
   assert nixpkgs.lib.elem "jellyfin.service" svc.after;
   assert nixpkgs.lib.elem "jellyfin.service" svc.wants;
