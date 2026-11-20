@@ -202,10 +202,10 @@ describe("a second run with an unchanged config changes nothing", () => {
 
   it("plugins", () => {
     const { first, second }: Pair = twice(
-      { Hand: "set", OidConfigs: { k: { AdminRoles: ["a", "b"] } } } as never,
+      { Hand: "set", Providers: { primary: { Roles: ["a", "b"] } } } as never,
       (s: never): object | undefined =>
         calculatePluginConfigurationDiff(s, {
-          OidConfigs: { k: { AdminRoles: ["a"], Enabled: true } },
+          Providers: { primary: { Roles: ["a"], Enabled: true } },
         }),
     );
     expect(first).toBeDefined();

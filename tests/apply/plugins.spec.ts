@@ -45,6 +45,7 @@ vi.mock("../../src/lib/logger", () => ({
 }));
 
 const SSO_GUID: string = "505ce9d1-d916-42fa-86ca-673ef241d7df";
+const EXAMPLE_GUID: string = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
 const LDAP_GUID: string = "958aad66-3784-4d2a-b89a-a7b6fab6e25c";
 
 function catalogEntry(
@@ -68,6 +69,10 @@ const catalog: PackageInfoSchema[] = [
     { version: "5.1.0", targetAbi: "12.0.0.0" },
     { version: "4.0.0.4", targetAbi: "10.11.0.0" },
     { version: "6.0.0", targetAbi: "13.0.0.0" },
+  ]),
+  catalogEntry("Example Plugin", EXAMPLE_GUID, [
+    { version: "2.0.0", targetAbi: "12.0.0.0" },
+    { version: "1.0.0", targetAbi: "10.11.0.0" },
   ]),
   catalogEntry("LDAP Authentication", LDAP_GUID, [
     { version: "24.0.0.0", targetAbi: "12.0.0.0" },
@@ -360,14 +365,14 @@ describe("calculatePluginRemovals", () => {
       expect(
         calculatePluginRemovals(
           [
-            installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+            installedPlugin("Example-Plugin", EXAMPLE_GUID, "2.0.0.0"),
             withStatus(
-              installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+              installedPlugin("Example-Plugin", EXAMPLE_GUID, "1.0.0.0"),
               status,
             ),
           ],
           catalog,
-          [{ name: "SSO Authentication" }],
+          [{ name: "Example Plugin" }],
         ),
       ).toBeUndefined();
     },
@@ -378,12 +383,12 @@ describe("calculatePluginRemovals", () => {
       calculatePluginRemovals(
         [
           withStatus(
-            installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+            installedPlugin("Example-Plugin", EXAMPLE_GUID, "1.0.0.0"),
             "Superseded",
           ),
         ],
         catalog,
-        [{ name: "SSO Authentication" }],
+        [{ name: "Example Plugin" }],
       ),
     ).toBeUndefined();
   });
@@ -392,14 +397,14 @@ describe("calculatePluginRemovals", () => {
     expect(
       calculatePluginRemovals(
         [
-          installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+          installedPlugin("Example-Plugin", EXAMPLE_GUID, "1.0.0.0"),
           withStatus(
-            installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+            installedPlugin("Example-Plugin", EXAMPLE_GUID, "2.0.0.0"),
             "Superseded",
           ),
         ],
         catalog,
-        [{ name: "SSO Authentication" }],
+        [{ name: "Example Plugin" }],
       ),
     ).toBeUndefined();
   });

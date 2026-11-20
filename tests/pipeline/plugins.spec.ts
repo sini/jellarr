@@ -27,16 +27,16 @@ vi.mock("../../src/lib/health", () => ({
 
 import { runPipeline } from "../../src/pipeline";
 
-const GUID: string = "505ce9d1-d916-42fa-86ca-673ef241d7df";
+const GUID: string = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
 const catalog: unknown[] = [
   {
-    name: "SSO Authentication",
+    name: "Example Plugin",
     guid: GUID,
     versions: [{ version: "5.1.1", repositoryUrl: "https://r/manifest" }],
   },
 ];
-const activeSso: Record<string, string> = {
-  Name: "SSO-Auth",
+const activeExample: Record<string, string> = {
+  Name: "Example-Plugin",
   Id: GUID,
   Version: "5.1.1.0",
   Status: "Active",
@@ -54,7 +54,7 @@ describe("pipeline/plugin restart", () => {
         'base_url: "http://localhost:8096"',
         "system: {}",
         "plugins:",
-        '  - name: "SSO Authentication"',
+        '  - name: "Example Plugin"',
         ...(withConfiguration
           ? ["    configuration:", "      Enabled: true"]
           : []),
@@ -98,7 +98,7 @@ describe("pipeline/plugin restart", () => {
       })
       .mockImplementation(() => {
         order.push("plugins(after)");
-        return Promise.resolve([activeSso]);
+        return Promise.resolve([activeExample]);
       });
 
     // Act
@@ -121,7 +121,7 @@ describe("pipeline/plugin restart", () => {
   it("whenNothingChanged_thenServerIsNotRestarted", async () => {
     // Arrange
     await writeConfig(true);
-    client.getPlugins = vi.fn().mockResolvedValue([activeSso]);
+    client.getPlugins = vi.fn().mockResolvedValue([activeExample]);
     client.getPluginConfiguration = step("readConfig", { Enabled: true });
 
     // Act
@@ -136,11 +136,11 @@ describe("pipeline/plugin restart", () => {
     // Arrange
     await writeConfig(false);
     const old: Record<string, string> = {
-      ...activeSso,
+      ...activeExample,
       Version: "5.0.0.0",
       Status: "Superseded",
     };
-    client.getPlugins = vi.fn().mockResolvedValue([activeSso, old]);
+    client.getPlugins = vi.fn().mockResolvedValue([activeExample, old]);
 
     // Act
     await runPipeline(cfgFile);
@@ -154,7 +154,7 @@ describe("pipeline/plugin restart", () => {
   it("whenDeclaredConfigurationCannotBeReadAfterRestart_thenRunFails", async () => {
     // Arrange
     await writeConfig(true);
-    client.getPlugins = vi.fn().mockResolvedValue([activeSso]);
+    client.getPlugins = vi.fn().mockResolvedValue([activeExample]);
     client.getPluginConfiguration = vi
       .fn()
       .mockRejectedValue(new Error("GET /Plugins/x/Configuration failed: 404"));

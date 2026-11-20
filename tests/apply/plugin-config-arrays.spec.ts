@@ -3,15 +3,15 @@ import { calculatePluginConfigurationDiff } from "../../src/apply/plugins";
 import type { BasePluginConfigurationSchema } from "../../src/types/schema/plugins";
 import type { PluginConfigurationConfig } from "../../src/types/config/plugins";
 
-function ssoWith(roles: string[]): BasePluginConfigurationSchema {
+function withProviders(roles: string[]): BasePluginConfigurationSchema {
   return {
-    SamlConfigs: {},
-    OidConfigs: { kanidm: { AdminRoles: roles, Enabled: true, Hand: "set" } },
+    Other: { keep: true },
+    Providers: { primary: { Roles: roles, Enabled: true, Hand: "set" } },
   } as unknown as BasePluginConfigurationSchema;
 }
 
 function desiredRoles(roles: string[]): PluginConfigurationConfig {
-  return { OidConfigs: { kanidm: { AdminRoles: roles } } };
+  return { Providers: { primary: { Roles: roles } } };
 }
 
 function rolesAfter(
@@ -19,14 +19,17 @@ function rolesAfter(
   desired: string[],
 ): string[] | undefined {
   const result: BasePluginConfigurationSchema | undefined =
-    calculatePluginConfigurationDiff(ssoWith(current), desiredRoles(desired));
+    calculatePluginConfigurationDiff(
+      withProviders(current),
+      desiredRoles(desired),
+    );
   return result === undefined
     ? undefined
     : (
         result as unknown as {
-          OidConfigs: { kanidm: { AdminRoles: string[] } };
+          Providers: { primary: { Roles: string[] } };
         }
-      ).OidConfigs.kanidm.AdminRoles;
+      ).Providers.primary.Roles;
 }
 
 describe("plugin configuration arrays are replaced whole", () => {
@@ -67,7 +70,7 @@ describe("plugin configuration arrays are replaced whole", () => {
   });
   it("undeclared keys and arrays survive", () => {
     const current: BasePluginConfigurationSchema = {
-      ...ssoWith(["a", "b"]),
+      ...withProviders(["a", "b"]),
       Other: [1, 2],
     } as unknown as BasePluginConfigurationSchema;
     const result: unknown = calculatePluginConfigurationDiff(
@@ -75,9 +78,9 @@ describe("plugin configuration arrays are replaced whole", () => {
       desiredRoles(["a"]),
     );
     expect(result).toEqual({
-      SamlConfigs: {},
+      Other: { keep: true },
       Other: [1, 2],
-      OidConfigs: { kanidm: { AdminRoles: ["a"], Enabled: true, Hand: "set" } },
+      Providers: { primary: { Roles: ["a"], Enabled: true, Hand: "set" } },
     });
   });
 });

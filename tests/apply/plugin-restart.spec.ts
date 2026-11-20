@@ -17,9 +17,9 @@ vi.mock("../../src/lib/logger", () => ({
 }));
 
 const missing: Error = new Error("GET /Plugins/x/Configuration failed: 404");
-const sso: PluginInfoSchema = {
-  Name: "SSO-Auth",
-  Id: "sso-id",
+const example: PluginInfoSchema = {
+  Name: "Example-Plugin",
+  Id: "example-id",
 } as PluginInfoSchema;
 
 function clientReading(read: ReturnType<typeof vi.fn>): JellyfinClient {
@@ -35,11 +35,11 @@ describe("declared plugin configuration must be readable", () => {
     await expect(
       getPluginConfigurationSchemaByName(
         clientReading(read),
-        [sso],
-        [{ name: "SSO-Auth", configuration: { A: 1 } }],
+        [example],
+        [{ name: "Example-Plugin", configuration: { A: 1 } }],
       ),
     ).rejects.toThrow(
-      /"SSO-Auth" declares a configuration but it cannot be read/,
+      /"Example-Plugin" declares a configuration but it cannot be read/,
     );
   });
 
@@ -51,8 +51,8 @@ describe("declared plugin configuration must be readable", () => {
     const result: Map<string, unknown> =
       await getPluginConfigurationSchemaByName(
         clientReading(read),
-        [sso],
-        [{ name: "SSO-Auth" }],
+        [example],
+        [{ name: "Example-Plugin" }],
       );
 
     // Assert
@@ -68,10 +68,10 @@ describe("declared plugin configuration must be readable", () => {
       getPluginConfigurationSchemaByName(
         clientReading(read),
         [],
-        [{ name: "SSO-Auth", configuration: { A: 1 } }],
+        [{ name: "Example-Plugin", configuration: { A: 1 } }],
       ),
     ).rejects.toThrow(
-      /"SSO-Auth" declares a configuration but is not installed/,
+      /"Example-Plugin" declares a configuration but is not installed/,
     );
   });
 
@@ -83,13 +83,13 @@ describe("declared plugin configuration must be readable", () => {
     const result: Map<string, unknown> =
       await getPluginConfigurationSchemaByName(
         clientReading(read),
-        [sso],
-        [{ name: "SSO-Auth", configuration: { A: 1 } }],
+        [example],
+        [{ name: "Example-Plugin", configuration: { A: 1 } }],
       );
 
     // Assert
-    expect(result.get("SSO-Auth")).toEqual({
-      id: "sso-id",
+    expect(result.get("Example-Plugin")).toEqual({
+      id: "example-id",
       configuration: { A: 0 },
     });
   });
@@ -123,13 +123,13 @@ describe("restartJellyfin", () => {
 
 describe("waitForInstalledPluginsActive", () => {
   const install: PluginInstall = {
-    name: "SSO Authentication",
-    guid: "505CE9D1-D916-42FA-86CA-673EF241D7DF",
+    name: "Example Plugin",
+    guid: "0A1B2C3D-4E5F-4A6B-8C7D-9E0F1A2B3C4D",
     version: "5.1.1",
   };
   const active: PluginInfoSchema = {
-    Name: "SSO-Auth",
-    Id: "505ce9d1d91642fa86ca673ef241d7df",
+    Name: "Example-Plugin",
+    Id: "0a1b2c3d4e5f4a6b8c7d9e0f1a2b3c4d",
     Version: "5.1.1.0",
     Status: "Active",
   } as PluginInfoSchema;
@@ -165,6 +165,6 @@ describe("waitForInstalledPluginsActive", () => {
     // Act + Assert
     await expect(
       waitForInstalledPluginsActive(client, [install], 20, 5),
-    ).rejects.toThrow(/did not become active.*SSO Authentication/);
+    ).rejects.toThrow(/did not become active.*Example Plugin/);
   });
 });
