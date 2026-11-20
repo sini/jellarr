@@ -11,9 +11,9 @@ export const LibraryOptionsConfigType: z.ZodObject<{
       z.ZodObject<{
         type: z.ZodString;
         metadataFetchers: z.ZodArray<z.ZodString>;
-        metadataFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        metadataFetcherOrder: z.ZodOptional<z.ZodNullable<z.ZodArray<z.ZodString>>>;
         imageFetchers: z.ZodArray<z.ZodString>;
-        imageFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        imageFetcherOrder: z.ZodOptional<z.ZodNullable<z.ZodArray<z.ZodString>>>;
       }>
     >
   >;

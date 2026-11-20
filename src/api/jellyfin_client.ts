@@ -380,8 +380,7 @@ export function createJellyfinClient(
       body: UpdateLibraryOptionsDtoSchema,
     ): Promise<void> {
       const res = await client.POST("/Library/VirtualFolders/LibraryOptions", {
-        params: { query: { libraryId } },
-        body,
+        body: { ...body, Id: libraryId },
         headers: { "content-type": "application/json" },
       });
 
