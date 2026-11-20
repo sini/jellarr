@@ -35,8 +35,8 @@ pioneered declarative Jellyfin configuration, it takes a risky approach:
 
 - ✅ **API-based** — Uses Jellyfin's official REST API, never touches internal
   files or databases
-- ✅ **Zero service interruption** — Jellyfin keeps running, no restarts
-  required
+- ✅ **Zero service interruption** — Jellyfin keeps running; the only restart is
+  the one a plugin install or removal needs
 - ✅ **Cross-platform** — Works on Docker, bare metal, any OS (not just NixOS)
 - ✅ **Type-safe** — OpenAPI-generated types catch errors at build time
 - ✅ **Future-proof** — Relies on stable API contracts, not reverse-engineered
@@ -536,11 +536,18 @@ plugins:
   downgrade
 - Once an upgraded plugin is active, older copies of it are uninstalled.
   Jellyfin keeps loading a superseded copy's assemblies, whose API routes then
-  clash with the new copy's, so they're removed on the next run and unloaded on
-  the following restart
-- Jellyfin loads installed or upgraded plugins only after a restart. Until then
-  a newly installed plugin has no configuration to update, so its
-  `configuration` is applied on the first run after the restart
+  clash with the new copy's, so they're removed and Jellyfin is restarted again
+  to unload them
+- Jellyfin loads installed or upgraded plugins only after a restart, so when a
+  run installs or removes a plugin Jellarr restarts it (`POST /System/Restart`),
+  waits for `/health` to go down and come back (bounded by the
+  [startup wait](#startup-wait) timeout), waits for the installed plugins to
+  become Active, re-reads the plugin list and then applies plugin
+  `configuration`, all in the same run
+- A plugin declared with a `configuration` whose configuration cannot be read
+  (not installed or loaded, disabled, or no configuration endpoint) fails the
+  run with a non-zero exit. Plugins declared without a `configuration` that have
+  none are skipped
 - The `configuration` field accepts arbitrary key-value pairs specific to each
   plugin
 - Only specified configuration fields are updated; unspecified fields are

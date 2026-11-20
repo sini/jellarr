@@ -1345,3 +1345,28 @@ describe("api/jf password façade", () => {
     ).rejects.toThrow(/failed: 500/);
   });
 });
+
+describe("api/jf restart façade", () => {
+  it("when POST /System/Restart succeeds then it returns", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    await createJellyfinClient(baseUrl, apiKey).restartServer();
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/System\/Restart$/);
+  });
+
+  it("when POST /System/Restart fails then it throws with the status", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(403);
+
+    // Act + Assert
+    await expect(
+      createJellyfinClient(baseUrl, apiKey).restartServer(),
+    ).rejects.toThrow(/POST \/System\/Restart failed: 403/);
+  });
+});

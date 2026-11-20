@@ -49,9 +49,12 @@ import {
   calculatePluginConfigurationsDiff,
   applyPluginConfigurations,
   getPluginConfigurationSchemaByName,
+  restartJellyfin,
+  waitForInstalledPluginsActive,
   type PluginInstall,
   type PluginRemoval,
 } from "../apply/plugins";
+import type { PluginConfigList } from "../types/config/plugins";
 import { calculateApiKeysToCreate, createApiKeys } from "../apply/api-keys";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { ApiKeyConfig } from "../types/config/api-keys";
@@ -307,8 +310,15 @@ export async function runPipeline(
     if (pluginInstalls) {
       console.log("→ installing plugins");
       await installPlugins(jellyfinClient, pluginInstalls);
-      console.log("✓ installed plugins; restart Jellyfin to load them");
-      installedPlugins = await jellyfinClient.getPlugins();
+      console.log("✓ installed plugins");
+      console.log("→ restarting Jellyfin to load them");
+      await restartJellyfin(jellyfinClient, cfg.base_url, waitTimeoutMs);
+      installedPlugins = await waitForInstalledPluginsActive(
+        jellyfinClient,
+        pluginInstalls,
+        waitTimeoutMs,
+      );
+      console.log("✓ restarted Jellyfin; plugins loaded");
     } else {
       console.log("✓ plugins already up to date");
     }
@@ -322,20 +332,27 @@ export async function runPipeline(
     if (pluginRemovals) {
       console.log("→ removing superseded plugin versions");
       await removePlugins(jellyfinClient, pluginRemovals);
-      console.log(
-        "✓ removed superseded plugin versions; restart Jellyfin to unload them",
-      );
+      console.log("✓ removed superseded plugin versions");
+      console.log("→ restarting Jellyfin to unload them");
+      await restartJellyfin(jellyfinClient, cfg.base_url, waitTimeoutMs);
       installedPlugins = await jellyfinClient.getPlugins();
+      console.log("✓ restarted Jellyfin");
     }
 
+    const desiredPlugins: PluginConfigList = resolveInstalledPluginNames(
+      installedPlugins,
+      catalog,
+      cfg.plugins,
+    );
     const pluginConfigurationsToUpdate:
       Map<string, BasePluginConfigurationSchema> | undefined =
       calculatePluginConfigurationsDiff(
         await getPluginConfigurationSchemaByName(
           jellyfinClient,
           installedPlugins,
+          desiredPlugins,
         ),
-        resolveInstalledPluginNames(installedPlugins, catalog, cfg.plugins),
+        desiredPlugins,
       );
 
     if (pluginConfigurationsToUpdate) {

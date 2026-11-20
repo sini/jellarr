@@ -81,6 +81,7 @@ export interface InstallPackageOptions {
 export type PasswordCheck = "valid" | "invalid" | "unverifiable";
 
 export interface JellyfinClient {
+  restartServer(): Promise<void>;
   checkUserPassword(username: string, password: string): Promise<PasswordCheck>;
   updateUserPassword(userId: string, newPassword: string): Promise<void>;
   setAccessToken(accessToken: string): void;

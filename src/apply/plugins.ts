@@ -12,6 +12,7 @@ import type {
   BasePluginConfigurationSchema,
   PluginConfigurationSchema,
 } from "../types/schema/plugins";
+import { waitForRestart } from "../lib/health";
 import { ChangeSetBuilder } from "../lib/changeset";
 import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
@@ -237,6 +238,65 @@ export async function installPlugins(
   }
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve: () => void) => setTimeout(resolve, ms));
+}
+
+/**
+ * Restarts Jellyfin so it loads or unloads plugin assemblies, and waits
+ * until /health answers again.
+ */
+export async function restartJellyfin(
+  client: JellyfinClient,
+  baseUrl: string,
+  timeoutMs: number,
+): Promise<void> {
+  await client.restartServer();
+  await waitForRestart(baseUrl, { timeoutMs });
+}
+
+/**
+ * After a restart, waits until every plugin that was just installed has an
+ * Active copy at the installed version. Adapted from Jampard's
+ * waitForActivePlugins; the wait is bounded by the same timeout as /health.
+ */
+export async function waitForInstalledPluginsActive(
+  client: JellyfinClient,
+  installs: PluginInstall[],
+  timeoutMs: number,
+  intervalMs: number = 2000,
+): Promise<PluginInfoSchema[]> {
+  const deadline: number = Date.now() + timeoutMs;
+  let lastError: unknown;
+  for (;;) {
+    try {
+      const installed: PluginInfoSchema[] = await client.getPlugins();
+      const pending: PluginInstall[] = installs.filter(
+        (install: PluginInstall) =>
+          !installed.some(
+            (plugin: PluginInfoSchema) =>
+              plugin.Id !== undefined &&
+              normalizeGuid(plugin.Id) === normalizeGuid(install.guid) &&
+              plugin.Status === "Active" &&
+              plugin.Version !== undefined &&
+              compareVersions(plugin.Version, install.version) === 0,
+          ),
+      );
+      if (pending.length === 0) return installed;
+      lastError = new Error(
+        `not active: ${pending.map((install: PluginInstall) => install.name).join(", ")}`,
+      );
+    } catch (error) {
+      lastError = error;
+    }
+    if (Date.now() >= deadline) break;
+    await sleep(intervalMs);
+  }
+  throw new Error(
+    `Plugins did not become active after the restart within ${(timeoutMs / 1000).toString()}s (${lastError instanceof Error ? lastError.message : String(lastError)})`,
+  );
+}
+
 export interface PluginRemoval {
   name: string;
   id: string;
@@ -325,10 +385,22 @@ export function resolveInstalledPluginNames(
   });
 }
 
+/**
+ * Fetches each installed plugin's configuration. A plugin with no readable
+ * configuration (404) is skipped, unless `desired` declares a configuration
+ * for it; then, like a declared plugin that is not installed at all, it is an
+ * error rather than a silent no-op.
+ */
 export async function getPluginConfigurationSchemaByName(
   client: JellyfinClient,
   current: PluginInfoSchema[],
+  desired: PluginConfigList = [],
 ): Promise<Map<string, PluginConfigurationSchema>> {
+  const required: Set<string> = new Set(
+    desired
+      .filter((plugin: PluginConfig) => plugin.configuration !== undefined)
+      .map((plugin: PluginConfig) => plugin.name),
+  );
   const pluginConfigurationSchemaByName: Map<
     string,
     PluginConfigurationSchema
@@ -342,9 +414,21 @@ export async function getPluginConfigurationSchemaByName(
           configuration: await client.getPluginConfiguration(pluginInfo.Id),
         });
       } catch (error) {
-        if (isPluginConfigurationMissingError(error)) continue;
-        throw error;
+        if (!isPluginConfigurationMissingError(error)) throw error;
+        if (required.has(pluginInfo.Name)) {
+          throw new Error(
+            `Plugin "${pluginInfo.Name}" declares a configuration but it cannot be read (404): is the plugin enabled and loaded?`,
+          );
+        }
       }
+    }
+  }
+
+  for (const name of required) {
+    if (!pluginConfigurationSchemaByName.has(name)) {
+      throw new Error(
+        `Plugin "${name}" declares a configuration but is not installed and loaded`,
+      );
     }
   }
 

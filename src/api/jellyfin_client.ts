@@ -536,6 +536,15 @@ export function createJellyfinClient(
       }
     },
 
+    async restartServer(): Promise<void> {
+      const res: PostStartupStepResponse = await client.POST("/System/Restart");
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /System/Restart failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async getPlugins(): Promise<PluginInfoSchema[]> {
       const res: GetPluginsResponse = await client.GET("/Plugins");
       if (!res.response.ok) {
