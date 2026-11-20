@@ -2,6 +2,13 @@ import { deepEqual } from "fast-equals";
 import { logger } from "./logger";
 
 const MASK: string = "***";
+const CREDENTIAL_KEY: RegExp =
+  /pass(word)?|secret|token|api_?key|credential|private/i;
+
+/** Server-side values are masked by field name, since only config-derived secrets are known. */
+function isCredential(key: string, value: unknown): boolean {
+  return typeof value === "string" && value !== "" && CREDENTIAL_KEY.test(key);
+}
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -19,7 +26,10 @@ export class Plan {
   private show(value: unknown): string {
     if (value === undefined) return "(unset)";
     return JSON.stringify(value, (key: string, leaf: unknown): unknown =>
-      typeof leaf === "string" && this.secrets.has(leaf) ? MASK : leaf,
+      (typeof leaf === "string" && this.secrets.has(leaf)) ||
+      isCredential(key, leaf)
+        ? MASK
+        : leaf,
     );
   }
 
@@ -30,7 +40,11 @@ export class Plan {
       );
     }
     if (deepEqual(current, next)) return [];
-    if (typeof next === "string" && this.secrets.has(next)) {
+    const leafKey: string = path.split(".").at(-1) ?? "";
+    if (
+      (typeof next === "string" && this.secrets.has(next)) ||
+      isCredential(leafKey, next)
+    ) {
       return [`  ${path}: ${MASK} → ${MASK}`];
     }
     return [`  ${path}: ${this.show(current)} → ${this.show(next)}`];
