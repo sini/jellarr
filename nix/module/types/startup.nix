@@ -1,4 +1,5 @@
 {lib}: let
+  secret = import ./secret.nix {inherit lib;};
   inherit (lib) types mkOption optionalAttrs;
 
   inherit (types) nullOr;
@@ -19,16 +20,16 @@
   startupUserConfigType = types.submodule {
     options = {
       name = mkOption {
-        type = types.str;
+        type = secret.str;
         description = "The admin user name.";
       };
       password = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "The admin user password. Mutually exclusive with passwordFile.";
       };
       passwordFile = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Path to a file containing the admin user password. Mutually exclusive with password.";
       };
@@ -38,22 +39,22 @@
   startupConfigType = types.submodule {
     options = {
       serverName = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "The server name to set during startup.";
       };
       preferredMetadataLanguage = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Preferred metadata language.";
       };
       metadataCountryCode = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "Metadata country code.";
       };
       uiCulture = mkOption {
-        type = nullOr types.str;
+        type = nullOr secret.str;
         default = null;
         description = "UI language culture.";
       };
