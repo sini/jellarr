@@ -19,7 +19,9 @@ export function addSecret(value: string): void {
 function masked(msg: string): string {
   let out: string = msg;
   for (const secret of secretValues) {
-    if (secret !== "") out = out.split(secret).join("***");
+    if (secret === "") continue;
+    out = out.split(secret).join("***");
+    out = out.split(JSON.stringify(secret).slice(1, -1)).join("***");
   }
   return out;
 }

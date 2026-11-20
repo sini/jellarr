@@ -2,6 +2,7 @@
 import { Command, Option } from "commander";
 import { runPipeline, type PipelineResult } from "../pipeline";
 import { runDump } from "../dump";
+import { logger } from "../lib/logger";
 
 interface ApplyOptions {
   configFile: string;
@@ -62,6 +63,6 @@ program
   });
 
 program.parseAsync().catch((err: unknown): void => {
-  console.error(err);
+  logger.error(err instanceof Error ? (err.stack ?? err.message) : String(err));
   process.exit(1);
 });
