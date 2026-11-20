@@ -117,7 +117,7 @@ describe("apply/users password reconciliation", () => {
     );
   });
 
-  it("whenOneFailureWouldLockTheUserOut_thenSetsWithoutProbing", async () => {
+  it("whenOneFailureWouldLockTheUserOut_thenSkipsWithoutProbingOrSetting", async () => {
     // Arrange
     const fx: Fixture = makeClient("valid");
     const { client, checkUserPassword, updateUserPassword }: Fixture = fx;
@@ -139,7 +139,10 @@ describe("apply/users password reconciliation", () => {
 
     // Assert
     expect(checkUserPassword).not.toHaveBeenCalled();
-    expect(updateUserPassword).toHaveBeenCalledWith("id-alice", "pw");
+    expect(updateUserPassword).not.toHaveBeenCalled();
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining("left unchanged"),
+    );
   });
 
   it("whenUserIsSkippedOrUnknown_thenNothingIsCalled", async () => {
@@ -159,6 +162,11 @@ describe("apply/users password reconciliation", () => {
 
   it.each([
     [undefined, 0, true],
+    [null, 0, true],
+    [-1, 0, true],
+    [0, 0, true],
+    [0, 1, true],
+    [0, 2, false],
     [-1, 99, true],
     [5, 3, true],
     [5, 4, false],
@@ -166,7 +174,7 @@ describe("apply/users password reconciliation", () => {
     [1, 0, false],
   ])(
     "isProbeSafe(limit=%s, count=%s) is %s",
-    (limit: number | undefined, count: number, safe: boolean) => {
+    (limit: number | null | undefined, count: number, safe: boolean) => {
       expect(
         isProbeSafe({
           LoginAttemptsBeforeLockout: limit,

@@ -213,13 +213,16 @@ export async function applyUserConfigurations(
 /**
  * Whether one failed sign-in is safe for this user. Jellyfin counts a failed
  * AuthenticateByName and disables the account once the count reaches its
- * LoginAttemptsBeforeLockout policy (-1: never), so a probe is only made
- * while the count after a failure would stay below the limit.
+ * LoginAttemptsBeforeLockout policy, so a probe is only made while the count
+ * after a failure would stay below the limit. Jellyfin 10.11 reports a stored
+ * null as -1 (never locks) and maps a written 0 to 3 (UserManager.cs:457, 638,
+ * 816-820); a reported 0 is therefore read as 3.
  */
 export function isProbeSafe(
   policy: UserPolicySchema | null | undefined,
 ): boolean {
-  const limit: number = policy?.LoginAttemptsBeforeLockout ?? -1;
+  const reported: number = policy?.LoginAttemptsBeforeLockout ?? -1;
+  const limit: number = reported === 0 ? 3 : reported;
   if (limit < 0) return true;
   return (policy?.InvalidLoginAttemptCount ?? 0) + 1 < limit;
 }
@@ -228,7 +231,7 @@ export function isProbeSafe(
  * Sets the password of existing users whose current password differs from
  * the configured one. Setting a password revokes the user's other tokens, so
  * it is only done after a probe sign-in (own device id, signed out again)
- * fails; a user too close to lockout to probe is set unconditionally.
+ * fails; a user too close to lockout to probe is left unchanged.
  */
 export async function reconcileUserPasswords(
   client: JellyfinClient,
@@ -258,8 +261,9 @@ export async function reconcileUserPasswords(
       }
     } else {
       logger.warn(
-        `User ${userConfig.name} is close to lockout; setting the password without a sign-in check`,
+        `Cannot verify the password of user ${userConfig.name} without lockout risk; left unchanged`,
       );
+      continue;
     }
 
     logger.info(`Setting password: ${userConfig.name}`);
