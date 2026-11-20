@@ -240,3 +240,42 @@ describe("env substitution", () => {
     expect(result).toEqual({ a: nasty, b: 1 });
   });
 });
+
+describe("dollar escaping in rendered markup", () => {
+  const dollar: string = "$";
+  const cssLines: string[] = Array.from(
+    { length: 16 },
+    (unused: unknown, i: number) =>
+      `  .c${i.toString()}::after { content: "${dollar}{price}"; background: url(${dollar}{base}/i${i.toString()}.png); }`,
+  );
+  const original: string = [
+    "<style>",
+    ...cssLines,
+    "</style>",
+    '<div class="login">',
+    "  <span>Price: $5</span>",
+    "  <script>const t = `" + dollar + "{name}`; const re = /a$/;</script>",
+    "  <p>${user} paid $$ and $</p>",
+    "</div>",
+    "",
+  ].join("\n");
+
+  it("round-trips a long multi-line string with every dollar escaped", async () => {
+    const escaped: string = original.split(dollar).join(dollar + dollar);
+    expect(escaped.split("\n").length).toBeGreaterThan(20);
+    expect(escaped).toContain(dollar + dollar + "{price}");
+
+    const result: Record<string, unknown> = await resolveFileReferences({
+      html: escaped,
+    });
+
+    expect(result.html).toBe(original);
+  });
+
+  it("leaves a lone dollar not followed by a brace or dollar unchanged", async () => {
+    const result: Record<string, unknown> = await resolveFileReferences({
+      a: "cost $5, regex a$, end $",
+    });
+    expect(result.a).toBe("cost $5, regex a$, end $");
+  });
+});
