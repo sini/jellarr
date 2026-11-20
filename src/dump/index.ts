@@ -1,3 +1,4 @@
+import { resolveApiKey } from "../lib/api-key";
 import { createJellyfinClient } from "../api/jellyfin_client";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import type {
@@ -27,9 +28,9 @@ interface PluginWithConfig {
 }
 
 export async function runDump(baseUrl: string): Promise<void> {
-  const apiKey: string | undefined = process.env.JELLARR_API_KEY;
+  const apiKey: string | undefined = resolveApiKey();
   if (!apiKey) {
-    throw new Error("JELLARR_API_KEY environment variable is required");
+    throw new Error("JELLARR_API_KEY or JELLARR_API_KEY_FILE is required");
   }
 
   const client: JellyfinClient = createJellyfinClient(baseUrl, apiKey);
