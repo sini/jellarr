@@ -534,7 +534,8 @@ plugins:
   Jellyfin always loads the newest installed copy of a plugin, so a pin below
   the installed version is reported but not applied; uninstall the plugin to
   downgrade
-- Once an upgraded plugin is active, older copies of it are uninstalled.
+- Once an upgraded plugin is active, its older copies that Jellyfin reports as
+  `Superseded` are uninstalled (copies in any other state are left alone).
   Jellyfin keeps loading a superseded copy's assemblies, whose API routes then
   clash with the new copy's, so they're removed and Jellyfin is restarted again
   to unload them

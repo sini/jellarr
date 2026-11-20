@@ -348,6 +348,62 @@ describe("calculatePluginRemovals", () => {
     ).toBeUndefined();
   });
 
+  it.each<PluginInfoSchema["Status"]>([
+    "Disabled",
+    "Malfunctioned",
+    "NotSupported",
+    "Restart",
+    "Active",
+  ])(
+    "should keep an older copy with status %s, which Jellyfin has not superseded",
+    (status: PluginInfoSchema["Status"]) => {
+      expect(
+        calculatePluginRemovals(
+          [
+            installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+            withStatus(
+              installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+              status,
+            ),
+          ],
+          catalog,
+          [{ name: "SSO Authentication" }],
+        ),
+      ).toBeUndefined();
+    },
+  );
+
+  it("should keep a superseded copy when no copy is active", () => {
+    expect(
+      calculatePluginRemovals(
+        [
+          withStatus(
+            installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+            "Superseded",
+          ),
+        ],
+        catalog,
+        [{ name: "SSO Authentication" }],
+      ),
+    ).toBeUndefined();
+  });
+
+  it("should keep a superseded copy that is newer than the active one", () => {
+    expect(
+      calculatePluginRemovals(
+        [
+          installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+          withStatus(
+            installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+            "Superseded",
+          ),
+        ],
+        catalog,
+        [{ name: "SSO Authentication" }],
+      ),
+    ).toBeUndefined();
+  });
+
   it("should skip copies already marked for deletion", () => {
     expect(
       calculatePluginRemovals(

@@ -305,9 +305,11 @@ export interface PluginRemoval {
 
 /**
  * Finds old copies of desired plugins left behind by an upgrade. Jellyfin
- * marks them superseded but still loads their assemblies, so an old copy's
- * API controllers clash with the new one's. Copies are only removed once a
- * newer copy is active, so a pending upgrade never loses the running version.
+ * marks them Superseded but still loads their assemblies, so an old copy's
+ * API controllers clash with the new one's. Only copies Jellyfin itself
+ * reports as Superseded are removed, and only once a newer copy of the same
+ * plugin is Active, so a pending upgrade never loses the running version and
+ * a disabled, malfunctioning or not-yet-restarted older copy is left alone.
  */
 export function calculatePluginRemovals(
   installed: PluginInfoSchema[],
@@ -332,10 +334,9 @@ export function calculatePluginRemovals(
       if (compareVersions(copy.Version, newestActive) === 0) continue;
       const superseded: boolean =
         copy.Status === "Superseded" || copy.Status === "Superceded";
-      const older: boolean =
-        copy.Status !== "Deleted" &&
-        compareVersions(copy.Version, newestActive) < 0;
-      if (!superseded && !older) continue;
+      if (!superseded || compareVersions(copy.Version, newestActive) > 0) {
+        continue;
+      }
       if (
         removals.some(
           (removal: PluginRemoval) =>
