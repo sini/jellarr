@@ -406,6 +406,13 @@ it.
 - **Exactly one required**: Each user must specify either `password` or
   `passwordFile` (not both)
 
+**Declared arrays are authoritative:** in every section, an array you declare
+replaces the server's array whole (shrinking, emptying and reordering all land);
+an array you omit is left alone. The one exception is
+`policy.enabledLibraries:
+[]`, which is ignored rather than removing all library
+access; omit it or list libraries instead.
+
 **Password reconciliation:** on every run, an existing user whose password
 differs from the configured one has it set (`POST /Users/Password`). Jellarr
 finds out by signing in as that user under its own device id and signing out

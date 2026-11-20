@@ -36,6 +36,55 @@ function resolveFolderId(
   );
 }
 
+/**
+ * Declared arrays of objects are authoritative as a set and an order, but the
+ * server adds fields to their elements (a TypeOption's ImageOptions, a path's
+ * NetworkPath). Carry those over from the current element with the same
+ * identity so they neither read as drift nor get wiped by the update.
+ */
+function withServerElementFields(
+  desired: LibraryOptionsSchema,
+  current: LibraryOptionsSchema,
+): LibraryOptionsSchema {
+  const carry: <T extends object>(
+    wanted: T[] | undefined,
+    existing: T[] | undefined,
+    identity: (item: T) => unknown,
+  ) => T[] | undefined = <T extends object>(
+    wanted: T[] | undefined,
+    existing: T[] | undefined,
+    identity: (item: T) => unknown,
+  ): T[] | undefined =>
+    wanted?.map((item: T): T => {
+      const match: T | undefined = existing?.find(
+        (candidate: T) => identity(candidate) === identity(item),
+      );
+      return match ? { ...match, ...item } : item;
+    });
+
+  return {
+    ...desired,
+    ...(desired.PathInfos
+      ? {
+          PathInfos: carry(
+            desired.PathInfos,
+            current.PathInfos,
+            (info: { Path?: string | null }) => info.Path,
+          ),
+        }
+      : {}),
+    ...(desired.TypeOptions
+      ? {
+          TypeOptions: carry(
+            desired.TypeOptions,
+            current.TypeOptions,
+            (option: { Type?: string | null }) => option.Type,
+          ),
+        }
+      : {}),
+  } as LibraryOptionsSchema;
+}
+
 export function calculateLibraryDiff(
   current: VirtualFolderInfoSchema[],
   desired: VirtualFolderConfig[],
@@ -114,12 +163,15 @@ export function calculateLibraryDiff(
       folder.LibraryOptions as LibraryOptionsSchema | undefined;
     if (!name || !existingId || !libraryOptions) continue;
 
-    const currentOptions: unknown = currentFolder?.LibraryOptions ?? {};
-    if (deepEqual(overlay(currentOptions, libraryOptions), currentOptions)) {
-      continue;
-    }
+    const currentOptions: LibraryOptionsSchema =
+      currentFolder?.LibraryOptions ?? ({} as LibraryOptionsSchema);
+    const wanted: LibraryOptionsSchema = withServerElementFields(
+      libraryOptions,
+      currentOptions,
+    );
+    if (deepEqual(overlay(currentOptions, wanted), currentOptions)) continue;
     logger.info(`Library options differ: ${name}`);
-    toUpdate.push({ id: existingId, name, libraryOptions });
+    toUpdate.push({ id: existingId, name, libraryOptions: wanted });
   }
 
   if (toCreate.length === 0 && toUpdate.length === 0) return undefined;

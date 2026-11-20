@@ -325,9 +325,9 @@ describe("apply/library", () => {
             PathInfos: [{ Path: "/data/movies" }],
             TypeOptions: [
               {
-                type: "Movie",
-                metadataFetchers: [],
-                imageFetchers: [],
+                Type: "Movie",
+                MetadataFetchers: [],
+                ImageFetchers: [],
               },
             ],
           },

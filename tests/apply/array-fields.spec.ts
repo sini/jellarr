@@ -283,12 +283,12 @@ describe("library arrays", () => {
     }
   });
 
-  describe("TypeOptions (objects with nested arrays; the config's own key case is sent as-is)", () => {
+  describe("TypeOptions (objects with nested arrays)", () => {
     const t: (type: string, m: string[], i: string[]) => Item = (
       type: string,
       m: string[],
       i: string[],
-    ) => ({ type, metadataFetchers: m, imageFetchers: i });
+    ) => ({ Type: type, MetadataFetchers: m, ImageFetchers: i });
     const cases: Record<string, [Item[], Item[]]> = {
       "nested fetcher shrink": [
         [t("Movie", ["a", "b"], ["x"])],
@@ -328,7 +328,17 @@ describe("library arrays", () => {
                 collectionType: "movies",
                 libraryOptions: {
                   pathInfos: [{ path: "/m" }],
-                  typeOptions: d,
+                  typeOptions: d.map((x: Item) => {
+                    const o: Record<string, unknown> = x as Record<
+                      string,
+                      unknown
+                    >;
+                    return {
+                      type: o.Type,
+                      metadataFetchers: o.MetadataFetchers,
+                      imageFetchers: o.ImageFetchers,
+                    };
+                  }),
                 },
               },
             ] as never,

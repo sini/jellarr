@@ -8,6 +8,13 @@ import type {
 } from "../types/schema/library";
 import { withoutUndefined } from "../lib/objects";
 
+type TypeOptionConfig = NonNullable<
+  VirtualFolderConfig["libraryOptions"]["typeOptions"]
+>[number];
+type TypeOptionsSchema = NonNullable<
+  LibraryOptionsSchema["TypeOptions"]
+>[number];
+
 /** The LibraryOptions field each library option is written to. */
 export const LIBRARY_OPTION_FIELDS: Record<
   LibraryOptionName,
@@ -68,7 +75,16 @@ export function mapVirtualFolderConfigToSchema(
     PathInfos: opts.pathInfos.map((pathInfo: { path: string }) => ({
       Path: pathInfo.path,
     })),
-    TypeOptions: opts.typeOptions as LibraryOptionsSchema["TypeOptions"],
+    TypeOptions: opts.typeOptions?.map(
+      (typeOption: TypeOptionConfig): TypeOptionsSchema =>
+        withoutUndefined({
+          Type: typeOption.type,
+          MetadataFetchers: typeOption.metadataFetchers,
+          MetadataFetcherOrder: typeOption.metadataFetcherOrder,
+          ImageFetchers: typeOption.imageFetchers,
+          ImageFetcherOrder: typeOption.imageFetcherOrder,
+        }),
+    ),
     AutomaticallyAddToCollection: opts.automaticallyAddToCollection,
     EnableChapterImageExtraction: opts.enableChapterImageExtraction,
     ExtractChapterImagesDuringLibraryScan:
