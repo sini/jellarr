@@ -210,20 +210,32 @@ describe("resolveFileReferences", () => {
 });
 
 describe("env substitution", () => {
-  it("expands ${VAR} inside strings, with $$ as a literal dollar", async () => {
+  it("expands ${VAR} inside strings, with $${ as a literal ${", async () => {
     process.env.JF_TEST_HOST = "example.org";
     const result: Record<string, unknown> = await resolveFileReferences({
       url: "https://${JF_TEST_HOST}/x",
       price: "$$5",
+      lit: "$${JF_TEST_HOST}",
+      pw: "pa$$word",
       list: ["${JF_TEST_HOST}"],
       n: 3,
     });
     expect(result).toEqual({
       url: "https://example.org/x",
-      price: "$5",
+      price: "$$5",
+      lit: "${JF_TEST_HOST}",
+      pw: "pa$$word",
       list: ["example.org"],
       n: 3,
     });
+  });
+
+  it("expands ${VAR} in a _file path", async () => {
+    process.env.JF_TEST_DIR = "/run/secrets";
+    mockReadFile.mockResolvedValueOnce("v\n");
+    const result: unknown = await resolveValue({ _file: "${JF_TEST_DIR}/x" });
+    expect(mockReadFile).toHaveBeenCalledWith("/run/secrets/x", "utf8");
+    expect(result).toBe("v");
   });
 
   it("throws on an undefined variable", async () => {
@@ -260,10 +272,11 @@ describe("dollar escaping in rendered markup", () => {
     "",
   ].join("\n");
 
-  it("round-trips a long multi-line string with every dollar escaped", async () => {
-    const escaped: string = original.split(dollar).join(dollar + dollar);
+  it("round-trips a long multi-line string with every ${ escaped", async () => {
+    const escaped: string = original.split("${").join("$${");
     expect(escaped.split("\n").length).toBeGreaterThan(20);
     expect(escaped).toContain(dollar + dollar + "{price}");
+    expect(escaped).toContain("paid $$ and $");
 
     const result: Record<string, unknown> = await resolveFileReferences({
       html: escaped,

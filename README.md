@@ -579,7 +579,9 @@ plugins:
 - `{ _file: "<path>" }` is replaced by the file's contents with surrounding
   whitespace trimmed
 - `${VAR}` is replaced by the environment variable, including inside a longer
-  string; `$$` is a literal `$`
+  string, and in `_file` paths; `$${` is a literal `${`. Every other `$`
+  (including `$$`) is left as written, so a password such as `pa$$word` is
+  unchanged
 - A missing file or an undefined variable fails the run
 - Substituted values are always strings, so `${VAR}` cannot fill a numeric or
   boolean field

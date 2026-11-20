@@ -6,8 +6,8 @@ function substituteEnvVars(
   raw: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  return raw.replace(/\$\$|\$\{(\w+)\}/g, (match: string, name?: string) => {
-    if (match === "$$") return "$";
+  return raw.replace(/\$\$\{|\$\{(\w+)\}/g, (match: string, name?: string) => {
+    if (match === "$${") return "${";
     const varName: string = name as string;
     const value: string | undefined = env[varName];
     if (value === undefined) {
@@ -29,7 +29,8 @@ export async function resolveValue(
   if (parsed.success) {
     const fileRef: FileRef = parsed.data;
     try {
-      const contents: string = await fs.readFile(fileRef._file, "utf8");
+      const filePath: string = substituteEnvVars(fileRef._file);
+      const contents: string = await fs.readFile(filePath, "utf8");
       const fileValue: string = contents.trim();
       secrets?.add(fileValue);
       return fileValue;
