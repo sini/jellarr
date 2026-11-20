@@ -237,8 +237,8 @@ library:
                   - path: "/data/tv"
 ```
 
-`ignoreChanges` lists library options that are only applied when the library
-is created; after that, Jellarr leaves them as the server has them. This suits
+`ignoreChanges` lists library options that are only applied when the library is
+created; after that, Jellarr leaves them as the server has them. This suits
 options something else manages, such as the paths a plugin like Shokofin
 rewrites to point at its virtual file system:
 
@@ -436,11 +436,11 @@ file and, for Nix users, out of the world-readable Nix store.
 
 ```yaml
 plugins:
-  - name: "SSO Authentication"
-    configuration:
-      OidConfigs:
-        kanidm:
-          OidSecret: ${SSO_KANIDM_SECRET} # expanded from the environment at load
+    - name: "SSO Authentication"
+      configuration:
+          OidConfigs:
+              kanidm:
+                  OidSecret: ${SSO_KANIDM_SECRET} # expanded from the environment at load
 ```
 
 Provide the variables via the service's environment. With the NixOS module and

@@ -130,8 +130,6 @@ export const VirtualFolderConfigType: z.ZodObject<{
         enableRealtimeMonitor: z.boolean().optional(),
       })
       .strict(),
-    // Library options left as the server has them once the library exists;
-    // they are only applied when the library is created.
     ignoreChanges: z.array(z.enum(LIBRARY_OPTION_NAMES)).optional(),
   })
   .strict();
