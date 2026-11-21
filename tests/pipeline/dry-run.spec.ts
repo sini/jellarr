@@ -13,6 +13,7 @@ const READS: Record<string, unknown> = {
   getEncodingConfiguration: { EncoderPreset: "auto" },
   getVirtualFolders: [],
   getBrandingConfiguration: {},
+  getSplashscreen: new Uint8Array([1]),
   getNetworkingConfiguration: {},
   getUsers: [
     {
@@ -49,6 +50,7 @@ const WRITES: string[] = [
   "addVirtualFolder",
   "updateLibraryOptions",
   "updateBrandingConfiguration",
+  "uploadSplashscreen",
   "updateNetworkingConfiguration",
   "createUser",
   "updateUserPolicy",
@@ -122,6 +124,8 @@ describe("pipeline/dry run", () => {
 
   it("whenEveryModuleHasChanges_thenNoWriteOrSignInHappensAndSecretsAreMasked", async () => {
     // Arrange
+    const splashFile: string = path.join(dir, "splash.png");
+    await fs.writeFile(splashFile, Buffer.from([9, 9]));
     const secretFile: string = path.join(dir, "cert-pw");
     await fs.writeFile(secretFile, "file-s3cret\n");
     await writeConfig([
@@ -133,7 +137,7 @@ describe("pipeline/dry run", () => {
       "    - name: Movies",
       "      collectionType: movies",
       "      libraryOptions: { pathInfos: [{ path: /m }] }",
-      "branding: { customCss: 'a{}' }",
+      `branding: { customCss: 'a{}', splashscreenFile: ${splashFile} }`,
       "networking:",
       `  certificatePassword: { _file: ${secretFile} }`,
       '  baseUrl: "/${JELLARR_DRY_TOKEN}"',
@@ -166,6 +170,8 @@ describe("pipeline/dry run", () => {
       "encoding.EncoderPreset",
       "library Movies: would be created",
       "branding.CustomCss",
+      "branding splashscreen: ",
+      "splash.png would be uploaded",
       "networking.CertificatePassword: *** → ***",
       "networking.BaseUrl: *** → ***",
       "user carol: would be created",

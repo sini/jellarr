@@ -17,6 +17,8 @@ and this project adheres to
 - `system.metadataOptions`, `system.contentTypes`, `system.pathSubstitutions`
   and `system.castReceiverApplications`: declared lists replace the server's,
   and fields the server adds to an element are tolerated
+- `branding.splashscreenFile` uploads a custom splashscreen, only when its bytes
+  differ from what the server serves.
 
 ### Changed
 

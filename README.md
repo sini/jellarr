@@ -439,6 +439,19 @@ branding:
     splashscreenEnabled: false
 ```
 
+`splashscreenFile` is a plain path to an image (it does not take `{ _file }`
+references). Jellarr uploads it with `POST /Branding/Splashscreen`, but only
+when its bytes differ from what `GET /Branding/Splashscreen` serves: the server
+returns the stored custom image unchanged, so a byte comparison is the
+idempotence signal. A dry run reports the planned upload. Removing a custom
+splashscreen is not supported, because the API gives no way to tell whether one
+is set and a declared removal would be pending forever.
+
+```yaml
+branding:
+    splashscreenFile: /etc/jellarr/splash.png
+```
+
 ### User Management
 
 ```yaml

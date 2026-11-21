@@ -431,6 +431,32 @@ export function createJellyfinClient(
       }
     },
 
+    async getSplashscreen(): Promise<Uint8Array> {
+      const res: ApiResponse = await client.GET("/Branding/Splashscreen", {
+        parseAs: "arrayBuffer",
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /Branding/Splashscreen failed: ${res.response.status.toString()}`,
+        );
+      }
+      return new Uint8Array(res.data as ArrayBuffer);
+    },
+
+    async uploadSplashscreen(image: Uint8Array): Promise<void> {
+      // NOTE: the endpoint takes the image base64-encoded as a plain text body; the server sniffs the real type.
+      const res: ApiResponse = await client.POST("/Branding/Splashscreen", {
+        body: Buffer.from(image).toString("base64"),
+        bodySerializer: (body: unknown): string => body as string,
+        headers: { "content-type": "image/png" },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Branding/Splashscreen failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async getUsers(): Promise<UserDtoSchema[]> {
       const res: GetUsersResponse = await client.GET("/Users");
 

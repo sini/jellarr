@@ -14,6 +14,10 @@ import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
 } from "../apply/branding-options";
+import {
+  calculateSplashscreenUpload,
+  applySplashscreen,
+} from "../apply/splashscreen";
 import { calculateNetworkingDiff, applyNetworking } from "../apply/networking";
 import {
   calculateNewUsersDiff,
@@ -297,6 +301,25 @@ export async function runPipeline(
       console.log("✓ updated branding config");
     } else {
       console.log("✓ branding config already up to date");
+    }
+
+    if (cfg.branding.splashscreenFile) {
+      const splashscreen: Uint8Array | undefined =
+        await calculateSplashscreenUpload(
+          jellyfinClient,
+          cfg.branding.splashscreenFile,
+        );
+      if (splashscreen && plan) {
+        plan.action(
+          `branding splashscreen: ${cfg.branding.splashscreenFile} would be uploaded`,
+        );
+      } else if (splashscreen) {
+        console.log("→ uploading splashscreen");
+        await applySplashscreen(jellyfinClient, splashscreen);
+        console.log("✓ uploaded splashscreen");
+      } else {
+        console.log("✓ splashscreen already up to date");
+      }
     }
   }
 
