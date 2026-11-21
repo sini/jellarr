@@ -51,7 +51,7 @@ import type {
   PasswordCheck,
   GetStartupUserResponse,
 } from "./jellyfin.types";
-import { makeClient } from "./client";
+import { makeClient, type RetryOptions } from "./client";
 import { logger } from "../lib/logger";
 import { JellyfinHttpError } from "./errors";
 import type { paths } from "../../generated/schema";
@@ -77,15 +77,23 @@ import type {
 export function createJellyfinClient(
   baseUrl: string,
   apiKey?: string,
+  retry?: RetryOptions,
 ): JellyfinClient {
   let token: string | undefined = apiKey;
   const client: Client<paths> = makeClient(
     baseUrl,
     (): string | undefined => token,
+    "jellarr",
+    retry,
   );
 
   // NOTE: /Startup/* is anonymous on a pristine server; a stale token there could only get it rejected.
-  const startup: Client<paths> = makeClient(baseUrl);
+  const startup: Client<paths> = makeClient(
+    baseUrl,
+    undefined,
+    "jellarr",
+    retry,
+  );
 
   return {
     setAccessToken(accessToken: string): void {
@@ -97,7 +105,12 @@ export function createJellyfinClient(
       password: string,
     ): Promise<PasswordCheck> {
       const probeId: string = "jellarr-password-check";
-      const probe: Client<paths> = makeClient(baseUrl, undefined, probeId);
+      const probe: Client<paths> = makeClient(
+        baseUrl,
+        undefined,
+        probeId,
+        retry,
+      );
       const res: PostAuthenticateByNameResponse = await probe.POST(
         "/Users/AuthenticateByName",
         {

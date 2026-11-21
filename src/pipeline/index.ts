@@ -159,15 +159,19 @@ export async function runPipeline(
     );
   }
 
-  const liveClient: JellyfinClient = createJellyfinClient(cfg.base_url, apiKey);
+  const waitTimeoutMs: number = resolveWaitTimeoutMs(
+    options.waitTimeoutSeconds,
+  );
+  const liveClient: JellyfinClient = createJellyfinClient(
+    cfg.base_url,
+    apiKey,
+    { timeoutMs: waitTimeoutMs },
+  );
   const jellyfinClient: JellyfinClient = dryRun
     ? guardReadOnly(liveClient)
     : liveClient;
   if (dryRun) console.log("DRY RUN: nothing will be changed");
 
-  const waitTimeoutMs: number = resolveWaitTimeoutMs(
-    options.waitTimeoutSeconds,
-  );
   console.log("→ waiting for Jellyfin to become healthy");
   await waitForHealth(cfg.base_url, { timeoutMs: waitTimeoutMs });
   console.log("✓ Jellyfin is healthy");

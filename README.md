@@ -807,6 +807,11 @@ server. The wait defaults to 300 seconds and fails with a clear error when it
 expires. Set it with `--waitTimeout <seconds>` or `JELLARR_WAIT_TIMEOUT`; the
 flag wins.
 
+The same timeout bounds how long any request that Jellyfin answers with 503 is
+retried. A major Jellyfin upgrade can run a long database migration at first
+start, during which `/health` is 200 but every authenticated request is 503, so
+set the timeout to cover it.
+
 ```bash
 JELLARR_WAIT_TIMEOUT=600 jellarr --configFile config.yml
 ```

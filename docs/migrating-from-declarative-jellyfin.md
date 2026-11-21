@@ -454,6 +454,12 @@ you use will remove it from the server. Run the dry run first.
    starting. Before 0.3.1 that wait could end too early and the first run failed
    with a 500 from `/System/Info/Public`; if you see that on 0.3.0, run
    `systemctl start jellarr` once more.
+
+   A major Jellyfin upgrade can run a long database migration at first start,
+   during which `/health` answers 200 but every authenticated request
+   answers 503. jellarr retries those until the wait timeout, so set
+   `waitTimeout` (`JELLARR_WAIT_TIMEOUT`) to cover the migration.
+
 6. **Re-run the dry run** with the same config. It should exit 0.
 
 ## Rolling back
