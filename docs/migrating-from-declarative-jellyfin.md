@@ -370,6 +370,15 @@ changes even when your config matches the old one. These are expected:
   duplicates, and the dry run lists each one. Unlinking drops that location's
   items from the library on the next scan, so read those lines before applying.
 
+  If the same media is meant to stay available through another library or path,
+  make sure that one is fully populated before the scan runs. Items that leave
+  the library and come back later can keep their item ids, because Jellyfin
+  derives ids from paths, but their watched state and playback progress don't
+  come back with them. Back up `jellyfin.db` first. If watch state is lost,
+  restore it from the backup through `POST /UserItems/{itemId}/UserData`
+  (`Played`, `PlayCount`, `PlaybackPositionTicks`, `LastPlayedDate`); stable ids
+  make the backup rows a direct match.
+
 ## What the first run does to your server
 
 Checked against `src/` on this branch:
