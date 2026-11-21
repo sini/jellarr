@@ -344,9 +344,6 @@ A few jellarr behaviours are worth knowing before you rely on them:
 - A user whose `accessSchedules` or other policy forbids signing in can't have
   their password checked, so jellarr leaves it unchanged with a warning until a
   sign-in is allowed.
-- A change to the jellarr package alone doesn't re-run it on
-  `nixos-rebuild switch`; it runs at the next boot or on `schedule`. Run
-  `systemctl start jellarr` to apply straight away.
 
 ## Quirks the dry run shows
 

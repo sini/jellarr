@@ -58,14 +58,25 @@ in {
 
         # A target orders itself after every unit it wants, so a service wanted by
         # multi-user.target would hold up boot and switch until jellarr exits. This
-        # timer starts it instead: once when it activates (boot, or a restart on
-        # config change) without blocking either.
+        # timer starts it instead: once when it activates (boot, or a restart on a
+        # config or package change) without blocking either. The trigger restarts
+        # jellarr.service rather than starting it: a start is a no-op while an older
+        # run is still going, which would leave that run on the old package.
+        services.jellarr-apply = {
+          description = "Restart jellarr so it applies the current config";
+          restartIfChanged = false;
+          serviceConfig = {
+            ExecStart = "${config.systemd.package}/bin/systemctl restart --no-block jellarr.service";
+            Type = "oneshot";
+          };
+        };
+
         timers.jellarr-apply = {
-          description = "Run jellarr at boot and when its config changes";
-          restartTriggers = [configFile];
+          description = "Run jellarr at boot and when its config or package changes";
+          restartTriggers = [configFile cfg.package];
           timerConfig = {
             OnActiveSec = 0;
-            Unit = "jellarr.service";
+            Unit = "jellarr-apply.service";
           };
           wantedBy = ["timers.target"];
         };

@@ -964,9 +964,11 @@ services.jellarr.config.networking.certificatePassword = {
 CLI itself waits for Jellyfin to be healthy. It runs from two timers:
 `jellarr.timer` (`services.jellarr.schedule`) and `jellarr-apply.timer`, which
 fires when it activates, so at boot and after a `nixos-rebuild switch` that
-changed the rendered config. Neither boot nor switch waits for the run to
-finish. The unit does not set `RemainAfterExit`, which would stop the timers
-from running it again.
+changed the rendered config or the jellarr package. The trigger restarts
+`jellarr.service`, so a run still going from before the switch is replaced by
+one of the new package. Neither boot nor switch waits for the run to finish. The
+unit does not set `RemainAfterExit`, which would stop the timers from running it
+again.
 
 ### Library `ignoreChanges` (NixOS)
 

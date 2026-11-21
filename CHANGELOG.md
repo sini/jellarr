@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-11-21
+
+### Fixed
+
+- The NixOS module applies after a switch that changes only the jellarr package,
+  not just the config. The switch-time trigger now restarts `jellarr.service`
+  instead of starting it, so a run that was still going from before the switch
+  (on the old package) is replaced by a run of the new one.
+
 ## [0.3.1] - 2026-11-21
 
 ### Fixed
@@ -419,6 +428,7 @@ branding:
 - **Library Configuration**: Content scanning intervals, metadata providers,
   subtitle preferences
 
+[0.3.2]: https://github.com/sini/jellarr/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/sini/jellarr/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/sini/jellarr/releases/tag/v0.3.0
 [0.1.0]: https://github.com/venkyr77/jellarr/compare/v0.0.3...v0.1.0
