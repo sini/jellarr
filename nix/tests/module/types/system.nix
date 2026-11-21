@@ -504,4 +504,102 @@ in [
     enableFolderView = false;
     preferredMetadataLanguage = "en";
   })
+  (assertEq "object arrays pass through, null fields dropped" (mkSystemConfig {
+      metadataOptions = [
+        {
+          itemType = "Movie";
+          disabledMetadataSavers = ["Nfo"];
+          localMetadataReaderOrder = null;
+          disabledMetadataFetchers = [];
+          metadataFetcherOrder = null;
+          disabledImageFetchers = null;
+          imageFetcherOrder = ["TheMovieDb"];
+        }
+      ];
+      contentTypes = [
+        {
+          name = "/media/movies";
+          value = "movies";
+        }
+      ];
+      pathSubstitutions = [
+        {
+          from = "/data";
+          to = "/mnt/data";
+        }
+      ];
+      castReceiverApplications = [
+        {
+          id = "ABC123";
+          name = "Stable";
+        }
+      ];
+    }) {
+      metadataOptions = [
+        {
+          itemType = "Movie";
+          disabledMetadataSavers = ["Nfo"];
+          disabledMetadataFetchers = [];
+          imageFetcherOrder = ["TheMovieDb"];
+        }
+      ];
+      contentTypes = [
+        {
+          name = "/media/movies";
+          value = "movies";
+        }
+      ];
+      pathSubstitutions = [
+        {
+          from = "/data";
+          to = "/mnt/data";
+        }
+      ];
+      castReceiverApplications = [
+        {
+          id = "ABC123";
+          name = "Stable";
+        }
+      ];
+    })
+
+  (assertEq "empty object arrays are kept" (mkSystemConfig {
+      metadataOptions = [];
+      contentTypes = [];
+      pathSubstitutions = [];
+      castReceiverApplications = [];
+    }) {
+      metadataOptions = [];
+      contentTypes = [];
+      pathSubstitutions = [];
+      castReceiverApplications = [];
+    })
+
+  (assertThrows "reject metadata options without item type" (mkSystemConfig {
+    metadataOptions = [{itemType = "";}];
+  }))
+  (assertThrows "reject empty content type path" (mkSystemConfig {
+    contentTypes = [
+      {
+        name = "";
+        value = "movies";
+      }
+    ];
+  }))
+  (assertThrows "reject empty path substitution source" (mkSystemConfig {
+    pathSubstitutions = [
+      {
+        from = "";
+        to = "/x";
+      }
+    ];
+  }))
+  (assertThrows "reject empty cast receiver id" (mkSystemConfig {
+    castReceiverApplications = [
+      {
+        id = "";
+        name = "n";
+      }
+    ];
+  }))
 ]

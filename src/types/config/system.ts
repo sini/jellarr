@@ -12,6 +12,66 @@ export const PluginRepositoryConfigType: z.ZodObject<{
 
 export type PluginRepositoryConfig = z.infer<typeof PluginRepositoryConfigType>;
 
+export const MetadataOptionsConfigType: z.ZodObject<{
+  itemType: z.ZodString;
+  disabledMetadataSavers: z.ZodOptional<z.ZodArray<z.ZodString>>;
+  localMetadataReaderOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+  disabledMetadataFetchers: z.ZodOptional<z.ZodArray<z.ZodString>>;
+  metadataFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+  disabledImageFetchers: z.ZodOptional<z.ZodArray<z.ZodString>>;
+  imageFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+}> = z
+  .object({
+    itemType: z.string().min(1, "Metadata options item type cannot be empty"),
+    disabledMetadataSavers: z.array(z.string()).optional(),
+    localMetadataReaderOrder: z.array(z.string()).optional(),
+    disabledMetadataFetchers: z.array(z.string()).optional(),
+    metadataFetcherOrder: z.array(z.string()).optional(),
+    disabledImageFetchers: z.array(z.string()).optional(),
+    imageFetcherOrder: z.array(z.string()).optional(),
+  })
+  .strict();
+
+export type MetadataOptionsConfig = z.infer<typeof MetadataOptionsConfigType>;
+
+export const ContentTypeConfigType: z.ZodObject<{
+  name: z.ZodString;
+  value: z.ZodString;
+}> = z
+  .object({
+    name: z.string().min(1, "Content type path cannot be empty"),
+    value: z.string().min(1, "Content type cannot be empty"),
+  })
+  .strict();
+
+export type ContentTypeConfig = z.infer<typeof ContentTypeConfigType>;
+
+export const PathSubstitutionConfigType: z.ZodObject<{
+  from: z.ZodString;
+  to: z.ZodString;
+}> = z
+  .object({
+    from: z.string().min(1, "Path substitution source cannot be empty"),
+    to: z.string(),
+  })
+  .strict();
+
+export type PathSubstitutionConfig = z.infer<typeof PathSubstitutionConfigType>;
+
+export const CastReceiverApplicationConfigType: z.ZodObject<{
+  id: z.ZodString;
+  name: z.ZodString;
+}> = z
+  .object({
+    id: z.string().min(1, "Cast receiver application id cannot be empty"),
+    name: z.string().min(1, "Cast receiver application name cannot be empty"),
+  })
+  .strict();
+
+export type CastReceiverApplicationConfig = z.infer<
+  typeof CastReceiverApplicationConfigType
+>;
+
 export const TrickplayOptionsConfigType: z.ZodObject<{
   enableHwAcceleration: z.ZodOptional<z.ZodBoolean>;
   enableHwEncoding: z.ZodOptional<z.ZodBoolean>;
@@ -65,6 +125,14 @@ export const SystemConfigType: z.ZodObject<{
     z.ZodArray<typeof PluginRepositoryConfigType>
   >;
   trickplayOptions: z.ZodOptional<typeof TrickplayOptionsConfigType>;
+  metadataOptions: z.ZodOptional<z.ZodArray<typeof MetadataOptionsConfigType>>;
+  contentTypes: z.ZodOptional<z.ZodArray<typeof ContentTypeConfigType>>;
+  pathSubstitutions: z.ZodOptional<
+    z.ZodArray<typeof PathSubstitutionConfigType>
+  >;
+  castReceiverApplications: z.ZodOptional<
+    z.ZodArray<typeof CastReceiverApplicationConfigType>
+  >;
   imageSavingConvention: z.ZodOptional<
     z.ZodEnum<{
       Legacy: "Legacy";
@@ -134,6 +202,12 @@ export const SystemConfigType: z.ZodObject<{
     enableMetrics: z.boolean().optional(),
     pluginRepositories: z.array(PluginRepositoryConfigType).optional(),
     trickplayOptions: TrickplayOptionsConfigType.optional(),
+    metadataOptions: z.array(MetadataOptionsConfigType).optional(),
+    contentTypes: z.array(ContentTypeConfigType).optional(),
+    pathSubstitutions: z.array(PathSubstitutionConfigType).optional(),
+    castReceiverApplications: z
+      .array(CastReceiverApplicationConfigType)
+      .optional(),
     imageSavingConvention: z.enum(["Legacy", "Compatible"]).optional(),
     chapterImageResolution: z
       .enum([

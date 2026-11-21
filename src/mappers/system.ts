@@ -2,11 +2,19 @@ import {
   type SystemConfig,
   type TrickplayOptionsConfig,
   type PluginRepositoryConfig,
+  type MetadataOptionsConfig,
+  type ContentTypeConfig,
+  type PathSubstitutionConfig,
+  type CastReceiverApplicationConfig,
 } from "../types/config/system";
 import {
   type ServerConfigurationSchema,
   type TrickplayOptionsSchema,
   type PluginRepositorySchema,
+  type MetadataOptionsSchema,
+  type ContentTypeSchema,
+  type PathSubstitutionSchema,
+  type CastReceiverApplicationSchema,
 } from "../types/schema/system";
 import { withoutUndefined } from "../lib/objects";
 
@@ -18,6 +26,53 @@ export function toPluginRepositorySchemas(
     Url: r.url,
     Enabled: r.enabled,
   }));
+}
+
+export function toMetadataOptionsSchemas(
+  options: MetadataOptionsConfig[],
+): MetadataOptionsSchema[] {
+  return options.map((o: MetadataOptionsConfig): MetadataOptionsSchema =>
+    withoutUndefined({
+      ItemType: o.itemType,
+      DisabledMetadataSavers: o.disabledMetadataSavers,
+      LocalMetadataReaderOrder: o.localMetadataReaderOrder,
+      DisabledMetadataFetchers: o.disabledMetadataFetchers,
+      MetadataFetcherOrder: o.metadataFetcherOrder,
+      DisabledImageFetchers: o.disabledImageFetchers,
+      ImageFetcherOrder: o.imageFetcherOrder,
+    }),
+  );
+}
+
+export function toContentTypeSchemas(
+  types: ContentTypeConfig[],
+): ContentTypeSchema[] {
+  return types.map((t: ContentTypeConfig): ContentTypeSchema => ({
+    Name: t.name,
+    Value: t.value,
+  }));
+}
+
+export function toPathSubstitutionSchemas(
+  substitutions: PathSubstitutionConfig[],
+): PathSubstitutionSchema[] {
+  return substitutions.map(
+    (s: PathSubstitutionConfig): PathSubstitutionSchema => ({
+      From: s.from,
+      To: s.to,
+    }),
+  );
+}
+
+export function toCastReceiverApplicationSchemas(
+  applications: CastReceiverApplicationConfig[],
+): CastReceiverApplicationSchema[] {
+  return applications.map(
+    (a: CastReceiverApplicationConfig): CastReceiverApplicationSchema => ({
+      Id: a.id,
+      Name: a.name,
+    }),
+  );
 }
 
 export function toTrickplayOptionsSchema(
@@ -52,6 +107,22 @@ export function mapSystemConfigurationConfigToSchema(
     TrickplayOptions:
       desired.trickplayOptions !== undefined
         ? toTrickplayOptionsSchema(desired.trickplayOptions)
+        : undefined,
+    MetadataOptions:
+      desired.metadataOptions !== undefined
+        ? toMetadataOptionsSchemas(desired.metadataOptions)
+        : undefined,
+    ContentTypes:
+      desired.contentTypes !== undefined
+        ? toContentTypeSchemas(desired.contentTypes)
+        : undefined,
+    PathSubstitutions:
+      desired.pathSubstitutions !== undefined
+        ? toPathSubstitutionSchemas(desired.pathSubstitutions)
+        : undefined,
+    CastReceiverApplications:
+      desired.castReceiverApplications !== undefined
+        ? toCastReceiverApplicationSchemas(desired.castReceiverApplications)
         : undefined,
     ImageSavingConvention: desired.imageSavingConvention,
     ChapterImageResolution: desired.chapterImageResolution,

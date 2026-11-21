@@ -97,6 +97,16 @@
         };
       }).config.services.jellarr.config.users
       true)).success;
+  systemAccepted = system:
+    (builtins.tryEval (builtins.deepSeq
+      (eval {
+        services.jellarr.config = {
+          version = 1;
+          base_url = "http://x";
+          inherit system;
+        };
+      }).config.services.jellarr.config.system
+      true)).success;
   failing = e: builtins.filter (a: !a.assertion && nixpkgs.lib.hasInfix "jellarr" a.message) e.config.assertions != [];
 in
   assert nixpkgs.lib.elem "jellyfin.service" svc.after;
@@ -149,6 +159,38 @@ in
     ];
   });
   assert !(policyAccepted {notAField = true;});
+  assert systemAccepted {
+    metadataOptions = [{itemType = "Movie";}];
+    contentTypes = [
+      {
+        name = "/m";
+        value = "movies";
+      }
+    ];
+    pathSubstitutions = [
+      {
+        from = "/a";
+        to = "/b";
+      }
+    ];
+    castReceiverApplications = [
+      {
+        id = "A";
+        name = "B";
+      }
+    ];
+  };
+  assert !(systemAccepted {metadataOptions = [{disabledMetadataSavers = ["x"];}];});
+  assert !(systemAccepted {contentTypes = [{name = "/m";}];});
+  assert !(systemAccepted {
+    pathSubstitutions = [
+      {
+        from = "/a";
+        to = "/b";
+        extra = 1;
+      }
+    ];
+  });
   assert renamed.config.services.jellarr.jellyfinService == "jf.service";
     pkgs.runCommand "jellarr-module-options" {} ''
       grep -F '"certificatePassword":{"_file":"/run/secrets/cert"}' ${rendered}

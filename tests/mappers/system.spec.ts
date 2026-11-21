@@ -826,4 +826,43 @@ describe("mappers/system", () => {
       });
     });
   });
+
+  describe("arrays of objects", () => {
+    it("maps metadataOptions, contentTypes, pathSubstitutions and castReceiverApplications", () => {
+      const config: SystemConfig = {
+        metadataOptions: [
+          {
+            itemType: "Movie",
+            disabledMetadataSavers: ["Nfo"],
+            imageFetcherOrder: ["TheMovieDb"],
+          },
+        ],
+        contentTypes: [{ name: "/media/movies", value: "movies" }],
+        pathSubstitutions: [{ from: "/data", to: "/mnt/data" }],
+        castReceiverApplications: [{ id: "ABC123", name: "Stable" }],
+      };
+
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      expect(result).toEqual({
+        MetadataOptions: [
+          {
+            ItemType: "Movie",
+            DisabledMetadataSavers: ["Nfo"],
+            ImageFetcherOrder: ["TheMovieDb"],
+          },
+        ],
+        ContentTypes: [{ Name: "/media/movies", Value: "movies" }],
+        PathSubstitutions: [{ From: "/data", To: "/mnt/data" }],
+        CastReceiverApplications: [{ Id: "ABC123", Name: "Stable" }],
+      });
+    });
+
+    it("maps an empty declared array to an empty array, not an omission", () => {
+      expect(
+        mapSystemConfigurationConfigToSchema({ pathSubstitutions: [] }),
+      ).toEqual({ PathSubstitutions: [] });
+    });
+  });
 });

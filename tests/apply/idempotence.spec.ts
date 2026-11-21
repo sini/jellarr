@@ -50,6 +50,57 @@ describe("a second run with an unchanged config changes nothing", () => {
     expect(second).toBeUndefined();
   });
 
+  it("system: arrays of objects, against a server that adds fields to elements", () => {
+    const desired: never = {
+      metadataOptions: [
+        { itemType: "Movie", imageFetcherOrder: ["TheMovieDb"] },
+        { itemType: "Series" },
+      ],
+      contentTypes: [{ name: "/m", value: "movies" }],
+      pathSubstitutions: [{ from: "/a", to: "/b" }],
+      castReceiverApplications: [{ id: "A", name: "Stable" }],
+    } as never;
+    const server: object = {
+      MetadataOptions: [
+        {
+          ItemType: "Movie",
+          DisabledMetadataSavers: ["Nfo"],
+          ImageFetcherOrder: ["Old"],
+        },
+        { ItemType: "Gone" },
+      ],
+      ContentTypes: [{ Name: "/m", Value: "movies", Extra: 1 }],
+      PathSubstitutions: [{ From: "/a", To: "/old" }],
+      CastReceiverApplications: [{ Id: "Z", Name: "Old" }],
+    };
+    const { first, second }: Pair = twice(
+      server,
+      (s: never): object | undefined => calculateSystemDiff(s, desired),
+    );
+    expect(first).toEqual({
+      MetadataOptions: [
+        {
+          ItemType: "Movie",
+          DisabledMetadataSavers: ["Nfo"],
+          ImageFetcherOrder: ["TheMovieDb"],
+        },
+        { ItemType: "Series" },
+      ],
+      ContentTypes: [{ Name: "/m", Value: "movies", Extra: 1 }],
+      PathSubstitutions: [{ From: "/a", To: "/b" }],
+      CastReceiverApplications: [{ Id: "A", Name: "Stable" }],
+    });
+    expect(second).toBeUndefined();
+
+    const empty: Pair = twice(
+      { PathSubstitutions: [{ From: "/a", To: "/b" }] },
+      (s: never): object | undefined =>
+        calculateSystemDiff(s, { pathSubstitutions: [] } as never),
+    );
+    expect(empty.first).toEqual({ PathSubstitutions: [] });
+    expect(empty.second).toBeUndefined();
+  });
+
   it("encoding", () => {
     const { first, second }: Pair = twice(
       { EncoderPreset: "auto", Other: 1 } as never,

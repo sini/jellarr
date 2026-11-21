@@ -21,6 +21,84 @@
     };
   };
 
+  metadataOptionsConfigType = types.submodule {
+    options = {
+      itemType = mkOption {
+        type = secret.str;
+        description = "Item type these options apply to (for example Movie or Series).";
+      };
+      disabledMetadataSavers = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Metadata savers that are disabled.";
+      };
+      localMetadataReaderOrder = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Order in which local metadata readers are tried.";
+      };
+      disabledMetadataFetchers = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Metadata fetchers that are disabled.";
+      };
+      metadataFetcherOrder = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Order in which metadata fetchers are tried.";
+      };
+      disabledImageFetchers = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Image fetchers that are disabled.";
+      };
+      imageFetcherOrder = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Order in which image fetchers are tried.";
+      };
+    };
+  };
+
+  contentTypeConfigType = types.submodule {
+    options = {
+      name = mkOption {
+        type = secret.str;
+        description = "Path the content type applies to.";
+      };
+      value = mkOption {
+        type = secret.str;
+        description = "Content type of that path (for example movies or tvshows).";
+      };
+    };
+  };
+
+  pathSubstitutionConfigType = types.submodule {
+    options = {
+      from = mkOption {
+        type = secret.str;
+        description = "Path prefix to replace.";
+      };
+      to = mkOption {
+        type = secret.str;
+        description = "Path prefix to replace it with.";
+      };
+    };
+  };
+
+  castReceiverApplicationConfigType = types.submodule {
+    options = {
+      id = mkOption {
+        type = secret.str;
+        description = "Cast receiver application id.";
+      };
+      name = mkOption {
+        type = secret.str;
+        description = "Cast receiver application name.";
+      };
+    };
+  };
+
   trickplayOptionsConfigType = types.submodule {
     options = {
       enableHwAcceleration = mkOption {
@@ -102,6 +180,26 @@
         type = nullOr (types.listOf pluginRepositoryConfigType);
         default = null;
         description = "List of plugin repositories.";
+      };
+      metadataOptions = mkOption {
+        type = nullOr (types.listOf metadataOptionsConfigType);
+        default = null;
+        description = "Per item type metadata and image fetcher settings. The declared list replaces the server's.";
+      };
+      contentTypes = mkOption {
+        type = nullOr (types.listOf contentTypeConfigType);
+        default = null;
+        description = "Content type per path. The declared list replaces the server's.";
+      };
+      pathSubstitutions = mkOption {
+        type = nullOr (types.listOf pathSubstitutionConfigType);
+        default = null;
+        description = "Path substitutions. The declared list replaces the server's.";
+      };
+      castReceiverApplications = mkOption {
+        type = nullOr (types.listOf castReceiverApplicationConfigType);
+        default = null;
+        description = "Cast receiver applications. The declared list replaces the server's.";
       };
       trickplayOptions = mkOption {
         type = nullOr trickplayOptionsConfigType;
@@ -386,6 +484,28 @@
           inherit (repo) name url enabled;
         })
       c.pluginRepositories;
+    }
+    // optionalAttrs (c ? metadataOptions && c.metadataOptions != null) {
+      metadataOptions = map (o:
+        assert o.itemType != "" || throw "Metadata options item type cannot be empty"; lib.filterAttrs (_: v: v != null) o)
+      c.metadataOptions;
+    }
+    // optionalAttrs (c ? contentTypes && c.contentTypes != null) {
+      contentTypes = map (t:
+        assert t.name != "" || throw "Content type path cannot be empty";
+        assert t.value != "" || throw "Content type cannot be empty"; {inherit (t) name value;})
+      c.contentTypes;
+    }
+    // optionalAttrs (c ? pathSubstitutions && c.pathSubstitutions != null) {
+      pathSubstitutions = map (s:
+        assert s.from != "" || throw "Path substitution source cannot be empty"; {inherit (s) from to;})
+      c.pathSubstitutions;
+    }
+    // optionalAttrs (c ? castReceiverApplications && c.castReceiverApplications != null) {
+      castReceiverApplications = map (a:
+        assert a.id != "" || throw "Cast receiver application id cannot be empty";
+        assert a.name != "" || throw "Cast receiver application name cannot be empty"; {inherit (a) id name;})
+      c.castReceiverApplications;
     }
     // optionalAttrs (c ? trickplayOptions && c.trickplayOptions != null) {
       trickplayOptions = mkTrickplayOptionsConfig c.trickplayOptions;

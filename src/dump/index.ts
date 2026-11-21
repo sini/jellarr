@@ -4,6 +4,10 @@ import type { JellyfinClient } from "../api/jellyfin.types";
 import type {
   ServerConfigurationSchema,
   PluginRepositorySchema,
+  MetadataOptionsSchema,
+  ContentTypeSchema,
+  PathSubstitutionSchema,
+  CastReceiverApplicationSchema,
 } from "../types/schema/system";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
@@ -127,6 +131,30 @@ export async function runDump(baseUrl: string): Promise<void> {
           name: repo.Name ?? "",
           url: repo.Url ?? "",
           enabled: repo.Enabled ?? false,
+        }),
+      ),
+      metadataOptions: systemConfig.MetadataOptions?.map(
+        (o: MetadataOptionsSchema) => ({
+          itemType: o.ItemType ?? "",
+          disabledMetadataSavers: o.DisabledMetadataSavers ?? undefined,
+          localMetadataReaderOrder: o.LocalMetadataReaderOrder ?? undefined,
+          disabledMetadataFetchers: o.DisabledMetadataFetchers ?? undefined,
+          metadataFetcherOrder: o.MetadataFetcherOrder ?? undefined,
+          disabledImageFetchers: o.DisabledImageFetchers ?? undefined,
+          imageFetcherOrder: o.ImageFetcherOrder ?? undefined,
+        }),
+      ),
+      contentTypes: systemConfig.ContentTypes?.map((t: ContentTypeSchema) => ({
+        name: t.Name ?? "",
+        value: t.Value ?? "",
+      })),
+      pathSubstitutions: systemConfig.PathSubstitutions?.map(
+        (s: PathSubstitutionSchema) => ({ from: s.From ?? "", to: s.To ?? "" }),
+      ),
+      castReceiverApplications: systemConfig.CastReceiverApplications?.map(
+        (a: CastReceiverApplicationSchema) => ({
+          id: a.Id ?? "",
+          name: a.Name ?? "",
         }),
       ),
       trickplayOptions: {
