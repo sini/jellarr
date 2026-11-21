@@ -1528,3 +1528,42 @@ describe("api/jf Live TV", () => {
     ).rejects.toThrow(/POST \/LiveTv\/TunerHosts failed: 403/);
   });
 });
+
+describe("api/jf library media paths", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("adds a path without refreshing the library", async (): Promise<void> => {
+    mockFetchNoContent();
+    await createJellyfinClient(baseUrl, apiKey).addMediaPath("Movies", "/m");
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(
+      /\/Library\/VirtualFolders\/Paths\?refreshLibrary=false$/,
+    );
+    expect(await req.json()).toEqual({
+      Name: "Movies",
+      PathInfo: { Path: "/m" },
+    });
+  });
+
+  it("removes a path without refreshing the library", async (): Promise<void> => {
+    mockFetchNoContent();
+    await createJellyfinClient(baseUrl, apiKey).removeMediaPath("Movies", "/m");
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("DELETE");
+    const url: URL = new URL(req.url);
+    expect(url.pathname).toBe("/Library/VirtualFolders/Paths");
+    expect(url.searchParams.get("name")).toBe("Movies");
+    expect(url.searchParams.get("path")).toBe("/m");
+    expect(url.searchParams.get("refreshLibrary")).toBe("false");
+  });
+
+  it("throws with the status when a call fails", async (): Promise<void> => {
+    mockFetchNoContent(500);
+    await expect(
+      createJellyfinClient(baseUrl, apiKey).removeMediaPath("Movies", "/m"),
+    ).rejects.toThrow(/DELETE \/Library\/VirtualFolders\/Paths failed: 500/);
+  });
+});

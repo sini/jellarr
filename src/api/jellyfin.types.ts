@@ -119,6 +119,8 @@ export interface JellyfinClient {
     libraryId: string,
     body: UpdateLibraryOptionsDtoSchema,
   ): Promise<void>;
+  addMediaPath(libraryName: string, path: string): Promise<void>;
+  removeMediaPath(libraryName: string, path: string): Promise<void>;
   getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema>;
   updateBrandingConfiguration(
     body: Partial<BrandingOptionsDtoSchema>,

@@ -11,6 +11,12 @@ import {
   type LibraryDiff,
 } from "../apply/library";
 import {
+  calculateLocationChanges,
+  describeLocationChange,
+  applyLocationChanges,
+  type LocationChange,
+} from "../apply/library-locations";
+import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
 } from "../apply/branding-options";
@@ -279,6 +285,20 @@ export async function runPipeline(
 
   if (cfg.library?.virtualFolders) {
     currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+    const locationChanges: LocationChange[] = calculateLocationChanges(
+      currentVirtualFolders,
+      cfg.library.virtualFolders,
+    );
+    if (locationChanges.length > 0 && plan) {
+      for (const change of locationChanges) {
+        for (const line of describeLocationChange(change)) plan.action(line);
+      }
+    } else if (locationChanges.length > 0) {
+      console.log("→ reconciling library locations");
+      await applyLocationChanges(jellyfinClient, locationChanges);
+      console.log("✓ reconciled library locations");
+      currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+    }
     const libraryDiff: LibraryDiff | undefined = calculateLibraryDiff(
       currentVirtualFolders,
       cfg.library.virtualFolders,
