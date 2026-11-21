@@ -45,18 +45,23 @@
             module-bootstrap = import ./nix/tests/module/bootstrap.nix {
               inherit nixpkgs pkgs system;
             };
-            module-options = import ./nix/tests/module/options.nix {
-              inherit nixpkgs pkgs system;
-            };
             module-types = import ./nix/tests/module/types {inherit pkgs;};
           }
-          // import ./nix/tests/integration {
-            inherit pkgs;
-            jellyfinPackages = {
-              "10_11" = inputs.nixpkgs-jellyfin-10_11.legacyPackages.${system}.jellyfin;
-              "12" = pkgs.jellyfin;
-            };
-          };
+          # NixOS evaluations need systemd, which only exists on Linux.
+          // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux (
+            {
+              module-options = import ./nix/tests/module/options.nix {
+                inherit nixpkgs pkgs system;
+              };
+            }
+            // import ./nix/tests/integration {
+              inherit pkgs;
+              jellyfinPackages = {
+                "10_11" = inputs.nixpkgs-jellyfin-10_11.legacyPackages.${system}.jellyfin;
+                "12" = pkgs.jellyfin;
+              };
+            }
+          );
 
         formatter = treefmtFormatEval.config.build.wrapper;
 
