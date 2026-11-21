@@ -66,7 +66,7 @@ jobs:
       - name: Run VM integration tests
         run: |
           failed=0
-          for c in switch-apply sanity-jellyfin-10_11 sanity-jellyfin-12 library-update-jellyfin-10_11 library-update-jellyfin-12 gaps-jellyfin-10_11 gaps-jellyfin-12; do
+          for c in switch-apply sanity-jellyfin-10_11 sanity-jellyfin-12 library-update-jellyfin-10_11 library-update-jellyfin-12 gaps-jellyfin-10_11 gaps-jellyfin-12 locations-jellyfin-10_11 locations-jellyfin-12; do
             echo "::group::$c"
             nix build ".#checks.x86_64-linux.$c" --no-link --print-build-logs --max-jobs 1 || failed=1
             echo "::endgroup::"
