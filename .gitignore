@@ -3,4 +3,5 @@ node_modules
 result
 issue.md
 CLAUDE.md
-docs/
+/docs/*
+!/docs/*.md
