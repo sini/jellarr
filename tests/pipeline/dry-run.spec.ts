@@ -41,6 +41,10 @@ const READS: Record<string, unknown> = {
   ],
   getPluginConfiguration: { Flag: false },
   getApiKeys: [],
+  getLiveTvOptions: {
+    GuideDays: 3,
+    ListingProviders: [{ Id: "p", Type: "xmltv", Path: "/old.xml" }],
+  },
   getPublicSystemInfo: { StartupWizardCompleted: false },
 };
 const WRITES: string[] = [
@@ -64,6 +68,11 @@ const WRITES: string[] = [
   "restartServer",
   "updatePluginConfiguration",
   "createApiKey",
+  "updateLiveTvOptions",
+  "saveTunerHost",
+  "deleteTunerHost",
+  "saveListingProvider",
+  "deleteListingProvider",
   "completeStartupWizard",
   "updateStartupConfiguration",
   "getStartupUser",
@@ -153,6 +162,11 @@ describe("pipeline/dry run", () => {
       "  - name: New Plugin",
       "    configuration: { Never: shown }",
       "api_keys: [{ name: k }]",
+      "livetv:",
+      "  guideDays: 7",
+      "  authoritative: true",
+      "  tunerHosts: [{ type: m3u, url: 'http://tv.example/l.m3u' }]",
+      "  listingProviders: []",
       "startup: { serverName: x }",
     ]);
 
@@ -180,6 +194,9 @@ describe("pipeline/dry run", () => {
       "plugin New Plugin: install 2.0.0",
       "plugin Installed-Plugin.configuration.Flag: false → true",
       "api key k: would be created",
+      "livetv.GuideDays: 3 → 7",
+      "livetv tuner host m3u|http://tv.example/l.m3u: would be created",
+      "livetv listings provider xmltv: would be removed",
       "startup: the first-boot wizard would run",
       "DRY RUN: changes are pending (passwords were not verified)",
       "Would update user policy: bob",

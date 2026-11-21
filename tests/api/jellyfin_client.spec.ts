@@ -1460,3 +1460,60 @@ describe("api/jf restart façade", () => {
     ).rejects.toThrow(/POST \/System\/Restart failed: 403/);
   });
 });
+
+describe("api/jf Live TV", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("reads and writes the named livetv configuration", async (): Promise<void> => {
+    mockFetchJson({ GuideDays: 5 });
+    const jf: JellyfinClient = createJellyfinClient(baseUrl, apiKey);
+
+    expect(await jf.getLiveTvOptions()).toEqual({ GuideDays: 5 });
+    expect(getLastRequest().url).toMatch(/\/System\/Configuration\/livetv$/);
+
+    mockFetchNoContent();
+    await jf.updateLiveTvOptions({ GuideDays: 7 });
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/System\/Configuration\/livetv$/);
+    expect(await req.json()).toEqual({ GuideDays: 7 });
+  });
+
+  it("saves and deletes tuner hosts", async (): Promise<void> => {
+    mockFetchJson({});
+    const jf: JellyfinClient = createJellyfinClient(baseUrl, apiKey);
+    await jf.saveTunerHost({ Type: "m3u", Url: "http://tv" });
+    const save: Request = getLastRequest();
+    expect(save.method).toBe("POST");
+    expect(save.url).toMatch(/\/LiveTv\/TunerHosts$/);
+    expect(await save.json()).toEqual({ Type: "m3u", Url: "http://tv" });
+
+    mockFetchNoContent();
+    await jf.deleteTunerHost("h1");
+    const del: Request = getLastRequest();
+    expect(del.method).toBe("DELETE");
+    expect(del.url).toMatch(/\/LiveTv\/TunerHosts\?id=h1$/);
+  });
+
+  it("sends a listings password as the pw query and never in the body", async (): Promise<void> => {
+    mockFetchJson({});
+    const jf: JellyfinClient = createJellyfinClient(baseUrl, apiKey);
+    await jf.saveListingProvider({ Type: "SchedulesDirect" }, "s3cret");
+    const save: Request = getLastRequest();
+    expect(save.url).toMatch(/\/LiveTv\/ListingProviders\?pw=s3cret$/);
+    expect(await save.text()).not.toContain("s3cret");
+
+    mockFetchNoContent();
+    await jf.deleteListingProvider("p1");
+    expect(getLastRequest().url).toMatch(/\/LiveTv\/ListingProviders\?id=p1$/);
+  });
+
+  it("throws with the status when a call fails", async (): Promise<void> => {
+    mockFetchNoContent(403);
+    await expect(
+      createJellyfinClient(baseUrl, apiKey).saveTunerHost({}),
+    ).rejects.toThrow(/POST \/LiveTv\/TunerHosts failed: 403/);
+  });
+});

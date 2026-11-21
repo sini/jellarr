@@ -21,6 +21,11 @@ import {
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
+import type {
+  LiveTvOptionsSchema,
+  ListingsProviderInfoSchema,
+  TunerHostInfoSchema,
+} from "../types/schema/livetv";
 
 import type {
   PublicSystemInfoSchema,
@@ -148,4 +153,13 @@ export interface JellyfinClient {
   ): Promise<void>;
   getApiKeys(): Promise<AuthenticationInfoSchema[]>;
   createApiKey(appName: string): Promise<void>;
+  getLiveTvOptions(): Promise<LiveTvOptionsSchema>;
+  updateLiveTvOptions(body: LiveTvOptionsSchema): Promise<void>;
+  saveTunerHost(body: TunerHostInfoSchema): Promise<void>;
+  deleteTunerHost(id: string): Promise<void>;
+  saveListingProvider(
+    body: ListingsProviderInfoSchema,
+    password?: string,
+  ): Promise<void>;
+  deleteListingProvider(id: string): Promise<void>;
 }
