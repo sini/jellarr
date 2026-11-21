@@ -259,6 +259,19 @@ system:
         - name: "Jellyfin Official"
           url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
           enabled: true
+    metadataOptions: # per item type
+        - itemType: "Movie"
+          disabledMetadataSavers: ["Nfo"]
+          imageFetcherOrder: ["TheMovieDb"]
+    contentTypes:
+        - name: "/media/movies"
+          value: "movies"
+    pathSubstitutions:
+        - from: "/data"
+          to: "/mnt/data"
+    castReceiverApplications:
+        - id: "ABC123"
+          name: "Stable"
     trickplayOptions:
         enableHwAcceleration: true
         enableHwEncoding: true
@@ -277,6 +290,12 @@ system:
 The full field set mirrors Jellyfin's `ServerConfiguration` object (46 scalar
 fields including `corsHosts`). CORS allowed origins are configured under
 `system`, not under a separate networking key.
+
+`metadataOptions`, `contentTypes`, `pathSubstitutions` and
+`castReceiverApplications` are arrays of objects. A declared list is
+authoritative: it replaces the server's list whole, and `[]` clears it. Fields
+the server adds to an element, or that a declared element leaves out, keep the
+server's value, so a second run changes nothing.
 
 ### Encoding Configuration
 
@@ -450,6 +469,19 @@ users:
 
 `policy.enabledLibraries` accepts library names; jellarr resolves them to folder
 IDs when talking to the Jellyfin API.
+
+Every settable field of Jellyfin's `UserPolicy` (41) and `UserConfiguration`
+(16) is available under `policy` and at the top level of the user. Not exposed,
+because the server manages them: `AuthenticationProviderId`,
+`PasswordResetProviderId` and `InvalidLoginAttemptCount`. Declared lists are
+authoritative and `[]` clears them. Fields that hold library IDs take library
+names: `policy.enabledLibraries`, `policy.enableContentDeletionFromLibraries`,
+`policy.blockedMediaLibraries`, `orderedLibraries`, `groupedLibraries`,
+`latestItemsExcludedLibraries` and `myMediaExcludedLibraries`.
+`policy.accessSchedules` takes `dayOfWeek` (a day, `Everyday`, `Weekday` or
+`Weekend`), `startHour` and `endHour`; `policy.syncPlayAccess` is
+`CreateAndJoinGroups`, `JoinGroups` or `None`. `maxParentalRating` cannot be
+cleared once set, because an omitted field means unmanaged.
 
 `orderedLibraries` sets a user's home screen library order by library name. Omit
 it to preserve their order, or use `[]` to reset it. Unlisted libraries follow
@@ -645,6 +677,10 @@ plugins:
   (including `$$`) is left as written, so a password such as `pa$$word` is
   unchanged
 - A missing file or an undefined variable fails the run
+- Path-valued `*File` options (`passwordFile`) take a plain path, and `${VAR}`
+  is allowed in it (`${CREDENTIALS_DIRECTORY}/admin`); `{ _file: ... }` there is
+  an error, because it would use the file's contents as a path. The NixOS module
+  types `passwordFile` as a plain string for the same reason
 - Substituted values are always strings, so `${VAR}` cannot fill a numeric or
   boolean field
 

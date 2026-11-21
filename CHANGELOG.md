@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Every settable `UserPolicy` field (41) and `UserConfiguration` field (16) can
+  be configured, in the config, the NixOS module and `--dump`; the
+  server-managed `AuthenticationProviderId`, `PasswordResetProviderId` and
+  `InvalidLoginAttemptCount` are excluded
+- `system.metadataOptions`, `system.contentTypes`, `system.pathSubstitutions`
+  and `system.castReceiverApplications`: declared lists replace the server's,
+  and fields the server adds to an element are tolerated
+
+### Changed
+
+- An empty `policy.enabledLibraries` now clears the user's enabled folders
+  instead of being ignored, as every declared list is authoritative
+
+### Fixed
+
+- `passwordFile: { _file: ... }` no longer silently uses the referenced file's
+  contents as a path; a secret reference in a `*File` option is an error.
+  `${VAR}` stays allowed in a path. The NixOS module types `passwordFile` as a
+  plain string
+
 ## [0.3.0] - 2026-11-21
 
 The first release of the community-maintained fork at
