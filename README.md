@@ -518,10 +518,9 @@ it.
 
 **Declared arrays are authoritative:** in every section, an array you declare
 replaces the server's array whole (shrinking, emptying and reordering all land);
-an array you omit is left alone. The one exception is
-`policy.enabledLibraries:
-[]`, which is ignored rather than removing all library
-access; omit it or list libraries instead.
+an array you omit is left alone, and `[]` clears one. That includes
+`policy.enabledLibraries: []`, which removes all library access unless
+`enableAllFolders` is true.
 
 **Password reconciliation:** on every run, an existing user whose password
 differs from the configured one has it set (`POST /Users/Password`). Jellarr

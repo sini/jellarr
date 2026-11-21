@@ -6,32 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-
-### Added
-
-- Every settable `UserPolicy` field (41) and `UserConfiguration` field (16) can
-  be configured, in the config, the NixOS module and `--dump`; the
-  server-managed `AuthenticationProviderId`, `PasswordResetProviderId` and
-  `InvalidLoginAttemptCount` are excluded
-- `system.metadataOptions`, `system.contentTypes`, `system.pathSubstitutions`
-  and `system.castReceiverApplications`: declared lists replace the server's,
-  and fields the server adds to an element are tolerated
-- `branding.splashscreenFile` uploads a custom splashscreen, only when its bytes
-  differ from what the server serves.
-
-### Changed
-
-- An empty `policy.enabledLibraries` now clears the user's enabled folders
-  instead of being ignored, as every declared list is authoritative
-
-### Fixed
-
-- `passwordFile: { _file: ... }` no longer silently uses the referenced file's
-  contents as a path; a secret reference in a `*File` option is an error.
-  `${VAR}` stays allowed in a path. The NixOS module types `passwordFile` as a
-  plain string
-
 ## [0.3.0] - 2026-11-21
 
 The first release of the community-maintained fork at
@@ -46,8 +20,11 @@ another fork has already published it.
   environment; an undefined variable fails the run. Write `$${` for a literal
   `${`. Other `$` characters are left alone.
 - A declared list replaces the server's list in every module, so removing an
-  entry from the config removes it from Jellyfin. The one exception is
-  `policy.enabledLibraries: []`, which is still ignored.
+  entry from the config removes it from Jellyfin, and `[]` clears it. That
+  includes `policy.enabledLibraries: []`, which removes a user's access to every
+  library unless `enableAllFolders` is true.
+- A secret reference (`{ _file }`) in a path-valued `*File` option, such as
+  `passwordFile`, is an error. `${VAR}` is still allowed in a path.
 - On a server whose startup wizard has not been completed, jellarr now runs the
   wizard and creates the admin unless `startup.completeStartupWizard` is
   `false`.
@@ -79,15 +56,28 @@ another fork has already published it.
 - Startup wizard automation for a pristine server.
 - Full API coverage for networking, trickplay, encoding, library options and
   server configuration; declarative `api_keys`; metadata configuration.
-- Users: download and bitrate policies, audio language preference, subtitle
-  mode, tag restrictions and per-user library order.
+- Users: every settable `UserPolicy` field (41) and `UserConfiguration` field
+  (16), including access schedules, download and bitrate policies, audio
+  language preference, subtitle mode, tag restrictions and per-user library
+  order. `AuthenticationProviderId`, `PasswordResetProviderId` and
+  `InvalidLoginAttemptCount` are left to the server.
+- `system.metadataOptions`, `system.contentTypes`, `system.pathSubstitutions`
+  and `system.castReceiverApplications`.
+- `branding.splashscreenFile` uploads a custom splashscreen when its bytes
+  differ from the server's. It needs `splashscreenEnabled: true`.
+- A `livetv` module for Live TV options, tuner hosts and listings providers. It
+  adds and updates by default; `livetv.authoritative: true` also deletes entries
+  the config doesn't declare.
 - Plugins are matched by catalog GUID, kept up to date, and superseded copies
   are uninstalled.
 - Library `ignoreChanges` for options another tool manages, covering every
   library option.
 - NixOS module: `apiKeyFile` through systemd credentials, `configFile` as an
-  alternative to `config`, `jellyfinService` ordering, `waitTimeout`, and
-  `{ _file = …; }` accepted wherever a string is.
+  alternative to `config`, `jellyfinService` ordering, `waitTimeout`,
+  `{ _file = …; }` accepted wherever a string is, and `bootstrap.extraKeys` to
+  seed other applications' API keys with known values.
+- A migration guide from declarative-jellyfin, in
+  `docs/migrating-from-declarative-jellyfin.md`.
 
 ### Fixed
 
