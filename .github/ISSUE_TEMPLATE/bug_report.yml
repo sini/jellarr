@@ -1,0 +1,52 @@
+name: "Bug Report"
+description: "Report jellarr doing the wrong thing to a Jellyfin server"
+labels: [bug]
+body:
+  - type: input
+    id: jellarr_version
+    attributes:
+      label: jellarr version
+      placeholder: v0.3.0
+    validations:
+      required: true
+
+  - type: input
+    id: jellyfin_version
+    attributes:
+      label: Jellyfin version
+      placeholder: 10.11.10
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you run jellarr
+      options:
+        - NixOS module
+        - nix run
+        - Container image
+        - Node bundle
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant config
+      description: The smallest part of your config that shows the problem. Remove secrets.
+      render: yaml
+
+  - type: textarea
+    id: dry_run
+    attributes:
+      label: "`jellarr --dry-run` output"
+      description: Secrets from `_file` and `${VAR}` are already masked, but check for anything else private before pasting.
+      render: text

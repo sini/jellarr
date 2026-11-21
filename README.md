@@ -66,7 +66,8 @@ it keeps the two from being confused.
 Commits taken from other forks are cherry-picked with their original author.
 Where a change had to be rewritten, the commit carries `Co-authored-by` and
 `Adapted-from` trailers that point at the source. If you maintain a fork with
-work that isn't here, pull requests are welcome, and we'd rather converge than
+work that isn't here, pull requests are welcome; bugs and ideas go in
+[issues](https://github.com/sini/jellarr/issues), and we'd rather converge than
 split the community further. If upstream becomes active again, we'll offer all
 of this back.
 
