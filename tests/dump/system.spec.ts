@@ -18,6 +18,7 @@ vi.mock("../../src/api/jellyfin_client", () => ({
     getBrandingConfiguration: () => Promise.resolve({}),
     getPlugins: () => Promise.resolve([]),
     getApiKeys: () => Promise.resolve([]),
+    getLiveTvOptions: () => Promise.resolve({}),
     getVirtualFolders: () => Promise.resolve([]),
     getUsers: () => Promise.resolve([]),
   }),
