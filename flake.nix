@@ -42,14 +42,14 @@
             module-package-override = import ./nix/tests/module {
               inherit nixpkgs pkgs system;
             };
-            module-bootstrap = import ./nix/tests/module/bootstrap.nix {
-              inherit nixpkgs pkgs system;
-            };
             module-types = import ./nix/tests/module/types {inherit pkgs;};
           }
           # NixOS evaluations need systemd, which only exists on Linux.
           // nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux (
             {
+              module-bootstrap = import ./nix/tests/module/bootstrap.nix {
+                inherit nixpkgs pkgs system;
+              };
               module-options = import ./nix/tests/module/options.nix {
                 inherit nixpkgs pkgs system;
               };
