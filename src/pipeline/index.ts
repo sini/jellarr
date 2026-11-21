@@ -325,6 +325,14 @@ export async function runPipeline(
     }
 
     if (cfg.branding.splashscreenFile) {
+      if (!(
+        cfg.branding.splashscreenEnabled ??
+        currentBrandingSchema.SplashscreenEnabled
+      )) {
+        throw new Error(
+          "branding.splashscreenFile needs splashscreenEnabled: true; the server serves the image only when enabled, so jellarr could not tell whether it is up to date",
+        );
+      }
       const splashscreen: Uint8Array | undefined =
         await calculateSplashscreenUpload(
           jellyfinClient,

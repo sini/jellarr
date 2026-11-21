@@ -146,7 +146,7 @@ describe("pipeline/dry run", () => {
       "    - name: Movies",
       "      collectionType: movies",
       "      libraryOptions: { pathInfos: [{ path: /m }] }",
-      `branding: { customCss: 'a{}', splashscreenFile: ${splashFile} }`,
+      `branding: { customCss: 'a{}', splashscreenEnabled: true, splashscreenFile: ${splashFile} }`,
       "networking:",
       `  certificatePassword: { _file: ${secretFile} }`,
       '  baseUrl: "/${JELLARR_DRY_TOKEN}"',
@@ -213,6 +213,19 @@ describe("pipeline/dry run", () => {
     ]) {
       expect(output).not.toContain(live);
     }
+  });
+
+  it("whenSplashscreenFileIsSetButTheSplashscreenIsDisabled_thenItFailsLoudly", async () => {
+    // Arrange
+    await writeConfig([
+      "system: {}",
+      `branding: { splashscreenFile: ${path.join(dir, "s.png")} }`,
+    ]);
+
+    // Act and Assert
+    await expect(runPipeline(cfgFile, { dryRun: true })).rejects.toThrow(
+      /needs splashscreenEnabled: true/,
+    );
   });
 
   it("whenNothingWouldChange_thenPendingIsFalse", async () => {

@@ -440,6 +440,8 @@ export function createJellyfinClient(
       const res: ApiResponse = await client.GET("/Branding/Splashscreen", {
         parseAs: "arrayBuffer",
       });
+      // NOTE: the server answers 404 when the splashscreen is disabled or none is set, never a generated image.
+      if (res.response.status === 404) return new Uint8Array();
       if (!res.response.ok) {
         throw new Error(
           `GET /Branding/Splashscreen failed: ${res.response.status.toString()}`,

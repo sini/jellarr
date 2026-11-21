@@ -524,6 +524,17 @@ describe("api/jf Splashscreen", () => {
     expect(getLastRequest().url).toMatch(/\/Branding\/Splashscreen$/);
   });
 
+  it("when GET /Branding/Splashscreen is 404 then no custom image is set", async (): Promise<void> => {
+    mockFetchNoContent(404);
+
+    const out: Uint8Array = await createJellyfinClient(
+      baseUrl,
+      apiKey,
+    ).getSplashscreen();
+
+    expect(out).toHaveLength(0);
+  });
+
   it("when uploading then it POSTs the base64 text as an image body", async (): Promise<void> => {
     mockFetchNoContent();
 

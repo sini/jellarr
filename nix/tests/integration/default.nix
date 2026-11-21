@@ -2,7 +2,7 @@
   pkgs,
   jellyfinPackages,
 }: let
-  jellyfinTests = ["sanity" "library-update"];
+  jellyfinTests = ["sanity" "library-update" "gaps"];
   versionIndependent = ["switch-apply"];
 in
   builtins.listToAttrs (
