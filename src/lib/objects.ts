@@ -32,3 +32,22 @@ export function overlay(current: unknown, desired: unknown): unknown {
   }
   return merged;
 }
+
+/**
+ * Elements of a declared array replace the server's whole, but the server may
+ * add fields to each element (Id, UserId, NetworkPath). Carry those over from
+ * the current element with the same identity so they neither read as drift nor
+ * get wiped by the update.
+ */
+export function carryServerFields<T extends object>(
+  wanted: T[] | undefined,
+  existing: T[] | undefined,
+  identity: (item: T) => unknown,
+): T[] | undefined {
+  return wanted?.map((item: T): T => {
+    const match: T | undefined = existing?.find(
+      (candidate: T) => identity(candidate) === identity(item),
+    );
+    return match ? { ...match, ...item } : item;
+  });
+}

@@ -1,6 +1,6 @@
 import { logger } from "../lib/logger";
 import { deepEqual } from "fast-equals";
-import { overlay } from "../lib/objects";
+import { carryServerFields, overlay } from "../lib/objects";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import type { VirtualFolderConfig } from "../types/config/library";
 import type {
@@ -46,27 +46,11 @@ function withServerElementFields(
   desired: LibraryOptionsSchema,
   current: LibraryOptionsSchema,
 ): LibraryOptionsSchema {
-  const carry: <T extends object>(
-    wanted: T[] | undefined,
-    existing: T[] | undefined,
-    identity: (item: T) => unknown,
-  ) => T[] | undefined = <T extends object>(
-    wanted: T[] | undefined,
-    existing: T[] | undefined,
-    identity: (item: T) => unknown,
-  ): T[] | undefined =>
-    wanted?.map((item: T): T => {
-      const match: T | undefined = existing?.find(
-        (candidate: T) => identity(candidate) === identity(item),
-      );
-      return match ? { ...match, ...item } : item;
-    });
-
   return {
     ...desired,
     ...(desired.PathInfos
       ? {
-          PathInfos: carry(
+          PathInfos: carryServerFields(
             desired.PathInfos,
             current.PathInfos,
             (info: { Path?: string | null }) => info.Path,
@@ -75,7 +59,7 @@ function withServerElementFields(
       : {}),
     ...(desired.TypeOptions
       ? {
-          TypeOptions: carry(
+          TypeOptions: carryServerFields(
             desired.TypeOptions,
             current.TypeOptions,
             (option: { Type?: string | null }) => option.Type,

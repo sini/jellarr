@@ -508,4 +508,68 @@ in [
       };
     }
   ]))
+  (assertEq "full policy passes through, nulls dropped, empty lists kept" (userPolicy {
+      isHidden = true;
+      isDisabled = null;
+      maxParentalRating = 9;
+      syncPlayAccess = "JoinGroups";
+      blockUnratedItems = ["Book" "Music"];
+      enabledChannels = [];
+      enableContentDeletionFromLibraries = ["Movies"];
+      accessSchedules = [
+        {
+          dayOfWeek = "Weekend";
+          startHour = 8;
+          endHour = 22.5;
+        }
+      ];
+    }) {
+      isHidden = true;
+      maxParentalRating = 9;
+      syncPlayAccess = "JoinGroups";
+      blockUnratedItems = ["Book" "Music"];
+      enabledChannels = [];
+      enableContentDeletionFromLibraries = ["Movies"];
+      accessSchedules = [
+        {
+          dayOfWeek = "Weekend";
+          startHour = 8;
+          endHour = 22.5;
+        }
+      ];
+    })
+
+  (assertThrows "reject empty blocked library" (userPolicy {blockedMediaLibraries = [""];}))
+  (assertThrows "reject empty enabled device" (userPolicy {enabledDevices = [""];}))
+
+  (assertEq "full configuration passes through" (mkUsersConfig [
+      {
+        name = "viewer";
+        password = "pass";
+        passwordFile = null;
+        groupedLibraries = ["Movies"];
+        latestItemsExcludedLibraries = [];
+        hidePlayedInLatest = true;
+        castReceiverId = "recv";
+        enableLocalPassword = null;
+      }
+    ]) [
+      {
+        name = "viewer";
+        password = "pass";
+        groupedLibraries = ["Movies"];
+        latestItemsExcludedLibraries = [];
+        hidePlayedInLatest = true;
+        castReceiverId = "recv";
+      }
+    ])
+
+  (assertThrows "reject empty grouped library" (mkUsersConfig [
+    {
+      name = "viewer";
+      password = "pass";
+      passwordFile = null;
+      groupedLibraries = [""];
+    }
+  ]))
 ]

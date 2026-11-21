@@ -9,6 +9,7 @@ import {
   calculateUserPolicyDiff,
   calculateUserConfigurationsDiff,
 } from "../../src/apply/users";
+import type { UserPolicySchema } from "../../src/types/schema/users";
 import { calculatePluginConfigurationDiff } from "../../src/apply/plugins";
 
 vi.mock("../../src/lib/logger", () => ({
@@ -131,6 +132,93 @@ describe("a second run with an unchanged config changes nothing", () => {
                 password: "p",
                 orderedLibraries: ["Movies"],
                 subtitleMode: "Always",
+              },
+            ],
+            [{ Name: "Movies", ItemId: "m1" }] as never,
+          );
+        const next: unknown = result?.get("id");
+        return next ? ({ Configuration: next } as never) : undefined;
+      },
+    );
+    expect(configuration.first).toBeDefined();
+    expect(configuration.second).toBeUndefined();
+  });
+
+  it("users: full policy and configuration, against a server that adds fields to schedules", () => {
+    const folders: Map<string, string> = new Map([["Movies", "m1"]]);
+    const policy: Pair = twice(
+      {
+        AccessSchedules: [
+          {
+            Id: 1,
+            UserId: "u",
+            DayOfWeek: "Everyday",
+            StartHour: 1,
+            EndHour: 2,
+          },
+        ],
+      } as never,
+      (s: never): object | undefined => {
+        const state: UserPolicySchema = s;
+        const next: UserPolicySchema | undefined = calculateUserPolicyDiff(
+          state,
+          {
+            isHidden: true,
+            syncPlayAccess: "JoinGroups",
+            blockUnratedItems: ["Book"],
+            enableContentDeletionFromLibraries: ["Movies"],
+            accessSchedules: [
+              { dayOfWeek: "Everyday", startHour: 1, endHour: 2 },
+              { dayOfWeek: "Weekend", startHour: 8, endHour: 22 },
+            ],
+          },
+          folders,
+        );
+        return next;
+      },
+    );
+    expect(policy.first).toMatchObject({
+      AccessSchedules: [
+        { Id: 1, UserId: "u", DayOfWeek: "Everyday", StartHour: 1, EndHour: 2 },
+        { DayOfWeek: "Weekend", StartHour: 8, EndHour: 22 },
+      ],
+    });
+    expect(policy.second).toBeUndefined();
+
+    const unchanged: UserPolicySchema | undefined = calculateUserPolicyDiff(
+      {
+        AccessSchedules: [
+          {
+            Id: 1,
+            UserId: "u",
+            DayOfWeek: "Everyday",
+            StartHour: 1,
+            EndHour: 2,
+          },
+        ],
+      } as never,
+      {
+        accessSchedules: [{ dayOfWeek: "Everyday", startHour: 1, endHour: 2 }],
+      },
+    );
+    expect(unchanged).toBeUndefined();
+
+    const configuration: Pair = twice(
+      { Configuration: { Other: 1 } } as never,
+      (s: never): object | undefined => {
+        const state: { Configuration: unknown } = s;
+        const result: ReturnType<typeof calculateUserConfigurationsDiff> =
+          calculateUserConfigurationsDiff(
+            [
+              { Name: "u", Id: "id", Configuration: state.Configuration },
+            ] as never,
+            [
+              {
+                name: "u",
+                password: "p",
+                groupedLibraries: ["Movies"],
+                hidePlayedInLatest: true,
+                castReceiverId: "recv",
               },
             ],
             [{ Name: "Movies", ItemId: "m1" }] as never,

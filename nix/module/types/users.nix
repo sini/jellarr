@@ -1,35 +1,67 @@
 {lib}: let
   secret = import ./secret.nix {inherit lib;};
-  inherit (lib) types mkOption optionalAttrs;
+  inherit (lib) types mkOption;
 
   inherit (types) nullOr;
 
+  accessScheduleType = types.submodule {
+    options = {
+      dayOfWeek = mkOption {
+        type = types.enum ["Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Everyday" "Weekday" "Weekend"];
+        description = "Day or day group the schedule applies to.";
+      };
+      startHour = mkOption {
+        type = types.numbers.between 0 24;
+        description = "Start hour (0 to 24, fractions allowed).";
+      };
+      endHour = mkOption {
+        type = types.numbers.between 0 24;
+        description = "End hour (0 to 24, fractions allowed).";
+      };
+    };
+  };
+
   userPolicyConfigType = types.submodule {
     options = {
-      allowedTags = mkOption {
-        type = nullOr (types.listOf secret.str);
-        default = null;
-        description = "Only show items with these tags. An empty list removes the restriction.";
-      };
-      blockedTags = mkOption {
-        type = nullOr (types.listOf secret.str);
-        default = null;
-        description = "Hide items with these tags. An empty list removes the restriction.";
-      };
       isAdministrator = mkOption {
         type = nullOr types.bool;
         default = null;
         description = "Whether the user is an administrator.";
+      };
+      isHidden = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Hide the user from login screens.";
+      };
+      isDisabled = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Disable the user account.";
       };
       loginAttemptsBeforeLockout = mkOption {
         type = nullOr types.int;
         default = null;
         description = "Number of login attempts before lockout (minimum 1).";
       };
-      enabledLibraries = mkOption {
-        type = nullOr (types.listOf secret.str);
+      maxActiveSessions = mkOption {
+        type = nullOr types.int;
         default = null;
-        description = "List of library names the user can access.";
+        description = "Maximum concurrent active sessions for the user.";
+      };
+      remoteClientBitrateLimit = mkOption {
+        type = nullOr types.ints.unsigned;
+        default = null;
+        description = "Internet streaming bitrate limit for remote clients (bits per second).";
+      };
+      maxParentalRating = mkOption {
+        type = nullOr types.ints.unsigned;
+        default = null;
+        description = "Maximum parental rating the user may see.";
+      };
+      maxParentalSubRating = mkOption {
+        type = nullOr types.ints.unsigned;
+        default = null;
+        description = "Maximum parental sub-rating the user may see.";
       };
       enableAllFolders = mkOption {
         type = nullOr types.bool;
@@ -41,20 +73,160 @@
         default = null;
         description = "Allow user to manage collections.";
       };
+      enableSubtitleManagement = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to manage subtitles.";
+      };
+      enableLyricManagement = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to manage lyrics.";
+      };
       enableContentDownloading = mkOption {
         type = nullOr types.bool;
         default = null;
         description = "Allow user to download media content.";
       };
-      maxActiveSessions = mkOption {
-        type = nullOr types.int;
+      enableContentDeletion = mkOption {
+        type = nullOr types.bool;
         default = null;
-        description = "Maximum concurrent active sessions for the user.";
+        description = "Allow user to delete content from every library.";
       };
-      remoteClientBitrateLimit = mkOption {
-        type = nullOr types.int;
+      enableUserPreferenceAccess = mkOption {
+        type = nullOr types.bool;
         default = null;
-        description = "Internet streaming bitrate limit for remote clients (bits per second).";
+        description = "Allow user to change their own preferences.";
+      };
+      enableRemoteControlOfOtherUsers = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to remote control other users.";
+      };
+      enableSharedDeviceControl = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to control shared devices.";
+      };
+      enableRemoteAccess = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to connect from outside the local network.";
+      };
+      enableLiveTvManagement = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to manage Live TV.";
+      };
+      enableLiveTvAccess = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to watch Live TV.";
+      };
+      enableMediaPlayback = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to play media.";
+      };
+      enableAudioPlaybackTranscoding = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow audio playback that needs transcoding.";
+      };
+      enableVideoPlaybackTranscoding = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow video playback that needs transcoding.";
+      };
+      enablePlaybackRemuxing = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow playback that needs remuxing.";
+      };
+      forceRemoteSourceTranscoding = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Force transcoding of remote media sources.";
+      };
+      enableSyncTranscoding = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow transcoding for sync.";
+      };
+      enableMediaConversion = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to convert media.";
+      };
+      enableAllDevices = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow access from all devices.";
+      };
+      enableAllChannels = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow access to all channels.";
+      };
+      enablePublicSharing = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to share items publicly.";
+      };
+      syncPlayAccess = mkOption {
+        type = nullOr (types.enum ["CreateAndJoinGroups" "JoinGroups" "None"]);
+        default = null;
+        description = "What SyncPlay features the user can access.";
+      };
+      enabledLibraries = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "List of library names the user can access.";
+      };
+      enableContentDeletionFromLibraries = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Library names the user can delete content from.";
+      };
+      blockedMediaLibraries = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Library names blocked for the user (legacy; prefer enabledLibraries).";
+      };
+      enabledDevices = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Device ids the user can access from.";
+      };
+      enabledChannels = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Channel ids the user can access.";
+      };
+      blockedChannels = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Channel ids blocked for the user.";
+      };
+      allowedTags = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Only show items with these tags. An empty list removes the restriction.";
+      };
+      blockedTags = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Hide items with these tags. An empty list removes the restriction.";
+      };
+      blockUnratedItems = mkOption {
+        type = nullOr (types.listOf (types.enum ["Movie" "Trailer" "Series" "Music" "Book" "LiveTvChannel" "LiveTvProgram" "ChannelContent" "Other"]));
+        default = null;
+        description = "Unrated item types hidden from the user.";
+      };
+      accessSchedules = mkOption {
+        type = nullOr (types.listOf accessScheduleType);
+        default = null;
+        description = "Times of day the user may access the server. An empty list removes the restriction.";
       };
     };
   };
@@ -80,15 +252,60 @@
         default = null;
         description = "User policy configuration.";
       };
+      orderedLibraries = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Library names in home screen order. Omit to preserve the order, or use an empty list to reset it.";
+      };
+      groupedLibraries = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Library names grouped into one view.";
+      };
+      latestItemsExcludedLibraries = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Library names excluded from the latest items rows.";
+      };
+      myMediaExcludedLibraries = mkOption {
+        type = nullOr (types.listOf secret.str);
+        default = null;
+        description = "Library names hidden from the My Media row.";
+      };
       displayMissingEpisodes = mkOption {
         type = nullOr types.bool;
         default = null;
         description = "Show missing episodes for the user.";
       };
-      orderedLibraries = mkOption {
-        type = nullOr (types.listOf secret.str);
+      displayCollectionsView = mkOption {
+        type = nullOr types.bool;
         default = null;
-        description = "Library names in home screen order. Omit to preserve the order, or use an empty list to reset it.";
+        description = "Show a collections view on the home screen.";
+      };
+      enableLocalPassword = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Require a password on the local network.";
+      };
+      hidePlayedInLatest = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Hide played items from the latest items rows.";
+      };
+      rememberAudioSelections = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Remember the audio track chosen for the previous item.";
+      };
+      rememberSubtitleSelections = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Remember the subtitle track chosen for the previous item.";
+      };
+      enableNextEpisodeAutoPlay = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Play the next episode automatically.";
       };
       subtitleLanguagePreference = mkOption {
         type = nullOr secret.str;
@@ -96,13 +313,7 @@
         description = "Subtitle language preference code.";
       };
       subtitleMode = mkOption {
-        type = nullOr (types.enum [
-          "Default"
-          "Always"
-          "OnlyForced"
-          "None"
-          "Smart"
-        ]);
+        type = nullOr (types.enum ["Default" "Always" "OnlyForced" "None" "Smart"]);
         default = null;
         description = "Subtitle playback mode for the user.";
       };
@@ -116,10 +327,27 @@
         default = null;
         description = "Play the default audio track regardless of the preferred language.";
       };
+      castReceiverId = mkOption {
+        type = nullOr secret.str;
+        default = null;
+        description = "Id of the selected cast receiver.";
+      };
     };
   };
 
   usersConfigType = nullOr (types.listOf userConfigType);
+
+  # Declared lists are authoritative, so an empty list is kept; only an empty entry is an error.
+  checkEntries = c: names:
+    lib.all (
+      n:
+        (c.${n} or null)
+        == null
+        || lib.all (e: e != "" || throw "${n} entries cannot be empty") c.${n}
+    )
+    names;
+
+  presentOnly = lib.filterAttrs (_: v: v != null);
 
   mkUserPolicyConfig = cfg: let
     c =
@@ -127,27 +355,12 @@
       then {}
       else cfg;
   in
-    {}
-    // optionalAttrs (c ? allowedTags && c.allowedTags != null) (
-      assert lib.all (tag: tag != "" || throw "allowedTags entries cannot be empty") c.allowedTags; {inherit (c) allowedTags;}
-    )
-    // optionalAttrs (c ? blockedTags && c.blockedTags != null) (
-      assert lib.all (tag: tag != "" || throw "blockedTags entries cannot be empty") c.blockedTags; {inherit (c) blockedTags;}
-    )
-    // optionalAttrs (c ? isAdministrator && c.isAdministrator != null) {inherit (c) isAdministrator;}
-    // optionalAttrs (c ? loginAttemptsBeforeLockout && c.loginAttemptsBeforeLockout != null) (
-      assert c.loginAttemptsBeforeLockout
-      >= 1
-      || throw "loginAttemptsBeforeLockout must be at least 1"; {inherit (c) loginAttemptsBeforeLockout;}
-    )
-    // optionalAttrs (c ? enabledLibraries && c.enabledLibraries != null) (
-      assert lib.all (library: library != "" || throw "enabledLibraries entries cannot be empty") c.enabledLibraries; {inherit (c) enabledLibraries;}
-    )
-    // optionalAttrs (c ? enableAllFolders && c.enableAllFolders != null) {inherit (c) enableAllFolders;}
-    // optionalAttrs (c ? enableCollectionManagement && c.enableCollectionManagement != null) {inherit (c) enableCollectionManagement;}
-    // optionalAttrs (c ? enableContentDownloading && c.enableContentDownloading != null) {inherit (c) enableContentDownloading;}
-    // optionalAttrs (c ? remoteClientBitrateLimit && c.remoteClientBitrateLimit != null) {inherit (c) remoteClientBitrateLimit;}
-    // optionalAttrs (c ? maxActiveSessions && c.maxActiveSessions != null) {inherit (c) maxActiveSessions;};
+    assert checkEntries c ["enabledLibraries" "enableContentDeletionFromLibraries" "blockedMediaLibraries" "enabledDevices" "enabledChannels" "blockedChannels" "allowedTags" "blockedTags"];
+    assert (c.loginAttemptsBeforeLockout or null)
+    == null
+    || c.loginAttemptsBeforeLockout >= 1
+    || throw "loginAttemptsBeforeLockout must be at least 1";
+      presentOnly c;
 
   mkUsersConfig = cfg:
     map (
@@ -156,19 +369,14 @@
         assert (user.password != null)
         != (user.passwordFile != null)
         || throw "User '${user.name}' must specify exactly one of 'password' or 'passwordFile'";
-          {}
-          // {inherit (user) name;}
-          // optionalAttrs (user.password != null) {inherit (user) password;}
-          // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
-          // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;}
-          // optionalAttrs (user ? orderedLibraries && user.orderedLibraries != null) (
-            assert lib.all (library: library != "" || throw "orderedLibraries entries cannot be empty") user.orderedLibraries; {inherit (user) orderedLibraries;}
-          )
-          // optionalAttrs (user ? displayMissingEpisodes && user.displayMissingEpisodes != null) {inherit (user) displayMissingEpisodes;}
-          // optionalAttrs (user ? subtitleLanguagePreference && user.subtitleLanguagePreference != null) {inherit (user) subtitleLanguagePreference;}
-          // optionalAttrs (user ? subtitleMode && user.subtitleMode != null) {inherit (user) subtitleMode;}
-          // optionalAttrs (user ? audioLanguagePreference && user.audioLanguagePreference != null) {inherit (user) audioLanguagePreference;}
-          // optionalAttrs (user ? playDefaultAudioTrack && user.playDefaultAudioTrack != null) {inherit (user) playDefaultAudioTrack;}
+        assert checkEntries user ["orderedLibraries" "groupedLibraries" "latestItemsExcludedLibraries" "myMediaExcludedLibraries"];
+          presentOnly (user
+            // {
+              policy =
+                if (user.policy or null) == null
+                then null
+                else mkUserPolicyConfig user.policy;
+            })
     )
     cfg;
 in {

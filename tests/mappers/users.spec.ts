@@ -415,7 +415,7 @@ describe("mappers/users", () => {
       );
     });
 
-    it("should ignore enabledLibraries when empty", () => {
+    it("should clear enabledFolders when enabledLibraries is empty", () => {
       const folderMap: Map<string, string> = new Map([["Movies", "id"]]);
       const config: UserPolicyConfig = { enabledLibraries: [] };
 
@@ -424,7 +424,7 @@ describe("mappers/users", () => {
         folderMap,
       );
 
-      expect(result).toEqual({});
+      expect(result).toEqual({ EnabledFolders: [] });
     });
 
     it("should handle zero value for loginAttemptsBeforeLockout", () => {
@@ -474,6 +474,135 @@ describe("mappers/users", () => {
         mapUserConfigToConfiguration(config);
 
       expect(result).toEqual({});
+    });
+  });
+
+  describe("full policy and configuration", () => {
+    const folders: Map<string, string> = new Map([
+      ["Movies", "m1"],
+      ["Music", "m2"],
+    ]);
+
+    it("maps every new policy field to its API name", () => {
+      const result: Partial<UserPolicySchema> = mapUserPolicyConfigToSchema(
+        {
+          isHidden: true,
+          isDisabled: false,
+          maxParentalRating: 9,
+          maxParentalSubRating: 1,
+          enableSubtitleManagement: true,
+          enableLyricManagement: true,
+          enableContentDeletion: false,
+          enableUserPreferenceAccess: true,
+          enableRemoteControlOfOtherUsers: false,
+          enableSharedDeviceControl: false,
+          enableRemoteAccess: true,
+          enableLiveTvManagement: false,
+          enableLiveTvAccess: false,
+          enableMediaPlayback: true,
+          enableAudioPlaybackTranscoding: true,
+          enableVideoPlaybackTranscoding: false,
+          enablePlaybackRemuxing: true,
+          forceRemoteSourceTranscoding: false,
+          enableSyncTranscoding: false,
+          enableMediaConversion: false,
+          enableAllDevices: false,
+          enableAllChannels: true,
+          enablePublicSharing: false,
+          syncPlayAccess: "None",
+          enabledDevices: ["dev"],
+          enabledChannels: ["ch"],
+          blockedChannels: [],
+          blockUnratedItems: ["Movie", "Book"],
+          enableContentDeletionFromLibraries: ["Music"],
+          blockedMediaLibraries: ["Movies"],
+          accessSchedules: [
+            { dayOfWeek: "Everyday", startHour: 8, endHour: 20.5 },
+          ],
+        },
+        folders,
+      );
+
+      expect(result).toEqual({
+        IsHidden: true,
+        IsDisabled: false,
+        MaxParentalRating: 9,
+        MaxParentalSubRating: 1,
+        EnableSubtitleManagement: true,
+        EnableLyricManagement: true,
+        EnableContentDeletion: false,
+        EnableUserPreferenceAccess: true,
+        EnableRemoteControlOfOtherUsers: false,
+        EnableSharedDeviceControl: false,
+        EnableRemoteAccess: true,
+        EnableLiveTvManagement: false,
+        EnableLiveTvAccess: false,
+        EnableMediaPlayback: true,
+        EnableAudioPlaybackTranscoding: true,
+        EnableVideoPlaybackTranscoding: false,
+        EnablePlaybackRemuxing: true,
+        ForceRemoteSourceTranscoding: false,
+        EnableSyncTranscoding: false,
+        EnableMediaConversion: false,
+        EnableAllDevices: false,
+        EnableAllChannels: true,
+        EnablePublicSharing: false,
+        SyncPlayAccess: "None",
+        EnabledDevices: ["dev"],
+        EnabledChannels: ["ch"],
+        BlockedChannels: [],
+        BlockUnratedItems: ["Movie", "Book"],
+        EnableContentDeletionFromFolders: ["m2"],
+        BlockedMediaFolders: ["m1"],
+        AccessSchedules: [
+          { DayOfWeek: "Everyday", StartHour: 8, EndHour: 20.5 },
+        ],
+      });
+    });
+
+    it("maps every new configuration field to its API name", () => {
+      const result: Partial<UserConfigurationSchema> =
+        mapUserConfigToConfiguration(
+          {
+            name: "u",
+            password: "p",
+            groupedLibraries: ["Music"],
+            latestItemsExcludedLibraries: ["Movies"],
+            myMediaExcludedLibraries: [],
+            displayCollectionsView: true,
+            enableLocalPassword: false,
+            hidePlayedInLatest: true,
+            rememberAudioSelections: false,
+            rememberSubtitleSelections: false,
+            enableNextEpisodeAutoPlay: true,
+            castReceiverId: "recv",
+          },
+          folders,
+        );
+
+      expect(result).toEqual({
+        GroupedFolders: ["m2"],
+        LatestItemsExcludes: ["m1"],
+        MyMediaExcludes: [],
+        DisplayCollectionsView: true,
+        EnableLocalPassword: false,
+        HidePlayedInLatest: true,
+        RememberAudioSelections: false,
+        RememberSubtitleSelections: false,
+        EnableNextEpisodeAutoPlay: true,
+        CastReceiverId: "recv",
+      });
+    });
+
+    it("rejects an unknown library in a new library field", () => {
+      expect(() =>
+        mapUserPolicyConfigToSchema(
+          { blockedMediaLibraries: ["Nope"] },
+          folders,
+        ),
+      ).toThrow(
+        "Library 'Nope' not found while resolving blockedMediaLibraries",
+      );
     });
   });
 });

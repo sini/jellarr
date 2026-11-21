@@ -15,6 +15,13 @@ import type {
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type { UserDtoSchema } from "../types/schema/users";
+import {
+  CONFIGURATION_LIBRARY_FIELDS,
+  POLICY_FIELDS,
+  POLICY_LIBRARY_FIELDS,
+  USER_CONFIGURATION_FIELDS,
+  dumpFields,
+} from "../mappers/users";
 import type {
   PluginInfoSchema,
   BasePluginConfigurationSchema,
@@ -373,24 +380,30 @@ export async function runDump(baseUrl: string): Promise<void> {
     users: users.map((user: UserDtoSchema) => ({
       name: user.Name ?? "",
       policy: {
-        allowedTags: user.Policy?.AllowedTags ?? undefined,
-        blockedTags: user.Policy?.BlockedTags ?? undefined,
-        isAdministrator: user.Policy?.IsAdministrator,
-        loginAttemptsBeforeLockout: user.Policy?.LoginAttemptsBeforeLockout,
-        enableAllFolders: user.Policy?.EnableAllFolders,
-        enableCollectionManagement: user.Policy?.EnableCollectionManagement,
-        enableContentDownloading: user.Policy?.EnableContentDownloading,
-        maxActiveSessions: user.Policy?.MaxActiveSessions,
-        remoteClientBitrateLimit: user.Policy?.RemoteClientBitrateLimit,
-        enabledLibraries: resolveLibraryNames(user.Policy?.EnabledFolders),
+        ...dumpFields(user.Policy, POLICY_FIELDS),
+        ...dumpFields(user.Policy, POLICY_LIBRARY_FIELDS, resolveLibraryNames),
+        ...(user.Policy?.AccessSchedules
+          ? {
+              accessSchedules: user.Policy.AccessSchedules.map(
+                (schedule: {
+                  DayOfWeek?: string;
+                  StartHour?: number;
+                  EndHour?: number;
+                }) => ({
+                  dayOfWeek: schedule.DayOfWeek,
+                  startHour: schedule.StartHour,
+                  endHour: schedule.EndHour,
+                }),
+              ),
+            }
+          : {}),
       },
-      orderedLibraries: resolveLibraryNames(user.Configuration?.OrderedViews),
-      displayMissingEpisodes: user.Configuration?.DisplayMissingEpisodes,
-      audioLanguagePreference: user.Configuration?.AudioLanguagePreference,
-      playDefaultAudioTrack: user.Configuration?.PlayDefaultAudioTrack,
-      subtitleLanguagePreference:
-        user.Configuration?.SubtitleLanguagePreference,
-      subtitleMode: user.Configuration?.SubtitleMode,
+      ...dumpFields(user.Configuration, USER_CONFIGURATION_FIELDS),
+      ...dumpFields(
+        user.Configuration,
+        CONFIGURATION_LIBRARY_FIELDS,
+        resolveLibraryNames,
+      ),
     })),
 
     plugins: pluginsWithConfig,

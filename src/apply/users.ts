@@ -18,6 +18,14 @@ import {
   getPassword,
 } from "../mappers/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
+import { carryServerFields } from "../lib/objects";
+import { deepEqual } from "fast-equals";
+
+const POLICY_LIBRARY_KEYS: ReadonlyArray<keyof UserPolicyConfig> = [
+  "enabledLibraries",
+  "enableContentDeletionFromLibraries",
+  "blockedMediaLibraries",
+];
 
 function buildFolderNameToIdMap(
   virtualFolders: VirtualFolderInfoSchema[] | undefined,
@@ -75,9 +83,30 @@ export function calculateUserPolicyDiff(
     folderNameToIdMap,
   );
 
-  const next: UserPolicySchema = { ...current, ...mapped };
+  const next: UserPolicySchema = {
+    ...current,
+    ...mapped,
+    ...(mapped.AccessSchedules
+      ? {
+          AccessSchedules: carryServerFields(
+            mapped.AccessSchedules,
+            current.AccessSchedules ?? undefined,
+            (schedule: {
+              DayOfWeek?: string;
+              StartHour?: number;
+              EndHour?: number;
+            }) =>
+              JSON.stringify([
+                schedule.DayOfWeek,
+                schedule.StartHour,
+                schedule.EndHour,
+              ]),
+          ),
+        }
+      : {}),
+  };
 
-  return JSON.stringify(next) === JSON.stringify(current) ? undefined : next;
+  return deepEqual(next, current) ? undefined : next;
 }
 
 export function calculateUserPoliciesDiff(
@@ -88,20 +117,20 @@ export function calculateUserPoliciesDiff(
   if (desired.length === 0) return undefined;
 
   const userPoliciesToUpdate: Map<string, UserPolicySchema> = new Map();
-  const enabledLibraryNames: string[] = desired
-    .map(
-      (userConfig: UserConfig) =>
-        userConfig.policy?.enabledLibraries ?? undefined,
-    )
-    .filter(
-      (names: string[] | undefined): names is string[] =>
-        typeof names !== "undefined",
-    )
-    .flat();
+  const enabledLibraryNames: string[] = desired.flatMap(
+    (userConfig: UserConfig): string[] =>
+      POLICY_LIBRARY_KEYS.flatMap(
+        (key: keyof UserPolicyConfig): string[] =>
+          (userConfig.policy?.[key] as string[] | undefined) ?? [],
+      ),
+  );
 
   const hasEnabledFoldersDefined: boolean = desired.some(
     (userConfig: UserConfig) =>
-      typeof userConfig.policy?.enabledLibraries !== "undefined",
+      POLICY_LIBRARY_KEYS.some(
+        (key: keyof UserPolicyConfig) =>
+          typeof userConfig.policy?.[key] !== "undefined",
+      ),
   );
 
   const folderNameToIdMap: Map<string, string> | undefined =
@@ -116,7 +145,7 @@ export function calculateUserPoliciesDiff(
     (folderNameToIdMap?.size === 0 || !folderNameToIdMap)
   ) {
     throw new Error(
-      "policy.enabledLibraries provided but no libraries were found to resolve names",
+      "policy library names provided but no libraries were found to resolve names",
     );
   }
 
@@ -190,7 +219,7 @@ export function calculateUserConfigurationsDiff(
         ...desiredConfig,
       };
 
-      if (JSON.stringify(next) !== JSON.stringify(currentConfig)) {
+      if (!deepEqual(next, currentConfig)) {
         userConfigsToUpdate.set(currentUserDtoSchema.Id, next);
       }
     }
