@@ -297,15 +297,6 @@ is left as written. A missing file or an undefined variable fails the run.
 Substituted values are strings, so `${VAR}` cannot fill an integer or boolean
 option.
 
-### Quirks the dry run shows
-
-- **Stale or duplicate library locations.** declarative-jellyfin can leave stale
-  or duplicate `.mblink` files in a library's folder, so Jellyfin scans paths
-  the config no longer declares, or the same folder twice. jellarr now cleans
-  these up: it unlinks locations that are not in `pathInfos` and collapses
-  duplicates, and the dry run lists each one. Unlinking drops that location's
-  items from the library on the next scan, so read those lines before applying.
-
 ## What jellarr cannot do
 
 Some declarative-jellyfin behaviour has no jellarr equivalent, because jellarr
@@ -375,6 +366,12 @@ changes even when your config matches the old one. These are expected:
   leading spaces. It converges to your value on the first run.
 - **Settings you newly declare,** such as an empty list on the server becoming
   the list you wrote.
+- **Stale or duplicate library locations.** declarative-jellyfin can leave stale
+  or duplicate `.mblink` files in a library's folder, so Jellyfin scans paths
+  the config no longer declares, or the same folder twice. jellarr now cleans
+  these up: it unlinks locations that are not in `pathInfos` and collapses
+  duplicates, and the dry run lists each one. Unlinking drops that location's
+  items from the library on the next scan, so read those lines before applying.
 
 ## What the first run does to your server
 
