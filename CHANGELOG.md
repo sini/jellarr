@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [0.3.4] - 2026-11-21
 
+### Changed
+
+- Plugin install and upgrade log lines name the repository the version comes
+  from, for example `Installing plugin: Example 1.0.0 from Stable (https://…)`,
+  so a per-plugin `repository` choice can be checked from the log.
+
 ### Fixed
 
 - A Jellyfin that is still starting up no longer fails the run. While a long

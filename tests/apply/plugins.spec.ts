@@ -36,6 +36,7 @@ import type {
   PluginConfigurationSchema,
 } from "../../src/types/schema/plugins";
 import * as fs from "fs";
+import { logger } from "../../src/lib/logger";
 
 vi.mock("../../src/lib/logger", () => ({
   logger: {
@@ -337,6 +338,9 @@ describe("calculatePluginInstalls", () => {
       version: "1.0.0",
       repositoryUrl: "https://example.invalid/stable.json",
     });
+    expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
+      "Installing plugin: Example Plugin 1.0.0 from Stable (https://example.invalid/stable.json)",
+    );
     expect(() =>
       calculatePluginInstalls(
         [],

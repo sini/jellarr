@@ -244,15 +244,16 @@ export function calculatePluginInstalls(
       }
     }
 
+    const source: string = ` from ${target.repositoryName ?? "an unnamed repository"}${target.repositoryUrl ? ` (${target.repositoryUrl})` : ""}`;
     logger.info(
       installedVersion
         ? say(
-            `Upgrading plugin ${plugin.name}: ${installedVersion} -> ${target.version}`,
-            `Would upgrade plugin ${plugin.name}: ${installedVersion} -> ${target.version}`,
+            `Upgrading plugin ${plugin.name}: ${installedVersion} -> ${target.version}${source}`,
+            `Would upgrade plugin ${plugin.name}: ${installedVersion} -> ${target.version}${source}`,
           )
         : say(
-            `Installing plugin: ${plugin.name} ${target.version}`,
-            `Would install plugin: ${plugin.name} ${target.version}`,
+            `Installing plugin: ${plugin.name} ${target.version}${source}`,
+            `Would install plugin: ${plugin.name} ${target.version}${source}`,
           ),
     );
     installs.push({
