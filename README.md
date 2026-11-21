@@ -429,6 +429,17 @@ library:
 
 The full field set mirrors Jellyfin's `LibraryOptions` object.
 
+**Locations.** Jellyfin scans a library's `.mblink` shortcut files (reported as
+`Locations`), not `PathInfos`, and the two can disagree: a stale shortcut, or
+the same folder linked twice. For every existing library that declares
+`pathInfos` (and does not list `pathInfos` in `ignoreChanges`), jellarr makes
+the shortcuts match: it links missing paths, unlinks paths that are not declared
+and collapses a folder linked more than once into one link. **Unlinking is
+destructive:** the items under that location leave the library on its next scan.
+A dry run prints each link, unlink and collapse. Jellarr does not trigger a
+library scan for this (as with a library options update); the server picks the
+change up on its next scan.
+
 ### Branding Configuration
 
 ```yaml

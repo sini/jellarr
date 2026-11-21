@@ -399,6 +399,38 @@ export function createJellyfinClient(
       }
     },
 
+    async addMediaPath(libraryName: string, path: string): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/Library/VirtualFolders/Paths",
+        {
+          params: { query: { refreshLibrary: false } },
+          body: { Name: libraryName, PathInfo: { Path: path } },
+          headers: { "content-type": "application/json" },
+        },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Library/VirtualFolders/Paths failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async removeMediaPath(libraryName: string, path: string): Promise<void> {
+      const res: ApiResponse = await client.DELETE(
+        "/Library/VirtualFolders/Paths",
+        {
+          params: {
+            query: { name: libraryName, path, refreshLibrary: false },
+          },
+        },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `DELETE /Library/VirtualFolders/Paths failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema> {
       const res: GetBrandingConfigurationResponse = await client.GET(
         "/Branding/Configuration",
