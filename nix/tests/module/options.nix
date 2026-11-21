@@ -66,6 +66,21 @@
         };
       }).config.services.jellarr.config.networking.certificatePassword
       true)).success;
+  pathAccepted = path:
+    (builtins.tryEval (builtins.deepSeq
+      (eval {
+        services.jellarr.config = {
+          version = 1;
+          base_url = "http://x";
+          users = [
+            {
+              name = "admin";
+              passwordFile = path;
+            }
+          ];
+        };
+      }).config.services.jellarr.config.users
+      true)).success;
   failing = e: builtins.filter (a: !a.assertion && nixpkgs.lib.hasInfix "jellarr" a.message) e.config.assertions != [];
 in
   assert nixpkgs.lib.elem "jellyfin.service" svc.after;
@@ -85,6 +100,9 @@ in
   });
   assert !(refAccepted {_file = 1;});
   assert !(refAccepted {_file = /run/secrets/x;});
+  assert pathAccepted "/run/secrets/pw";
+  assert pathAccepted "\${CREDENTIALS_DIRECTORY}/admin";
+  assert !(pathAccepted {_file = "/run/secrets/pw";});
   assert renamed.config.services.jellarr.jellyfinService == "jf.service";
     pkgs.runCommand "jellarr-module-options" {} ''
       grep -F '"certificatePassword":{"_file":"/run/secrets/cert"}' ${rendered}

@@ -18,6 +18,29 @@ describe("resolveFileReferences", () => {
     vi.clearAllMocks();
   });
 
+  it("rejects a _file reference in a *File path field", async () => {
+    const input: Record<string, unknown> = {
+      users: [{ passwordFile: { _file: "/run/secrets/path" } }],
+    };
+
+    await expect(resolveFileReferences(input)).rejects.toThrow(
+      "'passwordFile' is a path",
+    );
+    expect(mockReadFile).not.toHaveBeenCalled();
+  });
+
+  it("allows ${VAR} in a *File path field", async () => {
+    process.env.JELLARR_TEST_DIR = "/creds";
+    const input: Record<string, unknown> = {
+      passwordFile: "${JELLARR_TEST_DIR}/admin",
+    };
+
+    await expect(resolveFileReferences(input)).resolves.toStrictEqual({
+      passwordFile: "/creds/admin",
+    });
+    delete process.env.JELLARR_TEST_DIR;
+  });
+
   it("should resolve a simple _file reference", async () => {
     // Arrange
     mockReadFile.mockResolvedValueOnce("secret-value\n");

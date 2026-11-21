@@ -29,7 +29,7 @@
         description = "The admin user password. Mutually exclusive with passwordFile.";
       };
       passwordFile = mkOption {
-        type = nullOr secret.str;
+        type = nullOr types.str;
         default = null;
         description = "Path to a file containing the admin user password. Mutually exclusive with password.";
       };

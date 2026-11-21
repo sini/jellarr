@@ -71,7 +71,7 @@
         description = "User password (plaintext, for development only).";
       };
       passwordFile = mkOption {
-        type = nullOr secret.str;
+        type = nullOr types.str;
         default = null;
         description = "Path to file containing user password.";
       };

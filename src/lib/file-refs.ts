@@ -65,6 +65,11 @@ async function resolveEntry(
   [key, value]: [string, unknown],
   secrets?: Set<string>,
 ): Promise<[string, unknown]> {
+  if (key.endsWith("File") && FileRefType.safeParse(value).success) {
+    throw new Error(
+      `'${key}' is a path, not a secret: use a plain path (\${VAR} is allowed), not { _file }`,
+    );
+  }
   return [key, await resolveValue(value, secrets)];
 }
 
