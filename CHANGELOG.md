@@ -6,10 +6,81 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.3.0] - 2026-11-21
 
-- Breaking: strings containing `${NAME}` are now expanded from the environment;
-  write `$${` for a literal `${`
+The first release of the community-maintained fork at
+[sini/jellarr](https://github.com/sini/jellarr). It carries upstream's
+unreleased v0.1.1 branch, the open upstream pull requests and work from other
+forks; the README lists who contributed what. Version 0.2.x is skipped because
+another fork has already published it.
+
+### Breaking changes
+
+- Strings anywhere in the config containing `${NAME}` are expanded from the
+  environment; an undefined variable fails the run. Write `$${` for a literal
+  `${`. Other `$` characters are left alone.
+- A declared list replaces the server's list in every module, so removing an
+  entry from the config removes it from Jellyfin. The one exception is
+  `policy.enabledLibraries: []`, which is still ignored.
+- On a server whose startup wizard has not been completed, jellarr now runs the
+  wizard and creates the admin unless `startup.completeStartupWizard` is
+  `false`.
+- Installing or removing a plugin restarts Jellyfin in the same run. A declared
+  plugin whose configuration can't be read fails the run instead of being
+  skipped.
+- A user with a `passwordFile` has their password reconciled: jellarr probes it
+  and, only when the probe is rejected and a failed sign-in can't lock the user
+  out, sets it. An empty password file is an error.
+- The NixOS module starts jellarr from a timer at boot and after a switch that
+  changes the config, instead of making `multi-user.target` wait for it. A
+  package-only change runs at the next boot or on the schedule.
+- Authentication uses the `Authorization: MediaBrowser Token=…` header, which
+  Jellyfin 12 requires and 10.11 accepts.
+
+### Added
+
+- `--dry-run` (or `JELLARR_DRY_RUN=1`): read-only by construction, prints
+  `path: current → desired` for every pending change with secrets masked, and
+  exits 0 for no changes, 2 for changes pending and 1 for an error.
+- Secret references: `{ _file: path }` for any value and `${VAR}` inside any
+  string, resolved after the YAML is parsed so a secret can't change the
+  config's structure.
+- Authentication falls back to signing in as the admin by name with its
+  `passwordFile` when no API key is set or the key is rejected. The key can also
+  come from `JELLARR_API_KEY_FILE`.
+- A wait for `/health` and for the API to stop returning 503 before the first
+  call (`--waitTimeout` or `JELLARR_WAIT_TIMEOUT`, default 300 seconds).
+- Startup wizard automation for a pristine server.
+- Full API coverage for networking, trickplay, encoding, library options and
+  server configuration; declarative `api_keys`; metadata configuration.
+- Users: download and bitrate policies, audio language preference, subtitle
+  mode, tag restrictions and per-user library order.
+- Plugins are matched by catalog GUID, kept up to date, and superseded copies
+  are uninstalled.
+- Library `ignoreChanges` for options another tool manages, covering every
+  library option.
+- NixOS module: `apiKeyFile` through systemd credentials, `configFile` as an
+  alternative to `config`, `jellyfinService` ordering, `waitTimeout`, and
+  `{ _file = …; }` accepted wherever a string is.
+
+### Fixed
+
+- Every module makes no changes on a second run with the same config. Library
+  options and branding used to rewrite themselves on every run.
+- Removing an entry from a list now reaches the server; a removal from the
+  middle of a list could previously corrupt it.
+- Library updates to existing folders are detected, including folder names with
+  quotes.
+- User configuration is sent to `/Users/Configuration?userId=`; branding is read
+  from `/Branding/Configuration`, which Jellyfin 12 requires.
+- All server configuration fields are applied, not just an allowlist.
+- API errors with an empty body, such as a 401, are reported as errors.
+- A plugin install interrupted before its restart is completed on the next run,
+  and server-added fields in plugin list entries are kept.
+- Secrets are masked in logs and dry-run output, including their JSON-escaped
+  form.
+- The API-key bootstrap no longer deadlocks during activation, updates the key
+  row by name, and fails on an unexpected database schema.
 
 ## [0.1.0] - 2025-01-24
 
@@ -318,6 +389,7 @@ branding:
 - **Library Configuration**: Content scanning intervals, metadata providers,
   subtitle preferences
 
+[0.3.0]: https://github.com/sini/jellarr/releases/tag/v0.3.0
 [0.1.0]: https://github.com/venkyr77/jellarr/compare/v0.0.3...v0.1.0
 [0.0.3]: https://github.com/venkyr77/jellarr/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/venkyr77/jellarr/compare/v0.0.1...v0.0.2
