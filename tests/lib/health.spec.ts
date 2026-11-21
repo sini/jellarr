@@ -110,7 +110,30 @@ describe("lib/health", () => {
         intervalMs: 5,
         fetchFn: fetchFn as unknown as typeof fetch,
       }),
-    ).rejects.toThrow(/API was still starting \(503\)/);
+    ).rejects.toThrow(/\/System\/Info\/Public did not return 200/);
+  });
+
+  it("whenApiReturns500WhileConfigurationLoads_thenKeepsWaiting", async () => {
+    // Arrange
+    let apiCalls: number = 0;
+    const fetchFn: Mock = vi.fn((url: string) => {
+      if (url.endsWith("/health"))
+        return Promise.resolve(new Response("Healthy", { status: 200 }));
+      apiCalls += 1;
+      return Promise.resolve(
+        new Response("", { status: apiCalls < 3 ? 500 : 200 }),
+      );
+    });
+
+    // Act
+    await waitForHealth("http://jf:8096", {
+      timeoutMs: 5000,
+      intervalMs: 1,
+      fetchFn: fetchFn as unknown as typeof fetch,
+    });
+
+    // Assert
+    expect(apiCalls).toBe(3);
   });
 
   it("whenCliSecondsGiven_thenTheyBeatTheEnvVar", () => {

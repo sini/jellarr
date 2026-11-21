@@ -452,7 +452,11 @@ you use will remove it from the server. Run the dry run first.
    stock `ExecStart`; the existing XML files and database are read as they are.
 5. **Check the run.** `systemctl status jellarr` and `journalctl -u jellarr`.
    jellarr applies at switch (through `timers.jellarr-apply`) and then on its
-   timer. Run `systemctl start jellarr` to apply again.
+   timer. Run `systemctl start jellarr` to apply again. The switch also restarts
+   Jellyfin, because its start command changes; jellarr waits for it to finish
+   starting. Before 0.3.1 that wait could end too early and the first run failed
+   with a 500 from `/System/Info/Public`; if you see that on 0.3.0, run
+   `systemctl start jellarr` once more.
 6. **Re-run the dry run** with the same config. It should exit 0.
 
 ## Rolling back

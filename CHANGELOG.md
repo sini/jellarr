@@ -15,6 +15,10 @@ and this project adheres to
   scan) and collapses a folder linked twice, where it previously reported "up to
   date" while Jellyfin scanned stale `.mblink` shortcuts. Skipped for a library
   that lists `pathInfos` in `ignoreChanges`.
+- The startup wait now requires `/System/Info/Public` to return 200, not just
+  "not 503". While Jellyfin is still loading its configuration it can answer
+  `/health` and then return 500 to API calls, which failed the first run after a
+  `nixos-rebuild switch` that restarted Jellyfin.
 
 ## [0.3.0] - 2026-11-21
 
