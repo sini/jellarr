@@ -19,20 +19,24 @@ commit since 2026-08-15, and several working pull requests are still waiting for
 review there, so this fork collects that work in one place, tests it together,
 and releases it.
 
-It starts from [typedrat/jellarr](https://github.com/typedrat/jellarr), where
-Alexis Williams had already merged upstream's unreleased v0.1.1 branch and
-upstream PRs #69, #71, #73, #79 (the `Authorization` header Jellyfin 12
-requires) and #82, plus their own plugin and library work. On top of that, this
-fork carries:
+Jellarr was created by [@venkyr77](https://github.com/venkyr77) (Venkatesan
+Ravi), and everything in upstream's history is theirs and its contributors'.
+This fork starts from [typedrat/jellarr](https://github.com/typedrat/jellarr)
+and adds work from several other forks and open upstream pull requests. Here is
+everything it carries beyond upstream `main`:
 
-| From                                                     | What                                                                                                                                                                                                     |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [@sini](https://github.com/sini) (upstream #68)          | Full API coverage for networking, trickplay, encoding, library options and server configuration; declarative API keys                                                                                    |
-| [@booxter](https://github.com/booxter) (Ihar Hrachyshka) | Download and bitrate policies (upstream #72), the user configuration endpoint fix, audio language preference, tag restrictions, per-user library order, metadata configuration, a library-update VM test |
-| [@arseneyr](https://github.com/arseneyr)                 | `{ _file: path }` secret references, since widened to the whole config alongside `${VAR}`                                                                                                                |
-| [@cramt](https://github.com/cramt) (upstream #60)        | Startup wizard automation, adapted to sign in as the admin rather than write an API key                                                                                                                  |
-| [@Jampard](https://github.com/Jampard)                   | The Jellyfin 12 branding route, the bootstrap deadlock fix, the wait for plugins to become Active                                                                                                        |
-| [@ironoa](https://github.com/ironoa)                     | `response.ok` checks that catch empty-body 401s                                                                                                                                                          |
+| From                                                       | What                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@venkyr77](https://github.com/venkyr77) (Venkatesan Ravi) | The unreleased v0.1.1 release branch (upstream #66)                                                                                                                                                                                                                                             |
+| [@typedrat](https://github.com/typedrat) (Alexis Williams) | The consolidation this fork is based on; subtitle mode for users; plugins matched by catalog GUID and kept up to date; uninstalling superseded plugin copies; trickplay options mapped only when set; library `ignoreChanges`; tests run during the Nix build                                   |
+| [@booxter](https://github.com/booxter) (Ihar Hrachyshka)   | Graceful handling of missing plugin configuration (upstream #71); an overridable package (#73); download and bitrate policies (#72); the user configuration endpoint fix; audio language preference; tag restrictions; per-user library order; metadata configuration; a library-update VM test |
+| [@beefyhalo](https://github.com/beefyhalo) (Kevin Horlick) | Authentication with the `Authorization` header, which Jellyfin 12 requires (upstream #79)                                                                                                                                                                                                       |
+| [@noamsto](https://github.com/noamsto) (Noam Stolero)      | Tone mapping options (upstream #82)                                                                                                                                                                                                                                                             |
+| [@sini](https://github.com/sini) (Jason Bowman)            | Library update detection (upstream #69); full API coverage for networking, trickplay, encoding, library options and server configuration, plus declarative API keys (#68); the features listed below                                                                                            |
+| [@arseneyr](https://github.com/arseneyr)                   | `{ _file: path }` secret references, since widened to the whole config alongside `${VAR}`                                                                                                                                                                                                       |
+| [@cramt](https://github.com/cramt) (Alexandra Østermark)   | Startup wizard automation (upstream #60), adapted to sign in as the admin rather than write an API key                                                                                                                                                                                          |
+| [@Jampard](https://github.com/Jampard)                     | The Jellyfin 12 branding route; the bootstrap deadlock fix; waiting for plugins to become Active after a restart                                                                                                                                                                                |
+| [@ironoa](https://github.com/ironoa)                       | `response.ok` checks that catch empty-body 401s                                                                                                                                                                                                                                                 |
 
 New in this fork:
 
