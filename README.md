@@ -11,6 +11,63 @@ across environments, and reduces manual intervention.
 
 ---
 
+## About this fork
+
+This is a community-maintained fork of
+[venkyr77/jellarr](https://github.com/venkyr77/jellarr). Upstream hasn't had a
+commit since 2026-08-15, and several working pull requests are still waiting for
+review there, so this fork collects that work in one place, tests it together,
+and releases it.
+
+It starts from [typedrat/jellarr](https://github.com/typedrat/jellarr), where
+Alexis Williams had already merged upstream's unreleased v0.1.1 branch and
+upstream PRs #69, #71, #73, #79 (the `Authorization` header Jellyfin 12
+requires) and #82, plus their own plugin and library work. On top of that, this
+fork carries:
+
+| From                                                     | What                                                                                                                                                                                                     |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@sini](https://github.com/sini) (upstream #68)          | Full API coverage for networking, trickplay, encoding, library options and server configuration; declarative API keys                                                                                    |
+| [@booxter](https://github.com/booxter) (Ihar Hrachyshka) | Download and bitrate policies (upstream #72), the user configuration endpoint fix, audio language preference, tag restrictions, per-user library order, metadata configuration, a library-update VM test |
+| [@arseneyr](https://github.com/arseneyr)                 | `{ _file: path }` secret references, since widened to the whole config alongside `${VAR}`                                                                                                                |
+| [@cramt](https://github.com/cramt) (upstream #60)        | Startup wizard automation, adapted to sign in as the admin rather than write an API key                                                                                                                  |
+| [@Jampard](https://github.com/Jampard)                   | The Jellyfin 12 branding route, the bootstrap deadlock fix, the wait for plugins to become Active                                                                                                        |
+| [@ironoa](https://github.com/ironoa)                     | `response.ok` checks that catch empty-body 401s                                                                                                                                                          |
+
+New in this fork:
+
+- `--dry-run`: strictly read-only, prints `path: current → desired` for every
+  pending change, masks secrets, and exits 0 / 2 / 1 for no change / changes
+  pending / error, so it can gate CI or a deploy.
+- Authentication falls back to signing in as the admin when no API key is set or
+  the key is rejected; the API key can also come from `JELLARR_API_KEY_FILE`.
+- `passwordFile` is reconciled for existing users without risking lockout or
+  logging anyone out unnecessarily.
+- Plugin installs and removals restart Jellyfin in the same run, so plugin
+  configuration applies on the first pass.
+- Declared arrays are authoritative in every module, and every module is tested
+  to make no changes on a second run with the same config.
+- The NixOS module orders after Jellyfin, re-applies on `nixos-rebuild switch`,
+  takes `apiKeyFile` through systemd credentials, accepts `{ _file = ...; }`
+  wherever it accepts a string, and can take a plain `configFile`.
+- The NixOS VM tests run against both Jellyfin 10.11 and 12.
+
+Coming from upstream v0.1.1? Read [CHANGELOG.md](CHANGELOG.md) first. A few
+behaviours changed, most notably that strings containing `${NAME}` are now
+expanded from the environment (write `$${` for a literal `${`).
+
+Releases start at v0.3.0. Another fork has already published 0.2.x, and skipping
+it keeps the two from being confused.
+
+Commits taken from other forks are cherry-picked with their original author.
+Where a change had to be rewritten, the commit carries `Co-authored-by` and
+`Adapted-from` trailers that point at the source. If you maintain a fork with
+work that isn't here, pull requests are welcome, and we'd rather converge than
+split the community further. If upstream becomes active again, we'll offer all
+of this back.
+
+---
+
 ## Why Jellarr?
 
 Managing Jellyfin configuration becomes painful at scale:
@@ -50,13 +107,13 @@ pioneered declarative Jellyfin configuration, it takes a risky approach:
 
 ```bash
 # With Nix
-nix run github:venkyr77/jellarr/v0.0.1
+nix run github:sini/jellarr/v0.3.0
 
 # With Docker
-docker pull ghcr.io/venkyr77/jellarr:v0.0.1
+docker pull ghcr.io/sini/jellarr:v0.3.0
 
 # Download binary (requires Node.js 24+)
-./jellarr-v0.0.1
+node jellarr-v0.3.0.cjs --configFile path/to/config.yml
 ```
 
 **Example config** (`config/config.yml`):
@@ -86,7 +143,7 @@ Add to your `flake.nix`:
 
 ```nix
 {
-  inputs.jellarr.url = "github:venkyr77/jellarr";
+  inputs.jellarr.url = "github:sini/jellarr";
 
   outputs = { self, nixpkgs, jellarr, ... }: {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
@@ -113,13 +170,13 @@ Add to your `flake.nix`:
 Or run directly:
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run github:venkyr77/jellarr/v0.0.1
+JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.3.0
 ```
 
 ### Docker (Recommended)
 
 ```bash
-docker pull ghcr.io/venkyr77/jellarr:v0.0.1
+docker pull ghcr.io/sini/jellarr:v0.3.0
 ```
 
 **With docker-compose:**
@@ -127,7 +184,7 @@ docker pull ghcr.io/venkyr77/jellarr:v0.0.1
 ```yaml
 services:
     jellarr:
-        image: ghcr.io/venkyr77/jellarr:v0.0.1
+        image: ghcr.io/sini/jellarr:v0.3.0
         container_name: jellarr
         environment:
             - JELLARR_API_KEY=${JELLARR_API_KEY}
@@ -139,12 +196,12 @@ services:
 
 ### Bundle Download
 
-Download from [releases](https://github.com/venkyr77/jellarr/releases) (requires
+Download from [releases](https://github.com/sini/jellarr/releases) (requires
 Node.js 24+):
 
 ```bash
-curl -LO https://github.com/venkyr77/jellarr/releases/download/v0.0.2/jellarr-v0.0.2.cjs
-JELLARR_API_KEY=your_api_key node jellarr-v0.0.2.cjs --configFile path/to/config.yml
+curl -LO https://github.com/sini/jellarr/releases/download/v0.3.0/jellarr-v0.3.0.cjs
+JELLARR_API_KEY=your_api_key node jellarr-v0.3.0.cjs --configFile path/to/config.yml
 ```
 
 **Note:** Requires Node.js 24+ installed on your system.
@@ -685,7 +742,7 @@ jellarr
 ```bash
 docker run -e JELLARR_API_KEY=your_api_key \
   -v ./config:/config:ro \
-  ghcr.io/venkyr77/jellarr:v0.0.1
+  ghcr.io/sini/jellarr:v0.3.0
 ```
 
 ### API Key Bootstrap (NixOS, Same Host Only)

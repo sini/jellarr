@@ -38,10 +38,10 @@ jobs:
 
             ```bash
             # With Nix
-            nix run github:venkyr77/jellarr/${{ github.ref_name }}
+            nix run github:${{ github.repository }}/${{ github.ref_name }}
 
             # With Docker
-            docker pull ghcr.io/venkyr77/jellarr:${{ github.ref_name }}
+            docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
 
             # Download bundle (requires Node.js 24+)
             node jellarr-${{ github.ref_name }}.cjs --configFile path/to/config.yml
@@ -49,6 +49,6 @@ jobs:
 
             ## Changelog
 
-            See [CHANGELOG.md](https://github.com/venkyr77/jellarr/blob/main/CHANGELOG.md) for detailed release notes.
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed release notes.
           draft: false
           prerelease: false
