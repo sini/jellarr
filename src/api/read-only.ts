@@ -10,6 +10,7 @@ const READ_ONLY: ReadonlySet<string> = new Set([
   "getMetadataConfiguration",
   "getVirtualFolders",
   "getBrandingConfiguration",
+  "getSplashscreen",
   "getUsers",
   "getPlugins",
   "getPackages",

@@ -502,6 +502,53 @@ describe("api/jf Metadata façade", () => {
   });
 });
 
+describe("api/jf Splashscreen", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when GET /Branding/Splashscreen returns an image then it returns the raw bytes", async (): Promise<void> => {
+    fetchMock = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(new Uint8Array([1, 2, 3]), {
+        status: 200,
+        headers: { "content-type": "image/png" },
+      }),
+    );
+
+    const out: Uint8Array = await createJellyfinClient(
+      baseUrl,
+      apiKey,
+    ).getSplashscreen();
+
+    expect(Array.from(out)).toEqual([1, 2, 3]);
+    expect(getLastRequest().url).toMatch(/\/Branding\/Splashscreen$/);
+  });
+
+  it("when uploading then it POSTs the base64 text as an image body", async (): Promise<void> => {
+    mockFetchNoContent();
+
+    await createJellyfinClient(baseUrl, apiKey).uploadSplashscreen(
+      new Uint8Array([1, 2, 3]),
+    );
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Branding\/Splashscreen$/);
+    expect(req.headers.get("content-type")).toBe("image/png");
+    expect(await req.text()).toBe("AQID");
+  });
+
+  it("when the upload is rejected then it throws with the status", async (): Promise<void> => {
+    mockFetchNoContent(400);
+
+    await expect(
+      createJellyfinClient(baseUrl, apiKey).uploadSplashscreen(
+        new Uint8Array([1]),
+      ),
+    ).rejects.toThrow(/POST \/Branding\/Splashscreen failed: 400/);
+  });
+});
+
 describe("api/jf Branding façade", () => {
   beforeEach((): void => {
     vi.restoreAllMocks();

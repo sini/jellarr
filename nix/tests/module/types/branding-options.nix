@@ -40,6 +40,12 @@ in [
       splashscreenEnabled = false;
     })
 
+  (assertEq "splashscreenFile is emitted as a path string" (mkBrandingOptionsConfig {
+      splashscreenFile = "/srv/splash.png";
+    }) {
+      splashscreenFile = "/srv/splash.png";
+    })
+
   (assertEq "empty config" (mkBrandingOptionsConfig {
     loginDisclaimer = null;
     customCss = null;

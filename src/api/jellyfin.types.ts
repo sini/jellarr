@@ -118,6 +118,8 @@ export interface JellyfinClient {
   updateBrandingConfiguration(
     body: Partial<BrandingOptionsDtoSchema>,
   ): Promise<void>;
+  getSplashscreen(): Promise<Uint8Array>;
+  uploadSplashscreen(image: Uint8Array): Promise<void>;
   getUsers(): Promise<UserDtoSchema[]>;
   createUser(body: CreateUserByNameSchema): Promise<void>;
   updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;
