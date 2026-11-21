@@ -11,6 +11,11 @@ import { PluginConfigListType } from "./plugins";
 import { ApiKeyConfigListType } from "./api-keys";
 import { LiveTvConfigType } from "./livetv";
 
+interface RootConfigInput {
+  system: { pluginRepositories?: Array<{ name: string }> | undefined };
+  plugins?: Array<{ repository?: string | undefined }> | undefined;
+}
+
 export const RootConfigType: z.ZodObject<{
   version: z.ZodNumber;
   base_url: z.ZodURL;
@@ -41,6 +46,24 @@ export const RootConfigType: z.ZodObject<{
     api_keys: ApiKeyConfigListType.optional(),
     livetv: LiveTvConfigType.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((cfg: RootConfigInput, ctx: z.RefinementCtx): void => {
+    const known: Set<string> = new Set(
+      (cfg.system.pluginRepositories ?? []).map(
+        (repository: { name: string }) => repository.name,
+      ),
+    );
+    (cfg.plugins ?? []).forEach(
+      (plugin: { repository?: string | undefined }, index: number): void => {
+        if (plugin.repository !== undefined && !known.has(plugin.repository)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["plugins", index, "repository"],
+            message: `Plugin repository "${plugin.repository}" is not declared in system.pluginRepositories`,
+          });
+        }
+      },
+    );
+  });
 
 export type RootConfig = z.infer<typeof RootConfigType>;

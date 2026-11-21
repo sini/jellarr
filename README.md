@@ -693,6 +693,10 @@ plugins:
     # Hold a plugin at a specific version
     - name: "Shoko"
       version: "6.0.5.4012"
+
+    # Take one plugin from a named repository; the others use any repository
+    - name: "Fanart"
+      repository: "Dev"
 ```
 
 **How it works:**
@@ -703,13 +707,21 @@ plugins:
   plugins are matched by the catalog entry's GUID, so a plugin that reports a
   different name once installed (e.g. "SSO Authentication" installs as
   "SSO-Auth") is still recognized
+- When several repositories list the same plugin, Jellyfin merges them (by GUID,
+  else name) and every version from every repository is a candidate, each
+  installed from the repository it came from. `repository` names an entry of
+  `system.pluginRepositories` and restricts the plugin to that repository's
+  versions; an undeclared name is a configuration error
 - Without `version`, each plugin is kept at the newest version its repositories
   offer for the running Jellyfin version, so changing a repository URL or
   upgrading Jellyfin upgrades the plugin on the next run
 - With `version`, that version is installed and the plugin is held there.
   Jellyfin always loads the newest installed copy of a plugin, so a pin below
   the installed version is reported but not applied; uninstall the plugin to
-  downgrade
+  downgrade. A pin equal to the installed version does nothing even when no
+  repository offers it any more, and an unavailable pin on an installed plugin
+  is warned about and left alone (it is an error only when the plugin is not
+  installed)
 - Once an upgraded plugin is active, its older copies that Jellyfin reports as
   `Superseded` are uninstalled (copies in any other state are left alone).
   Jellyfin keeps loading a superseded copy's assemblies, whose API routes then

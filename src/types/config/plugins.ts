@@ -12,6 +12,7 @@ export type PluginConfigurationConfig = z.infer<
 export const PluginConfigType: z.ZodObject<{
   name: z.ZodString;
   version: z.ZodOptional<z.ZodString>;
+  repository: z.ZodOptional<z.ZodString>;
   configuration: z.ZodOptional<typeof PluginConfigurationConfigType>;
 }> = z
   .object({
@@ -19,6 +20,10 @@ export const PluginConfigType: z.ZodObject<{
     version: z
       .string()
       .regex(/^\d+(\.\d+){0,3}$/, "Plugin version must look like 1.2.3.4")
+      .optional(),
+    repository: z
+      .string()
+      .min(1, "Plugin repository cannot be empty")
       .optional(),
     configuration: PluginConfigurationConfigType.optional(),
   })

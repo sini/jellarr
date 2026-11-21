@@ -227,6 +227,126 @@ describe("calculatePluginInstalls", () => {
     ).toThrow(/no version 9.9.9/);
   });
 
+  it("should leave a pinned installed version the catalog no longer offers", () => {
+    expect(
+      calculatePluginInstalls(
+        [installedPlugin("Example Plugin", EXAMPLE_GUID, "3.0.0.0")],
+        catalog,
+        [{ name: "Example Plugin", version: "3.0.0" }],
+        "12.2.0",
+      ),
+    ).toBeUndefined();
+    expect(
+      calculatePluginInstalls(
+        [
+          installedPlugin(
+            "Gone",
+            "11111111-2222-4333-8444-555555555555",
+            "1.0.0",
+          ),
+        ],
+        catalog,
+        [{ name: "Gone", version: "1.0.0" }],
+        "12.2.0",
+      ),
+    ).toBeUndefined();
+  });
+
+  it("should warn and leave an installed plugin whose pin is unavailable", () => {
+    expect(
+      calculatePluginInstalls(
+        [installedPlugin("Example Plugin", EXAMPLE_GUID, "4.0.0.4")],
+        catalog,
+        [{ name: "Example Plugin", version: "9.9.9" }],
+        "12.2.0",
+      ),
+    ).toBeUndefined();
+  });
+
+  it("should merge versions of one plugin across catalog entries", () => {
+    const stable: PackageInfoSchema = {
+      name: "Example Plugin",
+      guid: EXAMPLE_GUID,
+      versions: [
+        {
+          version: "1.0.0",
+          targetAbi: "10.11.0.0",
+          repositoryName: "Stable",
+          repositoryUrl: "https://example.invalid/stable.json",
+        },
+      ],
+    } as PackageInfoSchema;
+    const dev: PackageInfoSchema = {
+      name: "Example Plugin",
+      guid: EXAMPLE_GUID.toUpperCase(),
+      versions: [
+        {
+          version: "2.0.0",
+          targetAbi: "10.11.0.0",
+          repositoryName: "Dev",
+          repositoryUrl: "https://example.invalid/dev.json",
+        },
+      ],
+    } as PackageInfoSchema;
+    const result: PluginInstall[] | undefined = calculatePluginInstalls(
+      [],
+      [stable, dev],
+      [{ name: "Example Plugin" }],
+      "12.2.0",
+    );
+    expect(result?.[0]?.version).toBe("2.0.0");
+    expect(result?.[0]?.repositoryUrl).toBe("https://example.invalid/dev.json");
+
+    expect(
+      calculatePluginInstalls(
+        [],
+        [stable, dev],
+        [{ name: "Example Plugin", version: "1.0.0" }],
+        "12.2.0",
+      )?.[0]?.repositoryUrl,
+    ).toBe("https://example.invalid/stable.json");
+  });
+
+  it("should only consider the chosen repository", () => {
+    const entry: PackageInfoSchema = {
+      name: "Example Plugin",
+      guid: EXAMPLE_GUID,
+      versions: [
+        {
+          version: "2.0.0",
+          targetAbi: "10.11.0.0",
+          repositoryName: "Dev",
+          repositoryUrl: "https://example.invalid/dev.json",
+        },
+        {
+          version: "1.0.0",
+          targetAbi: "10.11.0.0",
+          repositoryName: "Stable",
+          repositoryUrl: "https://example.invalid/stable.json",
+        },
+      ],
+    } as PackageInfoSchema;
+    expect(
+      calculatePluginInstalls(
+        [],
+        [entry],
+        [{ name: "Example Plugin", repository: "Stable" }],
+        "12.2.0",
+      )?.[0],
+    ).toMatchObject({
+      version: "1.0.0",
+      repositoryUrl: "https://example.invalid/stable.json",
+    });
+    expect(() =>
+      calculatePluginInstalls(
+        [],
+        [entry],
+        [{ name: "Example Plugin", repository: "Other" }],
+        "12.2.0",
+      ),
+    ).toThrow(/in repository "Other"/);
+  });
+
   it("should throw for a missing plugin that is in no repository", () => {
     expect(() =>
       calculatePluginInstalls([], catalog, [{ name: "Trakt" }], "12.2.0"),

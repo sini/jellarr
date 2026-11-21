@@ -83,6 +83,29 @@ in [
       {name = "Playback Reporting";}
     ])
 
+  (assertEq "with repository" (mkPluginsConfig [
+      {
+        name = "Trakt";
+        repository = "Dev";
+        configuration = null;
+      }
+    ]) [
+      {
+        name = "Trakt";
+        repository = "Dev";
+      }
+    ])
+
+  (assertEq "null repository omitted" (mkPluginsConfig [
+      {
+        name = "Trakt";
+        repository = null;
+        configuration = null;
+      }
+    ]) [
+      {name = "Trakt";}
+    ])
+
   (assertThrows "reject empty name" (mkPluginsConfig [
     {
       name = "";

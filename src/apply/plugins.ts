@@ -69,11 +69,41 @@ function isCompatible(
   );
 }
 
+/**
+ * Merges every catalog entry for the desired plugin: those with its name, and
+ * any other entry sharing a GUID with one of them. Jellyfin usually merges
+ * repositories itself (by GUID, else name) but keeps the first entry's other
+ * fields, so entries that still differ (a renamed plugin, an older server)
+ * must not hide each other's versions. Each version keeps its own
+ * repositoryUrl and repositoryName.
+ */
 function findPackage(
   catalog: PackageInfoSchema[],
   desired: PluginConfig,
 ): PackageInfoSchema | undefined {
-  return catalog.find((pkg: PackageInfoSchema) => pkg.name === desired.name);
+  const named: PackageInfoSchema[] = catalog.filter(
+    (pkg: PackageInfoSchema) => pkg.name === desired.name,
+  );
+  const first: PackageInfoSchema | undefined = named.at(0);
+  if (!first) return undefined;
+  const guids: Set<string> = new Set(
+    named.flatMap((pkg: PackageInfoSchema) =>
+      pkg.guid ? [normalizeGuid(pkg.guid)] : [],
+    ),
+  );
+  const entries: PackageInfoSchema[] = catalog.filter(
+    (pkg: PackageInfoSchema) =>
+      pkg.name === desired.name ||
+      (pkg.guid !== undefined && guids.has(normalizeGuid(pkg.guid))),
+  );
+  const guid: string | undefined = entries.find(
+    (pkg: PackageInfoSchema) => pkg.guid,
+  )?.guid;
+  return {
+    ...first,
+    ...(guid ? { guid } : {}),
+    versions: entries.flatMap((pkg: PackageInfoSchema) => pkg.versions ?? []),
+  };
 }
 
 /**
@@ -114,7 +144,9 @@ function chooseVersion(
   serverVersion: string,
 ): VersionInfoSchema | undefined {
   const versions: VersionInfoSchema[] = (pkg.versions ?? []).filter(
-    (version: VersionInfoSchema) => isCompatible(version, serverVersion),
+    (version: VersionInfoSchema) =>
+      isCompatible(version, serverVersion) &&
+      (!desired.repository || version.repositoryName === desired.repository),
   );
 
   if (desired.version) {
@@ -124,11 +156,6 @@ function chooseVersion(
         version.version !== undefined &&
         compareVersions(version.version, pinned) === 0,
     );
-    if (!match) {
-      throw new Error(
-        `Plugin "${desired.name}" has no version ${pinned} compatible with Jellyfin ${serverVersion}`,
-      );
-    }
     return match;
   }
 
@@ -159,7 +186,13 @@ export function calculatePluginInstalls(
       findInstalled(installed, pkg, plugin),
     );
 
+    const pinnedInstalled: boolean =
+      !!plugin.version &&
+      installedVersion !== undefined &&
+      compareVersions(plugin.version, installedVersion) === 0;
+
     if (!pkg?.guid) {
+      if (pinnedInstalled) continue;
       if (installedVersion) {
         logger.warn(
           `Plugin "${plugin.name}" is not in any configured repository; leaving ${installedVersion} as is`,
@@ -177,14 +210,21 @@ export function calculatePluginInstalls(
       serverVersion,
     );
     if (!target?.version) {
+      if (pinnedInstalled) continue;
+      const wanted: string = plugin.version
+        ? `version ${plugin.version}`
+        : "version";
+      const where: string = plugin.repository
+        ? ` in repository "${plugin.repository}"`
+        : "";
       if (installedVersion) {
         logger.warn(
-          `Plugin "${plugin.name}" has no version compatible with Jellyfin ${serverVersion}; leaving ${installedVersion} as is`,
+          `Plugin "${plugin.name}" has no ${wanted} compatible with Jellyfin ${serverVersion}${where}; leaving ${installedVersion} as is`,
         );
         continue;
       }
       throw new Error(
-        `Plugin "${plugin.name}" has no version compatible with Jellyfin ${serverVersion}`,
+        `Plugin "${plugin.name}" has no ${wanted} compatible with Jellyfin ${serverVersion}${where}`,
       );
     }
 

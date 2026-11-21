@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2026-11-21
+
+### Fixed
+
+- A plugin pinned to a version that is already installed no longer fails the run
+  when the repositories stop offering that version. An unavailable pin on an
+  installed plugin is warned about and left as is; it is an error only when the
+  plugin is not installed.
+- Versions of one plugin from several repositories are all candidates, each
+  installed from its own repository, instead of only the first catalog entry's.
+
+### Added
+
+- `repository` on a plugin entry (and the NixOS module's plugin option) takes a
+  name from `system.pluginRepositories` and restricts that plugin to the
+  versions that repository offers. An undeclared name is a validation error.
+
 ## [0.3.2] - 2026-11-21
 
 ### Fixed
@@ -428,6 +445,7 @@ branding:
 - **Library Configuration**: Content scanning intervals, metadata providers,
   subtitle preferences
 
+[0.3.3]: https://github.com/sini/jellarr/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/sini/jellarr/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/sini/jellarr/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/sini/jellarr/releases/tag/v0.3.0

@@ -797,4 +797,31 @@ describe("RootConfig", () => {
       expect(result.error.issues.length).toBeGreaterThan(0);
     }
   });
+
+  it("should require a plugin repository to be declared", () => {
+    const base: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {
+        pluginRepositories: [
+          {
+            name: "Dev",
+            url: "https://example.invalid/dev.json",
+            enabled: true,
+          },
+        ],
+      },
+      plugins: [{ name: "Example Plugin", repository: "Dev" }],
+    };
+    expect(RootConfigType.safeParse(base).success).toBe(true);
+    expect(
+      RootConfigType.safeParse({
+        ...base,
+        plugins: [{ name: "Example Plugin", repository: "Nope" }],
+      }).success,
+    ).toBe(false);
+    expect(RootConfigType.safeParse({ ...base, system: {} }).success).toBe(
+      false,
+    );
+  });
 });
