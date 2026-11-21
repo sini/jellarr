@@ -7,6 +7,7 @@
   cfg = config.services.jellarr;
   bootstrapCfg = cfg.bootstrap;
   bootstrapEnabled = cfg.enable && bootstrapCfg.enable;
+  allKeys = {${bootstrapCfg.apiKeyName} = bootstrapCfg.apiKeyFile;} // bootstrapCfg.extraKeys;
 
   types = import ./types {inherit lib;};
   configFile =
@@ -112,6 +113,14 @@ in {
           assertion = cfg.jellyfinService != null;
           message = "services.jellarr.jellyfinService must be set when bootstrap is enabled.";
         }
+        {
+          assertion = !(builtins.hasAttr bootstrapCfg.apiKeyName bootstrapCfg.extraKeys);
+          message = "services.jellarr.bootstrap.extraKeys must not contain apiKeyName (${bootstrapCfg.apiKeyName}); that key is set by apiKeyFile.";
+        }
+        {
+          assertion = lib.all (name: builtins.match "[A-Za-z0-9._ -]+" name != null) (builtins.attrNames allKeys);
+          message = "services.jellarr.bootstrap key names (apiKeyName and extraKeys) may only contain letters, digits, '.', '_', '-' and spaces.";
+        }
       ];
 
       systemd.services.jellarr-api-key-bootstrap = {
@@ -124,14 +133,28 @@ in {
         ];
         script = let
           dbPath = "${bootstrapCfg.jellyfinDataDir}/data/jellyfin.db";
+          addKeys = lib.concatStringsSep "\n" (lib.mapAttrsToList (
+              name: file: "add_key ${lib.escapeShellArg name} ${lib.escapeShellArg (toString file)}"
+            )
+            allKeys);
         in
           # sh
           ''
             set -euo pipefail
 
             DB="${dbPath}"
-            API_KEY=$(cat ${bootstrapCfg.apiKeyFile} | tr -d '[:space:]')
-            API_KEY_NAME="${bootstrapCfg.apiKeyName}"
+
+            declare -A wanted
+            add_key() {
+              local token
+              token=$(tr -d '[:space:]' < "$2")
+              if ! [[ "$token" =~ ^[A-Za-z0-9._~+/=-]+$ ]]; then
+                echo "API key '$1': $2 is empty or holds characters outside A-Za-z0-9._~+/=-" >&2
+                exit 1
+              fi
+              wanted["$1"]=$token
+            }
+            ${addKeys}
 
             until [ -e "$DB" ]; do
               sleep 1
@@ -150,34 +173,40 @@ in {
               exit 1
             fi
 
-            # Check if key exists and matches current value
-            existing_token=$(sqlite3 "$DB" "SELECT AccessToken FROM ApiKeys WHERE Name='$API_KEY_NAME';")
-            if [ "$existing_token" = "$API_KEY" ]; then
-              echo "API key '$API_KEY_NAME' already exists with correct value, skipping"
-              exit 0
-            fi
+            # Check which keys are missing or hold a different value
+            mapfile -t names < <(printf '%s\n' "''${!wanted[@]}" | sort)
+            changed=()
+            for name in "''${names[@]}"; do
+              existing_token=$(sqlite3 "$DB" "SELECT AccessToken FROM ApiKeys WHERE Name='$name';")
+              if [ "$existing_token" = "''${wanted[$name]}" ]; then
+                echo "API key '$name' already exists with correct value, skipping"
+              elif [ -n "$existing_token" ]; then
+                echo "API key '$name' value changed, updating..."
+                changed+=("$name")
+              else
+                echo "Inserting API key '$name' into Jellyfin database..."
+                changed+=("$name")
+              fi
+            done
+            [ "''${#changed[@]}" -eq 0 ] && exit 0
 
-            # Key missing or value changed - need to stop Jellyfin to safely update
-            if [ -n "$existing_token" ]; then
-              echo "API key '$API_KEY_NAME' value changed, updating..."
-            else
-              echo "Inserting API key '$API_KEY_NAME' into Jellyfin database..."
-            fi
+            # Stop Jellyfin once to update every changed key safely
             systemctl stop ${cfg.jellyfinService}
 
             sleep 5
 
-            sqlite3 -bail "$DB" <<SQL
-            BEGIN IMMEDIATE;
-            UPDATE ApiKeys SET AccessToken='$API_KEY', DateLastActivity=datetime('now') WHERE Name='$API_KEY_NAME';
-            INSERT INTO ApiKeys (AccessToken, Name, DateCreated, DateLastActivity)
-            SELECT '$API_KEY', '$API_KEY_NAME', datetime('now'), datetime('now')
-            WHERE NOT EXISTS (SELECT 1 FROM ApiKeys WHERE Name='$API_KEY_NAME');
-            COMMIT;
-            SQL
+            {
+              echo "BEGIN IMMEDIATE;"
+              for name in "''${changed[@]}"; do
+                token="''${wanted[$name]}"
+                echo "UPDATE ApiKeys SET AccessToken='$token', DateLastActivity=datetime('now') WHERE Name='$name';"
+                echo "INSERT INTO ApiKeys (AccessToken, Name, DateCreated, DateLastActivity) SELECT '$token', '$name', datetime('now'), datetime('now') WHERE NOT EXISTS (SELECT 1 FROM ApiKeys WHERE Name='$name');"
+              done
+              echo "COMMIT;"
+            } | sqlite3 -bail "$DB"
 
             systemctl start ${cfg.jellyfinService}
-            echo "API key configured, Jellyfin restarted"
+            echo "API keys configured, Jellyfin restarted"
           '';
         serviceConfig = {
           Type = "oneshot";

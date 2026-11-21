@@ -46,6 +46,21 @@ in {
         type = lib.types.str;
       };
 
+      extraKeys = lib.mkOption {
+        default = {};
+        description = ''
+          More API keys to seed with known values, as `{ <name> = <path to file>; }`.
+          Each file holds only the key value (whitespace is trimmed). They are
+          upserted by name exactly like `apiKeyName`, in the same single stop and
+          restart of Jellyfin, so applications that already hold a key can keep it
+          after a migration. Names are limited to letters, digits, `.`, `_`, `-`
+          and spaces; a value outside `A-Za-z0-9._~+/=-` fails the service.
+          The CLI's `api_keys` stays create-only and cannot do this.
+        '';
+        example = lib.literalExpression ''{ "my-app" = "/run/secrets/my-app-key"; }'';
+        type = lib.types.attrsOf lib.types.path;
+      };
+
       jellyfinDataDir = lib.mkOption {
         default = config.services.jellyfin.dataDir;
         description = ''

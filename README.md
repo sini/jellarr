@@ -857,6 +857,16 @@ another host) and pass it through `environmentFile`.
    Otherwise it stops Jellyfin, upserts the row by name (a rotated key replaces
    the old value instead of adding a row) and restarts Jellyfin
 
+**Several keys:**
+`bootstrap.extraKeys = { "my-app" = "/run/secrets/my-app-key"; };` seeds more
+keys with values you choose, which the API cannot do, so applications that
+already hold a key keep it after a migration. Every key is checked and upserted
+by name the same way, and Jellyfin is stopped and restarted once for all of
+them. A key file that is empty or holds characters outside `A-Za-z0-9._~+/=-`
+fails the service, as does a name outside letters, digits, `.`, `_`, `-` and
+spaces or one equal to `apiKeyName`. The CLI's `api_keys` list stays
+create-only.
+
 **Important notes:**
 
 - This **only works when Jellarr and Jellyfin are on the same host** - it
@@ -887,6 +897,7 @@ All options live under `services.jellarr`.
 | `bootstrap.enable`          | `false`              | Seed the API key into Jellyfin's database (same host only)                                                       |
 | `bootstrap.apiKeyFile`      | `apiKeyFile`         | File with the key to seed                                                                                        |
 | `bootstrap.apiKeyName`      | `"jellarr"`          | Name of the key row; the upsert key                                                                              |
+| `bootstrap.extraKeys`       | `{}`                 | More keys to seed, `{ <name> = <file>; }`, upserted by name with the same checks                                 |
 | `bootstrap.jellyfinDataDir` | Jellyfin `dataDir`   | Directory holding `data/jellyfin.db`                                                                             |
 
 Inside `config`, every string option also accepts `{ _file = "/path"; }`, which
