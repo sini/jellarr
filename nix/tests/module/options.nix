@@ -36,7 +36,7 @@
     };
   };
   svc = typed.config.systemd.services.jellarr;
-  rendered = builtins.head svc.restartTriggers;
+  rendered = builtins.head typed.config.systemd.timers.jellarr-apply.restartTriggers;
 
   withFile = eval {
     services.jellarr.configFile = "/etc/jellarr.yml";

@@ -838,11 +838,13 @@ services.jellarr.config.networking.certificatePassword = {
 
 ### When the NixOS module runs
 
-`jellarr.service` is a oneshot. It runs on the `services.jellarr.schedule` timer
-and also at every `nixos-rebuild switch` (it is wanted by `multi-user.target`
-and restarts when the rendered config changes), so a config change is applied
-without waiting for the timer. The unit does not set `RemainAfterExit`, which
-would stop the timer from running it again.
+`jellarr.service` is a oneshot ordered after and wanting `jellyfinService`; the
+CLI itself waits for Jellyfin to be healthy. It runs from two timers:
+`jellarr.timer` (`services.jellarr.schedule`) and `jellarr-apply.timer`, which
+fires when it activates, so at boot and after a `nixos-rebuild switch` that
+changed the rendered config. Neither boot nor switch waits for the run to
+finish. The unit does not set `RemainAfterExit`, which would stop the timers
+from running it again.
 
 ### Library `ignoreChanges` (NixOS)
 

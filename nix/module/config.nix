@@ -51,10 +51,22 @@ in {
             User = cfg.user;
             WorkingDirectory = cfg.dataDir;
           };
-          restartTriggers = [configFile];
+          restartIfChanged = false;
           wants = ["network-online.target"] ++ lib.optional (cfg.jellyfinService != null) cfg.jellyfinService;
-          # Starting multi-user.target on switch runs the oneshot again; no RemainAfterExit, so the timer keeps re-running it.
-          wantedBy = ["multi-user.target"];
+        };
+
+        # A target orders itself after every unit it wants, so a service wanted by
+        # multi-user.target would hold up boot and switch until jellarr exits. This
+        # timer starts it instead: once when it activates (boot, or a restart on
+        # config change) without blocking either.
+        timers.jellarr-apply = {
+          description = "Run jellarr at boot and when its config changes";
+          restartTriggers = [configFile];
+          timerConfig = {
+            OnActiveSec = 0;
+            Unit = "jellarr.service";
+          };
+          wantedBy = ["timers.target"];
         };
 
         timers.jellarr = {

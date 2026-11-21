@@ -34,8 +34,9 @@ in
   assert has "UPDATE ApiKeys SET AccessToken" script;
   assert has "WHERE NOT EXISTS" script;
   assert !(has "DELETE FROM ApiKeys" script);
-  assert services.jellarr.wantedBy == ["multi-user.target"];
-  assert services.jellarr.restartTriggers != [];
+  assert services.jellarr.wantedBy == [];
+  assert !services.jellarr.restartIfChanged;
+  assert evaluated.config.systemd.timers.jellarr-apply.restartTriggers != [];
   assert !(services.jellarr.serviceConfig.RemainAfterExit or false);
   assert evaluated.config.systemd.timers.jellarr.wantedBy == ["timers.target"];
     pkgs.runCommand "jellarr-module-bootstrap" {} ''
