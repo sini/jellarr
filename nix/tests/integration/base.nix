@@ -21,6 +21,9 @@
     ];
   };
 
+  # the tests drive jellarr themselves; a boot-time run would change the state they assert on
+  systemd.timers.jellarr-apply.wantedBy = pkgs.lib.mkForce [];
+
   networking.useDHCP = true;
 
   services = {

@@ -49,6 +49,21 @@ jobs:
         run: |
           nix build .#
 
-      - name: Run integration tests and build checks
+      - name: Evaluate every flake output
         run: |
-          nix flake check --all-systems --print-build-logs --keep-going --option sandbox false
+          nix flake check --all-systems --no-build
+
+      - name: Build non-VM checks
+        run: |
+          for c in formatting linting module-package-override module-bootstrap module-options module-types; do
+            nix build ".#checks.x86_64-linux.$c" --no-link --print-build-logs
+          done
+
+      # One VM at a time: parallel VMs starve each other on the runner.
+      - name: Run VM integration tests
+        run: |
+          failed=0
+          for c in switch-apply sanity-jellyfin-10_11 sanity-jellyfin-12 library-update-jellyfin-10_11 library-update-jellyfin-12; do
+            nix build ".#checks.x86_64-linux.$c" --no-link --print-build-logs --option sandbox false --max-jobs 1 || failed=1
+          done
+          exit "$failed"

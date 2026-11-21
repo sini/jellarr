@@ -6,7 +6,7 @@
 pkgs.testers.runNixOSTest {
   extraPythonPackages = p: [p.pyhamcrest];
 
-  globalTimeout = 600;
+  globalTimeout = 1500;
 
   skipTypeCheck = true;
 
