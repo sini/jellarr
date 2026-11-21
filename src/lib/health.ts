@@ -44,6 +44,33 @@ async function isHealthy(
   }
 }
 
+/**
+ * Jellyfin answers /health before startup finishes and returns 503 to API
+ * calls until it does, so readiness also needs the public info endpoint.
+ */
+async function pollApiReady(
+  baseUrl: string,
+  options: WaitOptions,
+  deadline: number,
+): Promise<boolean> {
+  const fetchFn: typeof fetch = options.fetchFn ?? fetch;
+  const intervalMs: number = options.intervalMs ?? 1000;
+  for (;;) {
+    try {
+      const res: Response = await fetchFn(
+        `${baseUrl.replace(/\/+$/, "")}/System/Info/Public`,
+        { signal: AbortSignal.timeout(5000) },
+      );
+      await res.body?.cancel();
+      if (res.status !== 503) return true;
+    } catch {
+      /* NOTE: a refused connection here means it restarted again; keep polling */
+    }
+    if (Date.now() >= deadline) return false;
+    await sleep(intervalMs);
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve: () => void) => setTimeout(resolve, ms));
 }
@@ -73,9 +100,15 @@ export async function waitForHealth(
   baseUrl: string,
   options: WaitOptions,
 ): Promise<void> {
+  const deadline: number = Date.now() + options.timeoutMs;
   if (!(await pollUntil(baseUrl, true, options))) {
     throw new Error(
       `Jellyfin at ${baseUrl} did not report healthy on /health within ${(options.timeoutMs / 1000).toString()}s`,
+    );
+  }
+  if (!(await pollApiReady(baseUrl, options, deadline))) {
+    throw new Error(
+      `Jellyfin at ${baseUrl} answered /health but its API was still starting (503) after ${(options.timeoutMs / 1000).toString()}s`,
     );
   }
 }

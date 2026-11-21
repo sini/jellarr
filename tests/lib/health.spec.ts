@@ -24,8 +24,11 @@ describe("lib/health", () => {
     });
 
     // Assert
-    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(fetchFn).toHaveBeenCalledTimes(4);
     expect(fetchFn.mock.calls[0]?.[0]).toBe("http://jf:8096/health");
+    expect(fetchFn.mock.calls[3]?.[0]).toBe(
+      "http://jf:8096/System/Info/Public",
+    );
   });
 
   it("whenServerNeverHealthy_thenWaitForHealthThrowsClearError", async () => {
@@ -62,7 +65,52 @@ describe("lib/health", () => {
     });
 
     // Assert
-    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(fetchFn).toHaveBeenCalledTimes(4);
+  });
+
+  it("whenHealthUpButApiStillStarting_thenWaitsForTheApi", async () => {
+    // Arrange
+    const fetchFn: Mock = vi.fn((url: string) =>
+      Promise.resolve(
+        new Response("", {
+          status:
+            url.endsWith("/health") || fetchFn.mock.calls.length > 4
+              ? 200
+              : 503,
+        }),
+      ),
+    );
+
+    // Act
+    await waitForHealth("http://jf:8096", {
+      timeoutMs: 5000,
+      intervalMs: 1,
+      fetchFn: fetchFn as unknown as typeof fetch,
+    });
+
+    // Assert
+    const apiCalls: number = fetchFn.mock.calls.filter(
+      (call: unknown[]) => call[0] === "http://jf:8096/System/Info/Public",
+    ).length;
+    expect(apiCalls).toBeGreaterThan(1);
+  });
+
+  it("whenApiNeverLeavesStartup_thenWaitForHealthThrowsClearError", async () => {
+    // Arrange
+    const fetchFn: Mock = vi.fn((url: string) =>
+      Promise.resolve(
+        new Response("", { status: url.endsWith("/health") ? 200 : 503 }),
+      ),
+    );
+
+    // Act + Assert
+    await expect(
+      waitForHealth("http://jf:8096", {
+        timeoutMs: 20,
+        intervalMs: 5,
+        fetchFn: fetchFn as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(/API was still starting \(503\)/);
   });
 
   it("whenCliSecondsGiven_thenTheyBeatTheEnvVar", () => {
