@@ -3,6 +3,7 @@
   brandingOptions = import ./branding-options.nix {inherit lib;};
   encodingOptions = import ./encoding-options.nix {inherit lib;};
   library = import ./library.nix {inherit lib;};
+  livetv = import ./livetv.nix {inherit lib;};
   networking = import ./networking.nix {inherit lib;};
   metadata = import ./metadata.nix {inherit lib;};
   plugins = import ./plugins.nix {inherit lib;};

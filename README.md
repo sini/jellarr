@@ -575,6 +575,55 @@ additive and idempotent: existing keys are never modified or deleted.
 keys. Provision the first credential via the API-key bootstrap or the Jellyfin
 dashboard.
 
+### Live TV Configuration
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+livetv:
+    guideDays: 7
+    recordingPath: /srv/recordings
+    saveRecordingNfo: true
+    authoritative: false
+    tunerHosts:
+        - type: m3u
+          url: "http://tv.example/playlist.m3u"
+          tunerCount: 2
+    listingProviders:
+        - type: SchedulesDirect
+          username: me
+          listingsId: "USA-00000-X"
+          password: { _file: /run/secrets/schedules-direct }
+        - type: xmltv
+          path: /srv/guide.xml
+          enableAllTuners: true
+```
+
+The scalar options are the named `livetv` configuration (`LiveTvOptions`),
+diffed like the other modules. Tuner hosts (`POST /LiveTv/TunerHosts`) and
+listings providers (`POST /LiveTv/ListingProviders`) are lists the server only
+exposes as part of that configuration, so jellarr matches entries by identity:
+
+- a tuner host is `type` plus `url`;
+- a listings provider is `type` plus `path`, `username` and `listingsId`
+  (whichever it has).
+
+A missing entry is created, an entry whose fields differ is updated in place
+(keeping its server id), and a matching entry is left alone. Lists are
+**additive by default**: entries on the server that the config does not declare
+are kept. Set `authoritative: true` to delete them; it only applies to a list
+the config declares, so `tunerHosts: []` with `authoritative: true` removes
+every tuner host, while leaving `tunerHosts` out never touches them. Changing an
+identity field creates a new entry, and with `authoritative` the old one is
+removed.
+
+A listings `password` is plain text (use `{ _file }` or `${VAR}`; it is masked
+in dry-run output). The server stores only a SHA-1 hash of it and takes the
+plain text as the `pw` query parameter, so jellarr compares the hash and sends
+the password only when it differs. Providers are saved without the server
+validating the login or the guide. `MediaLocationsCreated` is server state and
+is not configurable. `jellarr dump` exports the section without passwords.
+
 ### Plugin Management
 
 ```yaml

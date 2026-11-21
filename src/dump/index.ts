@@ -20,6 +20,11 @@ import type {
   BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
+import type {
+  LiveTvOptionsSchema,
+  ListingsProviderInfoSchema,
+  TunerHostInfoSchema,
+} from "../types/schema/livetv";
 import * as yaml from "yaml";
 
 interface PluginWithConfig {
@@ -47,6 +52,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     users,
     plugins,
     apiKeys,
+    liveTv,
   ]: [
     ServerConfigurationSchema,
     MetadataConfigurationSchema,
@@ -57,6 +63,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     UserDtoSchema[],
     PluginInfoSchema[],
     AuthenticationInfoSchema[],
+    LiveTvOptionsSchema,
   ] = await Promise.all([
     client.getSystemConfiguration(),
     client.getMetadataConfiguration(),
@@ -67,6 +74,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     client.getUsers(),
     client.getPlugins(),
     client.getApiKeys(),
+    client.getLiveTvOptions(),
   ]);
 
   const pluginsWithConfig: PluginWithConfig[] = await Promise.all(
@@ -398,11 +406,72 @@ export async function runDump(baseUrl: string): Promise<void> {
     api_keys: apiKeys.map((key: AuthenticationInfoSchema) => ({
       name: key.AppName,
     })),
+
+    livetv: {
+      guideDays: liveTv.GuideDays ?? undefined,
+      recordingPath: liveTv.RecordingPath ?? undefined,
+      movieRecordingPath: liveTv.MovieRecordingPath ?? undefined,
+      seriesRecordingPath: liveTv.SeriesRecordingPath ?? undefined,
+      enableRecordingSubfolders: liveTv.EnableRecordingSubfolders,
+      enableOriginalAudioWithEncodedRecordings:
+        liveTv.EnableOriginalAudioWithEncodedRecordings,
+      prePaddingSeconds: liveTv.PrePaddingSeconds,
+      postPaddingSeconds: liveTv.PostPaddingSeconds,
+      recordingPostProcessor: liveTv.RecordingPostProcessor ?? undefined,
+      recordingPostProcessorArguments:
+        liveTv.RecordingPostProcessorArguments ?? undefined,
+      saveRecordingNfo: liveTv.SaveRecordingNFO,
+      saveRecordingImages: liveTv.SaveRecordingImages,
+      tunerHosts: (liveTv.TunerHosts ?? []).map(
+        (host: TunerHostInfoSchema) => ({
+          type: host.Type ?? "",
+          url: host.Url ?? "",
+          friendlyName: host.FriendlyName ?? undefined,
+          deviceId: host.DeviceId ?? undefined,
+          importFavoritesOnly: host.ImportFavoritesOnly,
+          allowHwTranscoding: host.AllowHWTranscoding,
+          allowFmp4TranscodingContainer: host.AllowFmp4TranscodingContainer,
+          allowStreamSharing: host.AllowStreamSharing,
+          fallbackMaxStreamingBitrate: host.FallbackMaxStreamingBitrate,
+          enableStreamLooping: host.EnableStreamLooping,
+          source: host.Source ?? undefined,
+          tunerCount: host.TunerCount,
+          userAgent: host.UserAgent ?? undefined,
+          ignoreDts: host.IgnoreDts,
+          readAtNativeFramerate: host.ReadAtNativeFramerate,
+        }),
+      ),
+      listingProviders: (liveTv.ListingProviders ?? []).map(
+        (provider: ListingsProviderInfoSchema) => ({
+          type: provider.Type ?? "",
+          username: provider.Username ?? undefined,
+          listingsId: provider.ListingsId ?? undefined,
+          zipCode: provider.ZipCode ?? undefined,
+          country: provider.Country ?? undefined,
+          path: provider.Path ?? undefined,
+          enabledTuners: provider.EnabledTuners ?? undefined,
+          enableAllTuners: provider.EnableAllTuners,
+          newsCategories: provider.NewsCategories ?? undefined,
+          sportsCategories: provider.SportsCategories ?? undefined,
+          kidsCategories: provider.KidsCategories ?? undefined,
+          movieCategories: provider.MovieCategories ?? undefined,
+          channelMappings: provider.ChannelMappings?.map(
+            (mapping: { Name?: string | null; Value?: string | null }) => ({
+              name: mapping.Name ?? "",
+              value: mapping.Value ?? "",
+            }),
+          ),
+          moviePrefix: provider.MoviePrefix ?? undefined,
+          preferredLanguage: provider.PreferredLanguage ?? undefined,
+          userAgent: provider.UserAgent ?? undefined,
+        }),
+      ),
+    },
   };
 
   console.log(yaml.stringify(config));
 
   console.error(
-    "\n⚠️  Note: User passwords cannot be exported. Add them manually.",
+    "\n⚠️  Note: User and listings-provider passwords cannot be exported. Add them manually.",
   );
 }

@@ -68,6 +68,11 @@ import type {
   StartupRemoteAccessDtoSchema,
 } from "../types/schema/startup";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
+import type {
+  LiveTvOptionsSchema,
+  ListingsProviderInfoSchema,
+  TunerHostInfoSchema,
+} from "../types/schema/livetv";
 
 export function createJellyfinClient(
   baseUrl: string,
@@ -701,6 +706,81 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Auth/Keys failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getLiveTvOptions(): Promise<LiveTvOptionsSchema> {
+      const res: ApiResponse = await client.GET("/System/Configuration/{key}", {
+        params: { path: { key: "livetv" } },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /System/Configuration/livetv failed: ${res.response.status.toString()}`,
+        );
+      }
+      return (res.data ?? {}) as LiveTvOptionsSchema;
+    },
+
+    async updateLiveTvOptions(body: LiveTvOptionsSchema): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "livetv" } },
+          body,
+        },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /System/Configuration/livetv failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async saveTunerHost(body: TunerHostInfoSchema): Promise<void> {
+      const res: ApiResponse = await client.POST("/LiveTv/TunerHosts", {
+        body,
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /LiveTv/TunerHosts failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async deleteTunerHost(id: string): Promise<void> {
+      const res: ApiResponse = await client.DELETE("/LiveTv/TunerHosts", {
+        params: { query: { id } },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `DELETE /LiveTv/TunerHosts failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async saveListingProvider(
+      body: ListingsProviderInfoSchema,
+      password?: string,
+    ): Promise<void> {
+      const res: ApiResponse = await client.POST("/LiveTv/ListingProviders", {
+        params: { query: { pw: password } },
+        body,
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /LiveTv/ListingProviders failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async deleteListingProvider(id: string): Promise<void> {
+      const res: ApiResponse = await client.DELETE("/LiveTv/ListingProviders", {
+        params: { query: { id } },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `DELETE /LiveTv/ListingProviders failed: ${res.response.status.toString()}`,
         );
       }
     },

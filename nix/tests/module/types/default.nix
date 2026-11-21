@@ -11,6 +11,7 @@
     ++ (import ./networking.nix testArgs)
     ++ (import ./metadata.nix testArgs)
     ++ (import ./library.nix testArgs)
+    ++ (import ./livetv.nix testArgs)
     ++ (import ./plugins.nix testArgs)
     ++ (import ./root.nix testArgs)
     ++ (import ./startup.nix testArgs)

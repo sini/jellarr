@@ -20,6 +20,7 @@
     plugins = null;
     startup = null;
     api_keys = null;
+    livetv = null;
   };
 
   nullSystemConfig = {

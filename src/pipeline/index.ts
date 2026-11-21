@@ -64,6 +64,13 @@ import {
   type PluginRemoval,
 } from "../apply/plugins";
 import type { PluginConfigList } from "../types/config/plugins";
+import {
+  calculateLiveTvDiff,
+  applyLiveTv,
+  type LiveTvDiff,
+  type ListChange,
+} from "../apply/livetv";
+import type { LiveTvOptionsSchema } from "../types/schema/livetv";
 import { calculateApiKeysToCreate, createApiKeys } from "../apply/api-keys";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { ApiKeyConfig } from "../types/config/api-keys";
@@ -99,6 +106,20 @@ export interface PipelineResult {
 
 function wantsDryRun(flag: boolean | undefined): boolean {
   return flag ?? /^(1|true)$/i.test(process.env.JELLARR_DRY_RUN ?? "");
+}
+
+function planListChange<T extends object>(
+  plan: Plan,
+  change: ListChange<T>,
+): void {
+  if (change.current) {
+    plan.change(change.label, change.current, change.next);
+    if (change.password !== undefined) {
+      plan.action(`${change.label}: password would change`);
+    }
+  } else {
+    plan.action(`${change.label}: would be created`);
+  }
 }
 
 export async function runPipeline(
@@ -581,6 +602,43 @@ export async function runPipeline(
       console.log("✓ created API keys");
     } else {
       console.log("✓ API keys already up to date");
+    }
+  }
+
+  if (cfg.livetv) {
+    const currentLiveTv: LiveTvOptionsSchema =
+      await jellyfinClient.getLiveTvOptions();
+    const liveTvDiff: LiveTvDiff | undefined = calculateLiveTvDiff(
+      currentLiveTv,
+      cfg.livetv,
+    );
+    if (liveTvDiff && plan) {
+      if (liveTvDiff.options) {
+        plan.change(
+          "livetv",
+          liveTvDiff.options.current,
+          liveTvDiff.options.next,
+        );
+      }
+      for (const change of [...liveTvDiff.hosts, ...liveTvDiff.providers]) {
+        planListChange(plan, change);
+      }
+      for (const host of liveTvDiff.hostsToDelete) {
+        plan.action(
+          `livetv tuner host ${host.Type ?? "?"}|${host.Url ?? "?"}: would be removed`,
+        );
+      }
+      for (const provider of liveTvDiff.providersToDelete) {
+        plan.action(
+          `livetv listings provider ${provider.Type ?? "?"}: would be removed`,
+        );
+      }
+    } else if (liveTvDiff) {
+      console.log("→ updating live TV config");
+      await applyLiveTv(jellyfinClient, liveTvDiff);
+      console.log("✓ updated live TV config");
+    } else {
+      console.log("✓ live TV config already up to date");
     }
   }
 

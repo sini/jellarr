@@ -8,6 +8,7 @@
     brandingOptions = import ./branding-options.nix {inherit lib;};
     encodingOptions = import ./encoding-options.nix {inherit lib;};
     library = import ./library.nix {inherit lib;};
+    livetv = import ./livetv.nix {inherit lib;};
     networking = import ./networking.nix {inherit lib;};
     metadata = import ./metadata.nix {inherit lib;};
     plugins = import ./plugins.nix {inherit lib;};
@@ -76,6 +77,11 @@
         default = null;
         description = "API keys to create.";
       };
+      livetv = mkOption {
+        type = nullOr subTypes.livetv.liveTvConfigType;
+        default = null;
+        description = "Live TV configuration.";
+      };
     };
   };
 
@@ -114,6 +120,9 @@
       }
       // optionalAttrs (cfg ? api_keys && cfg.api_keys != null) {
         api_keys = subTypes.apiKeys.mkApiKeysConfig cfg.api_keys;
+      }
+      // optionalAttrs (cfg ? livetv && cfg.livetv != null) {
+        livetv = subTypes.livetv.mkLiveTvConfig cfg.livetv;
       };
 in {
   inherit rootConfigType mkConfig;

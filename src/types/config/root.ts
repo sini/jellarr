@@ -9,6 +9,7 @@ import { UserConfigListType } from "./users";
 import { StartupConfigType } from "./startup";
 import { PluginConfigListType } from "./plugins";
 import { ApiKeyConfigListType } from "./api-keys";
+import { LiveTvConfigType } from "./livetv";
 
 export const RootConfigType: z.ZodObject<{
   version: z.ZodNumber;
@@ -23,6 +24,7 @@ export const RootConfigType: z.ZodObject<{
   plugins: z.ZodOptional<typeof PluginConfigListType>;
   startup: z.ZodOptional<typeof StartupConfigType>;
   api_keys: z.ZodOptional<typeof ApiKeyConfigListType>;
+  livetv: z.ZodOptional<typeof LiveTvConfigType>;
 }> = z
   .object({
     version: z.number().int().positive("Version must be a positive integer"),
@@ -37,6 +39,7 @@ export const RootConfigType: z.ZodObject<{
     plugins: PluginConfigListType.optional(),
     startup: StartupConfigType.optional(),
     api_keys: ApiKeyConfigListType.optional(),
+    livetv: LiveTvConfigType.optional(),
   })
   .strict();
 
