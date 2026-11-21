@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { resolveApiKey } from "../../src/lib/api-key";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 function keyFile(content: string): string {
   const path: string = join(mkdtempSync(join(tmpdir(), "key-")), "k");
   writeFileSync(path, content);
