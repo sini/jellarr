@@ -178,6 +178,9 @@ Or run directly:
 JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.3.0
 ```
 
+Coming from declarative-jellyfin? See the
+[migration guide](./docs/migrating-from-declarative-jellyfin.md).
+
 ### Docker (Recommended)
 
 ```bash
