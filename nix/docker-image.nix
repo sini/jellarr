@@ -13,7 +13,12 @@ pkgs.dockerTools.buildLayeredImage {
   ];
 
   config = {
-    Cmd = ["${pkgs.lib.getExe package}"];
+    # The binary is the entrypoint, so `docker run … --configFile x` and a
+    # Kubernetes `args:` list pass flags to jellarr instead of replacing it.
+    Entrypoint = ["${pkgs.lib.getExe package}"];
+    Cmd = [];
     Env = ["NODE_ENV=production"];
+    # nobody:nogroup; jellarr writes nothing to disk, so it needs no home.
+    User = "65534:65534";
   };
 }

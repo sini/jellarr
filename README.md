@@ -112,13 +112,13 @@ pioneered declarative Jellyfin configuration, it takes a risky approach:
 
 ```bash
 # With Nix
-nix run github:sini/jellarr/v0.3.0
+nix run github:sini/jellarr/v0.3.5
 
 # With Docker
-docker pull ghcr.io/sini/jellarr:v0.3.0
+docker pull ghcr.io/sini/jellarr:v0.3.5
 
 # Download binary (requires Node.js 24+)
-node jellarr-v0.3.0.cjs --configFile path/to/config.yml
+node jellarr-v0.3.5.cjs --configFile path/to/config.yml
 ```
 
 **Example config** (`config/config.yml`):
@@ -175,7 +175,7 @@ Add to your `flake.nix`:
 Or run directly:
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.3.0
+JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.3.5
 ```
 
 Coming from declarative-jellyfin? See the
@@ -184,7 +184,7 @@ Coming from declarative-jellyfin? See the
 ### Docker (Recommended)
 
 ```bash
-docker pull ghcr.io/sini/jellarr:v0.3.0
+docker pull ghcr.io/sini/jellarr:v0.3.5
 ```
 
 **With docker-compose:**
@@ -192,7 +192,7 @@ docker pull ghcr.io/sini/jellarr:v0.3.0
 ```yaml
 services:
     jellarr:
-        image: ghcr.io/sini/jellarr:v0.3.0
+        image: ghcr.io/sini/jellarr:v0.3.5
         container_name: jellarr
         environment:
             - JELLARR_API_KEY=${JELLARR_API_KEY}
@@ -208,8 +208,8 @@ Download from [releases](https://github.com/sini/jellarr/releases) (requires
 Node.js 24+):
 
 ```bash
-curl -LO https://github.com/sini/jellarr/releases/download/v0.3.0/jellarr-v0.3.0.cjs
-JELLARR_API_KEY=your_api_key node jellarr-v0.3.0.cjs --configFile path/to/config.yml
+curl -LO https://github.com/sini/jellarr/releases/download/v0.3.5/jellarr-v0.3.5.cjs
+JELLARR_API_KEY=your_api_key node jellarr-v0.3.5.cjs --configFile path/to/config.yml
 ```
 
 **Note:** Requires Node.js 24+ installed on your system.
@@ -875,7 +875,22 @@ jellarr
 ```bash
 docker run -e JELLARR_API_KEY=your_api_key \
   -v ./config:/config:ro \
-  ghcr.io/sini/jellarr:v0.3.0
+  ghcr.io/sini/jellarr:v0.3.5 --configFile /config/config.yml
+```
+
+The image's entrypoint is jellarr itself and it runs as user `65534`, so
+anything after the image name is passed to jellarr (`--dry-run`,
+`--waitTimeout 1800`, `dump --baseUrl …`). In a Kubernetes Job, set `args:` and
+leave `command:` unset:
+
+```yaml
+containers:
+    - name: jellarr
+      image: ghcr.io/sini/jellarr:v0.3.5
+      args: ["--configFile", "/config/config.yml"]
+      env:
+          - name: JELLARR_API_KEY_FILE
+            value: /secrets/api-key
 ```
 
 ### API Key Bootstrap (NixOS, Same Host Only)

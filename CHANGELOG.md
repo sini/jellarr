@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5] - 2026-11-22
+
+### Changed
+
+- The container image runs jellarr as its entrypoint, with no default command,
+  so `docker run ghcr.io/sini/jellarr:v0.3.5 --configFile /config/config.yml`
+  and a Kubernetes `args:` list pass flags to jellarr. Before, the binary was
+  the image's only `Cmd`, so any arguments replaced it. A Kubernetes Job that
+  set `command:` to the old store path should drop `command:` and keep `args:`.
+- The image runs as `65534:65534` (nobody) instead of root.
+
 ## [0.3.4] - 2026-11-21
 
 ### Changed
@@ -462,6 +473,7 @@ branding:
 - **Library Configuration**: Content scanning intervals, metadata providers,
   subtitle preferences
 
+[0.3.5]: https://github.com/sini/jellarr/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/sini/jellarr/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/sini/jellarr/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/sini/jellarr/compare/v0.3.1...v0.3.2

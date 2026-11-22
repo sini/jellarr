@@ -53,6 +53,11 @@
               module-options = import ./nix/tests/module/options.nix {
                 inherit nixpkgs pkgs system;
               };
+              image-config = import ./nix/tests/image-config.nix {
+                inherit pkgs;
+                image = inputs.self.packages.${system}.docker-image;
+                package = inputs.self.packages.${system}.default;
+              };
             }
             // import ./nix/tests/integration {
               inherit pkgs;
