@@ -22,6 +22,24 @@ and this project adheres to
   with an explicit `null`; an absent key is still unmanaged. In the NixOS module
   the value `"unrestricted"` renders as that `null`.
 
+- Opt-in authoritative mode. `authoritative.users`, `authoritative.libraries`,
+  `authoritative.plugins` and `authoritative.apiKeys` delete the entries the
+  config does not declare, after every create and update. All are off by
+  default, and **deletions are permanent**: a deleted user loses their watch
+  history, so run `--dry-run` first (each deletion is a `DESTRUCTIVE` plan
+  line). jellarr never deletes the user it is signed in as, the API key it is
+  using or the last administrator; `authoritative.keep` spares entries by name;
+  and a run that would delete more than half of a kind is refused unless
+  `authoritative.allowMassDelete` is set. Plugins are limited to those the
+  server reports as removable. `authoritative.livetv` is an alias of
+  `livetv.authoritative`. The NixOS module mirrors the options.
+- `scheduledTasks` sets a task's triggers (`DailyTrigger`, `WeeklyTrigger`,
+  `IntervalTrigger`, `StartupTrigger`), matched by the task's `Key` or its name.
+  A declared task's trigger list replaces the server's; other tasks are left
+  alone. Besides Jellyfin's ticks, `timeOfDay: "03:30"`, `interval: 6h` and
+  `maxRuntime: 2h` are accepted. `jellarr dump` exports every task's triggers.
+- The `jellarr-authority` VM test, on Jellyfin 10.11 and 12.
+
 ### Changed
 
 - The API types are regenerated from the Jellyfin 12.4.0 OpenAPI spec. jellarr

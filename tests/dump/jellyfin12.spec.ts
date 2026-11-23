@@ -33,6 +33,7 @@ vi.mock("../../src/api/jellyfin_client", () => ({
         },
       ]),
     getUsers: () => Promise.resolve([]),
+    getScheduledTasks: () => Promise.resolve([]),
   }),
 }));
 
