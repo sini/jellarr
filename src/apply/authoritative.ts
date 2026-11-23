@@ -96,8 +96,9 @@ function planUserSync(
   declared: Declared,
   spared: Protected,
   keep: NonNullable<AuthoritativeConfig["keep"]>,
-  now: Date,
+  clock: () => Date,
 ): Deletion[] {
+  const now: Date = clock();
   const sparedNames: Set<string> = new Set(
     [...declared.users, ...(keep.users ?? []), ...spared.users].map(lower),
   );
@@ -161,6 +162,11 @@ function planUserSync(
         plan: `would disable user ${name} (not declared or kept); ${never(now)}`,
       });
     } else if (!known) {
+      if (stamp !== undefined) {
+        logger.warn(
+          `user ${name}: unreadable ${DISABLED_AT_KEY} marker "${stamp}"; rewriting it with the current time`,
+        );
+      }
       out.push({
         ...base,
         action: "mark",
@@ -169,6 +175,7 @@ function planUserSync(
       });
     } else if (
       graceMs !== undefined &&
+      // NOTE: inclusive; a marker exactly deleteDisabledAfter old is due.
       now.getTime() - known.getTime() >= graceMs
     ) {
       shrinking.add(user.Id);
@@ -214,7 +221,7 @@ export function planDeletions(
   state: AuthoritativeState,
   declared: Declared,
   spared: Protected,
-  now: Date = new Date(),
+  clock: () => Date = (): Date => new Date(),
 ): Deletion[] {
   if (!authoritative) return [];
   const keep: NonNullable<AuthoritativeConfig["keep"]> =
@@ -224,7 +231,7 @@ export function planDeletions(
 
   if (authoritative.users === "disable") {
     deletions.push(
-      ...planUserSync(authoritative, state, declared, spared, keep, now),
+      ...planUserSync(authoritative, state, declared, spared, keep, clock),
     );
   } else if (authoritative.users) {
     const sparedNames: Set<string> = new Set(

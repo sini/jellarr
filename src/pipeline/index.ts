@@ -120,6 +120,8 @@ import { waitForHealth, resolveWaitTimeoutMs } from "../lib/health";
 export interface PipelineOptions {
   waitTimeoutSeconds?: number;
   dryRun?: boolean;
+  /** The clock for markers and grace periods; the real clock when absent. */
+  now?: () => Date;
 }
 
 export interface PipelineResult {
@@ -821,6 +823,7 @@ export async function runPipeline(
         ),
         apiKeyToken: apiKey,
       },
+      options.now,
     );
     if (deletions.length > 0 && plan) {
       for (const deletion of deletions) plan.action(deletion.plan);

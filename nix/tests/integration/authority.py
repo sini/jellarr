@@ -385,10 +385,27 @@ def run_authority_test(server):
     assert user_names(server) == ["boss", "keeper", "x1", "x2"], user_names(server)
 
     # kept again, with a marker: re-enabled and the marker removed
+    first_marker = marker(server, "x1")
+    write_config(server, disable_yaml(["keeper", "x1"]))
+    run_ok(server)
+    assert not disabled(server, "x1")
+    # a POST without the key must really drop it: read the prefs back
+    uid1 = user_by_name(server, "x1")["Id"]
+    prefs = get_jellyfin_data(
+        server, f"/DisplayPreferences/jellarr?userId={uid1}&client=jellarr"
+    )
+    assert MARKER not in (prefs.get("CustomPrefs") or {}), prefs
+    assert disabled(server, "x2") and marker(server, "x2")
+
+    # dropped from keep again: disabled with a fresh, newer marker
+    write_config(server, disable_yaml(["keeper"]))
+    run_ok(server)
+    second_marker = marker(server, "x1")
+    assert disabled(server, "x1") and second_marker, second_marker
+    assert second_marker > first_marker, (first_marker, second_marker)
     write_config(server, disable_yaml(["keeper", "x1"]))
     run_ok(server)
     assert not disabled(server, "x1") and marker(server, "x1") is None
-    assert disabled(server, "x2") and marker(server, "x2")
 
     # disabled by an administrator, no marker: kept does not re-enable it
     keeper = user_by_name(server, "keeper")

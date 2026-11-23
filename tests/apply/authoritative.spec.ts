@@ -307,6 +307,7 @@ describe("authoritative/applyDeletions", () => {
 
 describe("authoritative/users disable mode", () => {
   const now: Date = new Date("2026-03-10T12:00:00.000Z");
+  const clock: () => Date = (): Date => now;
   const day: number = 86_400_000;
   const ago: (days: number) => string = (days: number): string =>
     new Date(now.getTime() - days * day).toISOString();
@@ -330,7 +331,7 @@ describe("authoritative/users disable mode", () => {
       state({ users, ...st }),
       { ...declared, ...over },
       nobody,
-      now,
+      clock,
     );
 
   it("whenUndeclared_thenDisabledWithAMarkerAndNothingDeleted", () => {
@@ -520,18 +521,18 @@ describe("authoritative/users disable mode", () => {
       snapshot(),
       declared,
       nobody,
-      now,
+      clock,
     );
     expect(first).toHaveLength(2);
     await applyDeletions(fake, first);
-    expect(planDeletions(cfg, snapshot(), declared, nobody, now)).toEqual([]);
+    expect(planDeletions(cfg, snapshot(), declared, nobody, clock)).toEqual([]);
     const later: Date = new Date(now.getTime() + 2 * day);
     const deletes: Deletion[] = planDeletions(
       cfg,
       snapshot(),
       declared,
       nobody,
-      later,
+      (): Date => later,
     );
     expect(deletes.map((d: Deletion) => d.action)).toEqual([
       undefined,
@@ -539,5 +540,102 @@ describe("authoritative/users disable mode", () => {
     ]);
     await applyDeletions(fake, deletes);
     expect(deleteUser).toHaveBeenCalledTimes(2);
+  });
+
+  const onlyAnn: (marker: string | undefined) => Deletion[] = (
+    marker: string | undefined,
+  ): Deletion[] =>
+    plan(
+      { users: "disable", deleteDisabledAfter: "30d" },
+      {
+        users: [
+          users[0],
+          { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+        ] as AuthoritativeState["users"],
+        markers: new Map(marker === undefined ? [] : [["2", marker]]),
+      },
+    );
+  const offset: (ms: number) => string = (ms: number): string =>
+    new Date(now.getTime() - ms).toISOString();
+
+  it("whenTheMarkerIsOneMsShortOfTheThreshold_thenNotDeleted", () => {
+    expect(onlyAnn(offset(30 * day - 1))).toEqual([]);
+  });
+
+  it("whenTheMarkerIsExactlyTheThreshold_thenDeleted", () => {
+    expect(onlyAnn(offset(30 * day)).map((r: Deletion) => r.action)).toEqual([
+      undefined,
+    ]);
+  });
+
+  it("whenTheMarkerIsUnparseable_thenRewrittenNowAndNeverDeleted", () => {
+    const result: Deletion[] = onlyAnn("garbage");
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      action: "mark",
+      marker: now.toISOString(),
+    });
+  });
+
+  it("whenReEnabled_thenTheWriteDropsOnlyTheMarkerAndKeepsOtherPrefs", async () => {
+    const prefs: { CustomPrefs: Record<string, string> } = {
+      CustomPrefs: {
+        "jellarr.disabledAt": ago(1),
+        "other.client": " keep me\u00e9 ",
+        "web.theme": "dark",
+      },
+    };
+    const written: unknown[] = [];
+    const fake: JellyfinClient = {
+      updateUserPolicy: vi.fn(),
+      getDisplayPreferences: (): Promise<unknown> => Promise.resolve(prefs),
+      updateDisplayPreferences: (
+        userId: string,
+        body: unknown,
+      ): Promise<void> => {
+        written.push(body);
+        return Promise.resolve();
+      },
+    } as unknown as JellyfinClient;
+    const disabled: AuthoritativeState["users"] = [
+      users[0],
+      { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    const result: Deletion[] = plan(
+      { users: "disable", keep: { users: ["ann"] } },
+      { users: disabled, markers: new Map([["2", ago(1)]]) },
+    );
+    await applyDeletions(fake, result);
+    const body: { CustomPrefs: Record<string, string> } = written[0] as {
+      CustomPrefs: Record<string, string>;
+    };
+    expect("jellarr.disabledAt" in body.CustomPrefs).toBe(false);
+    expect(body.CustomPrefs).toEqual({
+      "other.client": " keep me\u00e9 ",
+      "web.theme": "dark",
+    });
+  });
+
+  it("whenDisabledAgainAfterAReEnable_thenAFreshTimestampIsWritten", async () => {
+    const written: Array<{ CustomPrefs: Record<string, string> }> = [];
+    const fake: JellyfinClient = {
+      updateUserPolicy: vi.fn(),
+      getDisplayPreferences: (): Promise<unknown> =>
+        Promise.resolve({ CustomPrefs: {} }),
+      updateDisplayPreferences: (
+        userId: string,
+        body: { CustomPrefs: Record<string, string> },
+      ): Promise<void> => {
+        written.push(body);
+        return Promise.resolve();
+      },
+    } as unknown as JellyfinClient;
+    await applyDeletions(
+      fake,
+      plan({ users: "disable", allowMassDelete: true }, {}),
+    );
+    expect(written[0]?.CustomPrefs["jellarr.disabledAt"]).toBe(
+      now.toISOString(),
+    );
   });
 });
