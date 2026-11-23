@@ -550,6 +550,24 @@ describe("api/jf Splashscreen", () => {
     expect(await req.text()).toBe("AQID");
   });
 
+  it("when deleting then it sends DELETE /Branding/Splashscreen", async (): Promise<void> => {
+    mockFetchNoContent();
+
+    await createJellyfinClient(baseUrl, apiKey).deleteSplashscreen();
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("DELETE");
+    expect(req.url).toMatch(/\/Branding\/Splashscreen$/);
+  });
+
+  it("when the delete is rejected then it throws with the status", async (): Promise<void> => {
+    mockFetchNoContent(403);
+
+    await expect(
+      createJellyfinClient(baseUrl, apiKey).deleteSplashscreen(),
+    ).rejects.toThrow(/DELETE \/Branding\/Splashscreen failed: 403/);
+  });
+
   it("when the upload is rejected then it throws with the status", async (): Promise<void> => {
     mockFetchNoContent(400);
 

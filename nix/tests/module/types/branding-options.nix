@@ -1,6 +1,7 @@
 {
   lib,
   assertEq,
+  assertThrows,
   ...
 }: let
   types = import ../../../module/types {inherit lib;};
@@ -45,6 +46,24 @@ in [
     }) {
       splashscreenFile = "/srv/splash.png";
     })
+
+  (assertEq "removeSplashscreen true" (mkBrandingOptionsConfig {
+      removeSplashscreen = true;
+      splashscreenFile = null;
+    }) {
+      removeSplashscreen = true;
+    })
+
+  (assertEq "removeSplashscreen false is kept" (mkBrandingOptionsConfig {
+      removeSplashscreen = false;
+    }) {
+      removeSplashscreen = false;
+    })
+
+  (assertThrows "removeSplashscreen with splashscreenFile" (mkBrandingOptionsConfig {
+    removeSplashscreen = true;
+    splashscreenFile = "/srv/splash.png";
+  }))
 
   (assertEq "empty config" (mkBrandingOptionsConfig {
     loginDisclaimer = null;

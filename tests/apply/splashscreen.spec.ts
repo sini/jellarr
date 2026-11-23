@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
 import {
   calculateSplashscreenUpload,
   applySplashscreen,
+  calculateSplashscreenRemoval,
+  applySplashscreenRemoval,
 } from "../../src/apply/splashscreen";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 
@@ -80,5 +82,60 @@ describe("splashscreen", () => {
     await expect(
       calculateSplashscreenUpload(client, path.join(dir, "nope.png")),
     ).rejects.toThrow(/ENOENT/);
+  });
+
+  describe("removal", () => {
+    it.each([
+      [true, new Uint8Array([1]), true],
+      [true, new Uint8Array(), false],
+      [false, new Uint8Array([1]), false],
+      [undefined, new Uint8Array([1]), false],
+    ])(
+      "when enabled=%s and the server returns %j then removal is %s",
+      async (
+        enabled: boolean | undefined,
+        image: Uint8Array,
+        expected: boolean,
+      ) => {
+        const { client }: ReturnType<typeof fakeServer> = fakeServer(image);
+        expect(await calculateSplashscreenRemoval(client, enabled)).toBe(
+          expected,
+        );
+      },
+    );
+
+    it("does not read the splashscreen while it is disabled", async () => {
+      const getSplashscreen: ReturnType<typeof vi.fn> = vi.fn();
+      const client: JellyfinClient = {
+        getSplashscreen,
+      } as unknown as JellyfinClient;
+      await calculateSplashscreenRemoval(client, false);
+      expect(getSplashscreen).not.toHaveBeenCalled();
+    });
+
+    it("deletes once, and the second run finds the 404 and does nothing", async () => {
+      let stored: Uint8Array = new Uint8Array([1, 2]);
+      const deleteSplashscreen: ReturnType<typeof vi.fn> = vi
+        .fn()
+        .mockImplementation((): Promise<void> => {
+          stored = new Uint8Array();
+          return Promise.resolve();
+        });
+      const client: JellyfinClient = {
+        getSplashscreen: (): Promise<Uint8Array> => Promise.resolve(stored),
+        deleteSplashscreen,
+      } as unknown as JellyfinClient;
+
+      await applySplashscreenRemoval(
+        client,
+        await calculateSplashscreenRemoval(client, true),
+      );
+      await applySplashscreenRemoval(
+        client,
+        await calculateSplashscreenRemoval(client, true),
+      );
+
+      expect(deleteSplashscreen).toHaveBeenCalledTimes(1);
+    });
   });
 });

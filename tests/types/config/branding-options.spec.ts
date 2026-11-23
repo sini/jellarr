@@ -144,3 +144,32 @@ describe("BrandingOptionsConfigType", () => {
     }
   });
 });
+
+describe("BrandingOptionsConfigType: removeSplashscreen", () => {
+  it("accepts removeSplashscreen alone", () => {
+    expect(
+      BrandingOptionsConfigType.safeParse({ removeSplashscreen: true }).success,
+    ).toBe(true);
+  });
+
+  it("accepts removeSplashscreen: false with a splashscreenFile", () => {
+    expect(
+      BrandingOptionsConfigType.safeParse({
+        removeSplashscreen: false,
+        splashscreenFile: "/srv/s.png",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects removeSplashscreen: true together with splashscreenFile", () => {
+    const result: ZodSafeParseResult<BrandingOptionsConfig> =
+      BrandingOptionsConfigType.safeParse({
+        removeSplashscreen: true,
+        splashscreenFile: "/srv/s.png",
+      });
+    expect(result.success).toBe(false);
+    expect(JSON.stringify(result.error?.issues)).toContain(
+      "cannot be combined with splashscreenFile",
+    );
+  });
+});

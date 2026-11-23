@@ -509,6 +509,15 @@ export function createJellyfinClient(
       }
     },
 
+    async deleteSplashscreen(): Promise<void> {
+      const res: ApiResponse = await client.DELETE("/Branding/Splashscreen");
+      if (!res.response.ok) {
+        throw new Error(
+          `DELETE /Branding/Splashscreen failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async getUsers(): Promise<UserDtoSchema[]> {
       const res: GetUsersResponse = await client.GET("/Users");
 

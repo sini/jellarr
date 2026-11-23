@@ -63,6 +63,7 @@ const WRITES: string[] = [
   "updateLibraryOptions",
   "updateBrandingConfiguration",
   "uploadSplashscreen",
+  "deleteSplashscreen",
   "updateNetworkingConfiguration",
   "createUser",
   "updateUserPolicy",
@@ -223,6 +224,21 @@ describe("pipeline/dry run", () => {
     ]) {
       expect(output).not.toContain(live);
     }
+  });
+
+  it("whenRemoveSplashscreenIsSet_thenDryRunReportsItAndDeletesNothing", async () => {
+    // Arrange
+    await writeConfig([
+      "system: {}",
+      "branding: { splashscreenEnabled: true, removeSplashscreen: true }",
+    ]);
+
+    // Act
+    await runPipeline(cfgFile, { dryRun: true });
+
+    // Assert
+    expect(output).toContain("the custom image would be removed");
+    expect(client.deleteSplashscreen).not.toHaveBeenCalled();
   });
 
   it("whenSplashscreenFileIsSetButTheSplashscreenIsDisabled_thenItFailsLoudly", async () => {

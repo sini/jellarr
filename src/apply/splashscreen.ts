@@ -15,6 +15,26 @@ export async function calculateSplashscreenUpload(
   return Buffer.from(current).equals(wanted) ? undefined : wanted;
 }
 
+/**
+ * The server serves a custom splashscreen only while splashscreenEnabled is
+ * true and answers 404 otherwise, so a custom image can be seen, and removed,
+ * only while enabled: removal is due when enabled and the GET returns an image.
+ */
+export async function calculateSplashscreenRemoval(
+  client: JellyfinClient,
+  enabled: boolean | undefined,
+): Promise<boolean> {
+  if (!enabled) return false;
+  return (await client.getSplashscreen()).length > 0;
+}
+
+export async function applySplashscreenRemoval(
+  client: JellyfinClient,
+  remove: boolean,
+): Promise<void> {
+  if (remove) await client.deleteSplashscreen();
+}
+
 export async function applySplashscreen(
   client: JellyfinClient,
   image: Uint8Array | undefined,

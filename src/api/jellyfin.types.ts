@@ -127,6 +127,7 @@ export interface JellyfinClient {
   ): Promise<void>;
   getSplashscreen(): Promise<Uint8Array>;
   uploadSplashscreen(image: Uint8Array): Promise<void>;
+  deleteSplashscreen(): Promise<void>;
   getUsers(): Promise<UserDtoSchema[]>;
   createUser(body: CreateUserByNameSchema): Promise<void>;
   updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;

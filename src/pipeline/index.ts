@@ -23,6 +23,8 @@ import {
 import {
   calculateSplashscreenUpload,
   applySplashscreen,
+  calculateSplashscreenRemoval,
+  applySplashscreenRemoval,
 } from "../apply/splashscreen";
 import { calculateNetworkingDiff, applyNetworking } from "../apply/networking";
 import {
@@ -380,6 +382,22 @@ export async function runPipeline(
         console.log("✓ uploaded splashscreen");
       } else {
         console.log("✓ splashscreen already up to date");
+      }
+    }
+    if (cfg.branding.removeSplashscreen) {
+      const removeSplashscreen: boolean = await calculateSplashscreenRemoval(
+        jellyfinClient,
+        cfg.branding.splashscreenEnabled ??
+          currentBrandingSchema.SplashscreenEnabled,
+      );
+      if (removeSplashscreen && plan) {
+        plan.action("branding splashscreen: the custom image would be removed");
+      } else if (removeSplashscreen) {
+        console.log("→ removing splashscreen");
+        await applySplashscreenRemoval(jellyfinClient, removeSplashscreen);
+        console.log("✓ removed splashscreen");
+      } else {
+        console.log("✓ no custom splashscreen to remove");
       }
     }
   }
