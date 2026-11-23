@@ -112,13 +112,13 @@ pioneered declarative Jellyfin configuration, it takes a risky approach:
 
 ```bash
 # With Nix
-nix run github:sini/jellarr/v0.3.5
+nix run github:sini/jellarr/v0.4.0
 
 # With Docker
-docker pull ghcr.io/sini/jellarr:v0.3.5
+docker pull ghcr.io/sini/jellarr:v0.4.0
 
 # Download binary (requires Node.js 24+)
-node jellarr-v0.3.5.cjs --configFile path/to/config.yml
+node jellarr-v0.4.0.cjs --configFile path/to/config.yml
 ```
 
 **Example config** (`config/config.yml`):
@@ -175,7 +175,7 @@ Add to your `flake.nix`:
 Or run directly:
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.3.5
+JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.4.0
 ```
 
 Coming from declarative-jellyfin? See the
@@ -184,7 +184,7 @@ Coming from declarative-jellyfin? See the
 ### Docker (Recommended)
 
 ```bash
-docker pull ghcr.io/sini/jellarr:v0.3.5
+docker pull ghcr.io/sini/jellarr:v0.4.0
 ```
 
 **With docker-compose:**
@@ -192,7 +192,7 @@ docker pull ghcr.io/sini/jellarr:v0.3.5
 ```yaml
 services:
     jellarr:
-        image: ghcr.io/sini/jellarr:v0.3.5
+        image: ghcr.io/sini/jellarr:v0.4.0
         container_name: jellarr
         environment:
             - JELLARR_API_KEY=${JELLARR_API_KEY}
@@ -208,8 +208,8 @@ Download from [releases](https://github.com/sini/jellarr/releases) (requires
 Node.js 24+):
 
 ```bash
-curl -LO https://github.com/sini/jellarr/releases/download/v0.3.5/jellarr-v0.3.5.cjs
-JELLARR_API_KEY=your_api_key node jellarr-v0.3.5.cjs --configFile path/to/config.yml
+curl -LO https://github.com/sini/jellarr/releases/download/v0.4.0/jellarr-v0.4.0.cjs
+JELLARR_API_KEY=your_api_key node jellarr-v0.4.0.cjs --configFile path/to/config.yml
 ```
 
 **Note:** Requires Node.js 24+ installed on your system.
@@ -239,6 +239,18 @@ See [`dumped-example.yml`](./dumped-example.yml) for sample output.
 ## Configuration
 
 Jellarr uses a YAML configuration file (default: `config/config.yml`).
+
+### Jellyfin versions
+
+Jellarr works against Jellyfin 10.11 and 12 (its API types are generated from
+the 12.4.0 OpenAPI spec). A field the connected server does not have is skipped
+with a warning, not sent: jellarr reads the server's own API description
+(`/api-docs/openapi.json`) and, for a declared field its schema does not define,
+logs `<path> is not supported by Jellyfin <version>; skipped` once per run and
+leaves it out of the diff and the write. A setting that only exists in 12
+therefore never reads as drift on 10.11, and a setting 12 removed is still
+applied on 10.11. If the description cannot be read, jellarr says so and skips
+nothing. The settings that need Jellyfin 12 are marked below.
 
 ### System Configuration
 
@@ -337,11 +349,16 @@ encoding:
     deinterlaceMethod: "yadif" # yadif|bwdif
     # subtitles and keyframes
     enableSubtitleExtraction: true
+    subtitleExtractionTimeoutMinutes: 5 # Jellyfin 12 and later
     allowOnDemandMetadataBasedKeyframeExtractionForExtensions:
         - mkv
+    # HLS seeking
+    hlsAudioSeekStrategy: "TrimCopiedAudio" # TrimCopiedAudio|TranscodeAudio, Jellyfin 12 and later
 ```
 
 The full field set mirrors Jellyfin's `EncodingOptions` object.
+`subtitleExtractionTimeoutMinutes` and `hlsAudioSeekStrategy` exist only in
+Jellyfin 12; on 10.11 they are skipped with a warning.
 
 ### Networking Configuration
 
@@ -427,7 +444,11 @@ library:
               - pathInfos
 ```
 
-The full field set mirrors Jellyfin's `LibraryOptions` object.
+The full field set mirrors Jellyfin's `LibraryOptions` object. Each entry of
+`typeOptions` also takes `similarItemProviders` and `similarItemProviderOrder`
+(lists of provider names, Jellyfin 12 and later; skipped with a warning on
+10.11). In the NixOS module `similarItemProviderOrder` defaults to
+`similarItemProviders` when that is set, as the fetcher orders do.
 
 **Locations.** Jellyfin scans a library's `.mblink` shortcut files (reported as
 `Locations`), not `PathInfos`, and the two can disagree: a stale shortcut, or
@@ -457,13 +478,26 @@ branding:
 references). Jellarr uploads it with `POST /Branding/Splashscreen`, but only
 when its bytes differ from what `GET /Branding/Splashscreen` serves: the server
 returns the stored custom image unchanged, so a byte comparison is the
-idempotence signal. A dry run reports the planned upload. Removing a custom
-splashscreen is not supported, because the API gives no way to tell whether one
-is set and a declared removal would be pending forever.
+idempotence signal. A dry run reports the planned upload.
 
 ```yaml
 branding:
     splashscreenFile: /etc/jellarr/splash.png
+```
+
+`removeSplashscreen: true` deletes the custom splashscreen with
+`DELETE /Branding/Splashscreen`. Jellyfin serves the custom image only while
+`splashscreenEnabled` is true and answers 404 otherwise, so jellarr removes it
+only when the splashscreen is enabled (declared, or already on the server) and
+`GET /Branding/Splashscreen` returns an image; when it is disabled, or nothing
+is set, it does nothing, and a second run is a no-op. To remove an image from a
+disabled splashscreen, declare `splashscreenEnabled: true` with it. A dry run
+reports the removal. It cannot be combined with `splashscreenFile`.
+
+```yaml
+branding:
+    splashscreenEnabled: true
+    removeSplashscreen: true
 ```
 
 ### User Management
@@ -507,8 +541,30 @@ names: `policy.enabledLibraries`, `policy.enableContentDeletionFromLibraries`,
 `latestItemsExcludedLibraries` and `myMediaExcludedLibraries`.
 `policy.accessSchedules` takes `dayOfWeek` (a day, `Everyday`, `Weekday` or
 `Weekend`), `startHour` and `endHour`; `policy.syncPlayAccess` is
-`CreateAndJoinGroups`, `JoinGroups` or `None`. `maxParentalRating` cannot be
-cleared once set, because an omitted field means unmanaged.
+`CreateAndJoinGroups`, `JoinGroups` or `None`.
+
+`policy.maxParentalRating` and `policy.maxParentalSubRating` can be cleared: an
+explicit `null` removes the limit on the server, while an absent key leaves it
+unmanaged. In the NixOS module `null` means unset, so use `"unrestricted"` for
+the same effect.
+
+```yaml
+users:
+    - name: "kid"
+      password: "pw"
+      policy:
+          maxParentalRating: 7 # set the limit
+    - name: "adult"
+      password: "pw"
+      policy:
+          maxParentalRating: null # clear it
+```
+
+```nix
+services.jellarr.config.users = [
+  { name = "adult"; passwordFile = "/run/secrets/adult"; policy.maxParentalRating = "unrestricted"; }
+];
+```
 
 `orderedLibraries` sets a user's home screen library order by library name. Omit
 it to preserve their order, or use `[]` to reset it. Unlisted libraries follow
@@ -587,7 +643,7 @@ startup:
     uiCulture: "en-US"
     remoteAccess:
         enableRemoteAccess: false
-        enableAutomaticPortMapping: false
+        enableAutomaticPortMapping: false # not sent to Jellyfin 12, which dropped it
     user:
         name: "admin"
         passwordFile: "/run/secrets/jellyfin-admin-password" # or `password`
@@ -875,7 +931,7 @@ jellarr
 ```bash
 docker run -e JELLARR_API_KEY=your_api_key \
   -v ./config:/config:ro \
-  ghcr.io/sini/jellarr:v0.3.5 --configFile /config/config.yml
+  ghcr.io/sini/jellarr:v0.4.0 --configFile /config/config.yml
 ```
 
 The image's entrypoint is jellarr itself and it runs as user `65534`, so
@@ -886,7 +942,7 @@ leave `command:` unset:
 ```yaml
 containers:
     - name: jellarr
-      image: ghcr.io/sini/jellarr:v0.3.5
+      image: ghcr.io/sini/jellarr:v0.4.0
       args: ["--configFile", "/config/config.yml"]
       env:
           - name: JELLARR_API_KEY_FILE

@@ -4,6 +4,8 @@ import struct
 import zlib
 
 CONFIG = "/tmp/jellarr-gaps.yml"
+CONFIG_REMOVE_SPLASH = "/tmp/jellarr-gaps-remove-splash.yml"
+CONFIG_CLEAR_RATING = "/tmp/jellarr-gaps-clear-rating.yml"
 SPLASH = "/mnt/tv/splash.png"
 LISTING_PASSWORD = "hunter2"
 
@@ -35,6 +37,8 @@ system:
   pathSubstitutions:
     - from: /mnt/a
       to: /mnt/b
+encoding:
+  hlsAudioSeekStrategy: TranscodeAudio
 branding:
   splashscreenEnabled: true
   splashscreenFile: {SPLASH}
@@ -43,6 +47,7 @@ users:
     password: userpw
     policy:
       isHidden: true
+      maxParentalRating: 7
       maxActiveSessions: 3
       enableSubtitleManagement: true
       accessSchedules:
@@ -67,17 +72,65 @@ livetv:
 """
 
 
-def jellarr(server, flags=""):
+CONFIG_REMOVE_SPLASH_YAML = """version: 1
+base_url: http://localhost:8096
+system: {}
+branding:
+  splashscreenEnabled: true
+  removeSplashscreen: true
+"""
+
+CONFIG_CLEAR_RATING_YAML = """version: 1
+base_url: http://localhost:8096
+system: {}
+users:
+  - name: gapsuser
+    password: userpw
+    policy:
+      maxParentalRating: null
+"""
+
+
+def jellarr(server, flags="", config=CONFIG):
     jellarr_bin = server.succeed(
         "systemctl cat jellarr.service | sed -n 's/^ExecStart=//p'"
     ).strip()
-    return server.succeed(
-        f"cd /var/lib/jellarr && JELLARR_API_KEY=test-api-key {jellarr_bin} apply --configFile {CONFIG} {flags} 2>&1"
+    status, output = server.execute(
+        f"cd /var/lib/jellarr && JELLARR_API_KEY=test-api-key {jellarr_bin} apply --configFile {config} {flags} 2>&1"
     )
+    # exit 2 means a dry run found changes pending
+    assert status == 0 or (flags and status == 2), f"jellarr exited {status}:\n{output}"
+    return output
 
 
 def api(server, endpoint):
     return get_jellyfin_data(server, endpoint)
+
+
+def is_jellyfin_12(server):
+    version = api(server, "/System/Info/Public")["Version"]
+    print(f"REAL BEHAVIOUR server version: {version}")
+    return int(version.split(".")[0]) >= 12
+
+
+def validate_version_dependent(server, output, jellyfin_12):
+    seek = api(server, "/System/Configuration/encoding").get("HlsAudioSeekStrategy")
+    warning = "encoding.HlsAudioSeekStrategy is not supported by Jellyfin"
+    if jellyfin_12:
+        assert seek == "TranscodeAudio", seek
+        assert warning not in output, output
+    else:
+        assert seek is None, seek
+        assert warning in output, f"no unsupported-field warning:\n{output}"
+    print(f"12-only setting HlsAudioSeekStrategy on this server: {seek!r}")
+
+
+def splashscreen_status(server):
+    return int(
+        server.succeed(
+            "curl -s -o /dev/null -w '%{http_code}' http://localhost:8096/Branding/Splashscreen"
+        )
+    )
 
 
 def validate_applied(server, png):
@@ -108,6 +161,7 @@ def validate_applied(server, png):
     policy = users[0]["Policy"]
     assert policy["IsHidden"] is True
     assert policy["MaxActiveSessions"] == 3
+    assert policy["MaxParentalRating"] == 7, policy["MaxParentalRating"]
     assert policy["EnableSubtitleManagement"] is True
     schedules = [
         (s["DayOfWeek"], s["StartHour"], s["EndHour"])
@@ -140,9 +194,11 @@ def run_gaps_test(server):
     server.succeed("chmod 644 /mnt/tv/*")
     server.succeed(f"cat > {CONFIG} <<'EOF'\n{CONFIG_YAML}EOF")
 
+    jellyfin_12 = is_jellyfin_12(server)
     first = jellarr(server)
     print(first)
     validate_applied(server, png)
+    validate_version_dependent(server, first, jellyfin_12)
 
     second = jellarr(server)
     print(second)
@@ -150,8 +206,42 @@ def run_gaps_test(server):
         assert (
             live not in second
         ), f"second run still changes things ({live}):\n{second}"
+    validate_version_dependent(server, second, jellyfin_12)
 
     # exit 2 means changes are pending; succeed() demands 0
     print(jellarr(server, "--dry-run"))
     validate_applied(server, png)
+
+    # removing the custom splashscreen: only possible while it is enabled
+    assert splashscreen_status(server) == 200
+    server.succeed(
+        f"cat > {CONFIG_REMOVE_SPLASH} <<'EOF'\n{CONFIG_REMOVE_SPLASH_YAML}EOF"
+    )
+    dry = jellarr(server, "--dry-run", CONFIG_REMOVE_SPLASH)
+    assert "the custom image would be removed" in dry, dry
+    assert splashscreen_status(server) == 200, "a dry run removed the splashscreen"
+    removed = jellarr(server, config=CONFIG_REMOVE_SPLASH)
+    print(removed)
+    assert "✓ removed splashscreen" in removed, removed
+    status = splashscreen_status(server)
+    print(f"REAL BEHAVIOUR splashscreen GET after removal: {status}")
+    assert status == 404, status
+    again = jellarr(server, config=CONFIG_REMOVE_SPLASH)
+    assert "→ removing" not in again, again
+    assert "no custom splashscreen to remove" in again, again
+
+    # clearing a parental rating with an explicit null
+    server.succeed(
+        f"cat > {CONFIG_CLEAR_RATING} <<'EOF'\n{CONFIG_CLEAR_RATING_YAML}EOF"
+    )
+    cleared = jellarr(server, config=CONFIG_CLEAR_RATING)
+    print(cleared)
+    policy = [u for u in api(server, "/Users") if u["Name"] == "gapsuser"][0]["Policy"]
+    print(
+        f"REAL BEHAVIOUR MaxParentalRating after null: {policy.get('MaxParentalRating')!r}"
+    )
+    assert policy.get("MaxParentalRating") is None, policy.get("MaxParentalRating")
+    assert policy["IsHidden"] is True, "clearing the rating touched other policy fields"
+    again = jellarr(server, config=CONFIG_CLEAR_RATING)
+    assert "Updating user policy" not in again, again
     print("✅ GAPS test passed")

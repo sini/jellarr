@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-11-23
+
+### Added
+
+- Settings new in Jellyfin 12: `encoding.subtitleExtractionTimeoutMinutes`,
+  `encoding.hlsAudioSeekStrategy`, and `similarItemProviders` /
+  `similarItemProviderOrder` on each library `typeOptions` entry. They are in
+  the YAML schema, the NixOS module and `jellarr dump`.
+- `branding.removeSplashscreen: true` deletes the custom splashscreen with
+  `DELETE /Branding/Splashscreen`. It acts only while the splashscreen is
+  enabled and the server returns an image, so a second run does nothing. A dry
+  run reports it, and it cannot be combined with `splashscreenFile`.
+- `policy.maxParentalRating` and `policy.maxParentalSubRating` can be cleared
+  with an explicit `null`; an absent key is still unmanaged. In the NixOS module
+  the value `"unrestricted"` renders as that `null`.
+
+### Changed
+
+- The API types are regenerated from the Jellyfin 12.4.0 OpenAPI spec. jellarr
+  still works against Jellyfin 10.11.
+- A declared field the connected server's own API description
+  (`/api-docs/openapi.json`) does not define is skipped with a warning
+  (`<path> is not supported by Jellyfin <version>; skipped`) and left out of the
+  diff and the write, so a 12-only setting on 10.11, or a setting 12 removed, no
+  longer shows as a change on every run. This covers the system, encoding,
+  networking, metadata, branding, library, live TV and user settings.
+- A declared `null` over a field the server omits counts as already in place,
+  since Jellyfin leaves null fields out of what it returns.
+- The startup wizard no longer sends `remoteAccess.enableAutomaticPortMapping`
+  to Jellyfin 12, which removed it; it is skipped with a warning there and still
+  sent to 10.11.
+
 ## [0.3.5] - 2026-11-22
 
 ### Changed
