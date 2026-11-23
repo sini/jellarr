@@ -31,19 +31,6 @@
         preferences; a disabled user who is kept again is re-enabled. Never
         touches the user jellarr signs in as or the last (enabled) administrator.
       '';
-      libraries = opt names "Library names to spare.";
-      plugins = opt names "Plugin names to spare.";
-      apiKeys = opt names "API key names (AppName) to spare.";
-    };
-  };
-
-  authoritativeConfigType = types.submodule {
-    options = {
-      users = opt types.bool ''
-        Delete users the config does not declare. DESTRUCTIVE: a deleted user's
-        watch history is lost. Never deletes the user jellarr signs in as or the
-        last administrator.
-      '';
       libraries = opt types.bool ''
         Delete libraries the config does not declare, after the Locations
         reconciliation. Files on disk are not touched; the library's items and
@@ -67,7 +54,8 @@
       '';
       deleteDisabledAfter = opt types.str ''
         With `users = "disable"` only: delete a user jellarr disabled once it has
-        been disabled for this long, a duration such as `30d`, `12h` or `2w`. Unset means disabled users are never deleted.
+        been disabled for this long, a duration such as `30d`, `12h` or `2w`. Unset
+        means disabled users are never deleted.
       '';
     };
   };
