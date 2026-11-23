@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 /**
  * Drop keys whose value is `undefined`. Mappers diff their output against the
  * live server config, so an omitted option must be absent rather than an
@@ -50,4 +52,81 @@ export function carryServerFields<T extends object>(
     );
     return match ? { ...match, ...item } : item;
   });
+}
+
+let serverVersion: string = "an unknown version";
+const warnedUnsupported: Set<string> = new Set();
+
+/** Names the connected server in "not supported" warnings. */
+export function setServerVersion(version: string): void {
+  serverVersion = version;
+}
+
+/** Forgets which unsupported paths were already warned about (tests). */
+export function resetUnsupportedWarnings(): void {
+  warnedUnsupported.clear();
+}
+
+function shapeOf(elements: unknown[]): Record<string, unknown> {
+  const shape: Record<string, unknown> = {};
+  for (const element of elements) {
+    if (!isPlainObject(element)) continue;
+    for (const [key, value] of Object.entries(element)) {
+      if (!(key in shape) || shape[key] === null) shape[key] = value;
+    }
+  }
+  return shape;
+}
+
+function pruneUnsupported(
+  current: unknown,
+  desired: unknown,
+  path: string,
+): unknown {
+  if (Array.isArray(desired) && Array.isArray(current)) {
+    const shape: Record<string, unknown> = shapeOf(current);
+    if (Object.keys(shape).length === 0) return desired;
+    return desired.map((element: unknown) =>
+      pruneUnsupported(shape, element, `${path}[]`),
+    );
+  }
+  if (!isPlainObject(desired) || !isPlainObject(current)) return desired;
+  if (Object.keys(current).length === 0) return desired;
+  const kept: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(desired)) {
+    if (value === undefined) continue;
+    if (!(key in current)) {
+      const message: string = `${path}.${key} is not supported by Jellyfin ${serverVersion}; skipped`;
+      if (!warnedUnsupported.has(message)) {
+        warnedUnsupported.add(message);
+        logger.warn(message);
+      }
+      continue;
+    }
+    kept[key] = pruneUnsupported(current[key], value, `${path}.${key}`);
+  }
+  return kept;
+}
+
+/**
+ * Drops from `desired` every key the server's `current` object does not have,
+ * warning once per path. A server returns every field it knows, so a missing
+ * key means it predates the field (or dropped it): sending it would write
+ * nothing and read as drift on every run. Applies recursively.
+ */
+export function withoutUnsupported<T>(
+  current: unknown,
+  desired: T,
+  path: string,
+): T {
+  return pruneUnsupported(current, desired, path) as T;
+}
+
+/** `overlay` that first drops the keys the server does not support. */
+export function overlaySupported(
+  current: unknown,
+  desired: unknown,
+  path: string,
+): unknown {
+  return overlay(current, withoutUnsupported(current, desired, path));
 }

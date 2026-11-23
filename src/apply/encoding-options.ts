@@ -4,7 +4,7 @@ import { mapEncodingOptionsConfigToSchema } from "../mappers/encoding-options";
 import { type EncodingOptionsConfig } from "../types/config/encoding-options";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { deepEqual } from "fast-equals";
-import { overlay } from "../lib/objects";
+import { overlaySupported } from "../lib/objects";
 
 export function calculateEncodingDiff(
   current: EncodingOptionsSchema,
@@ -13,9 +13,10 @@ export function calculateEncodingDiff(
   const next: Partial<EncodingOptionsSchema> =
     mapEncodingOptionsConfigToSchema(desired);
 
-  const updated: EncodingOptionsSchema = overlay(
+  const updated: EncodingOptionsSchema = overlaySupported(
     current,
     next,
+    "encoding",
   ) as EncodingOptionsSchema;
 
   if (deepEqual(updated, current)) return undefined;

@@ -294,6 +294,9 @@ export async function runDump(baseUrl: string): Promise<void> {
       tonemappingRange: encodingConfig.TonemappingRange,
       encoderPreset: encodingConfig.EncoderPreset,
       deinterlaceMethod: encodingConfig.DeinterlaceMethod,
+      subtitleExtractionTimeoutMinutes:
+        encodingConfig.SubtitleExtractionTimeoutMinutes,
+      hlsAudioSeekStrategy: encodingConfig.HlsAudioSeekStrategy,
       allowOnDemandMetadataBasedKeyframeExtractionForExtensions:
         encodingConfig.AllowOnDemandMetadataBasedKeyframeExtractionForExtensions,
     },
@@ -342,6 +345,8 @@ export async function runDump(baseUrl: string): Promise<void> {
               metadataFetcherOrder: typeOpt.MetadataFetcherOrder ?? undefined,
               imageFetchers: typeOpt.ImageFetchers ?? [],
               imageFetcherOrder: typeOpt.ImageFetcherOrder ?? undefined,
+              similarItemProviders: typeOpt.SimilarItemProviders,
+              similarItemProviderOrder: typeOpt.SimilarItemProviderOrder,
             }),
           ),
           automaticallyAddToCollection:

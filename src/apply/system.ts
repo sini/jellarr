@@ -4,7 +4,7 @@ import { mapSystemConfigurationConfigToSchema } from "../mappers/system";
 import { type SystemConfig } from "../types/config/system";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { deepEqual } from "fast-equals";
-import { carryServerFields, overlay } from "../lib/objects";
+import { carryServerFields, overlaySupported } from "../lib/objects";
 
 /**
  * Diff the desired system configuration against the server's current state.
@@ -59,9 +59,10 @@ export function calculateSystemDiff(
     mapSystemConfigurationConfigToSchema(desired),
     current,
   );
-  const updated: ServerConfigurationSchema = overlay(
+  const updated: ServerConfigurationSchema = overlaySupported(
     current,
     next,
+    "system",
   ) as ServerConfigurationSchema;
 
   if (deepEqual(updated, current)) return undefined;

@@ -744,3 +744,31 @@ describe("EncodingOptionsConfig", () => {
     }
   });
 });
+
+describe("EncodingOptionsConfigType: Jellyfin 12 fields", () => {
+  it("accepts a timeout and both seek strategies", () => {
+    for (const hlsAudioSeekStrategy of [
+      "TrimCopiedAudio",
+      "TranscodeAudio",
+    ] as const) {
+      expect(
+        EncodingOptionsConfigType.parse({
+          subtitleExtractionTimeoutMinutes: 5,
+          hlsAudioSeekStrategy,
+        }),
+      ).toEqual({ subtitleExtractionTimeoutMinutes: 5, hlsAudioSeekStrategy });
+    }
+  });
+
+  it("rejects an unknown strategy and a fractional timeout", () => {
+    expect(
+      EncodingOptionsConfigType.safeParse({ hlsAudioSeekStrategy: "Other" })
+        .success,
+    ).toBe(false);
+    expect(
+      EncodingOptionsConfigType.safeParse({
+        subtitleExtractionTimeoutMinutes: 1.5,
+      }).success,
+    ).toBe(false);
+  });
+});

@@ -18,6 +18,8 @@ export const LibraryOptionsConfigType: z.ZodObject<{
         imageFetcherOrder: z.ZodOptional<
           z.ZodNullable<z.ZodArray<z.ZodString>>
         >;
+        similarItemProviders: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        similarItemProviderOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
       }>
     >
   >;
@@ -82,6 +84,8 @@ export const LibraryOptionsConfigType: z.ZodObject<{
               .optional(),
             imageFetchers: z.array(z.string().min(1)),
             imageFetcherOrder: z.array(z.string().min(1)).nullable().optional(),
+            similarItemProviders: z.array(z.string().min(1)).optional(),
+            similarItemProviderOrder: z.array(z.string().min(1)).optional(),
           })
           .strict(),
       )

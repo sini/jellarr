@@ -444,6 +444,94 @@ in [
       ];
     })
 
+  (assertEq "typeOptions similarItemProviders with order fallback" (mkLibraryConfig {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = null;
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = null;
+                similarItemProviders = ["Local" "Tmdb"];
+                similarItemProviderOrder = null;
+              }
+            ];
+          };
+        }
+      ];
+    }) {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = ["TheMovieDB"];
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = ["TheMovieDB"];
+                similarItemProviders = ["Local" "Tmdb"];
+                similarItemProviderOrder = ["Local" "Tmdb"];
+              }
+            ];
+          };
+        }
+      ];
+    })
+
+  (assertEq "typeOptions similarItemProviderOrder is kept when set" (mkLibraryConfig {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = [];
+                metadataFetcherOrder = null;
+                imageFetchers = [];
+                imageFetcherOrder = null;
+                similarItemProviders = ["Local" "Tmdb"];
+                similarItemProviderOrder = ["Tmdb" "Local"];
+              }
+            ];
+          };
+        }
+      ];
+    }) {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = [];
+                metadataFetcherOrder = [];
+                imageFetchers = [];
+                imageFetcherOrder = [];
+                similarItemProviders = ["Local" "Tmdb"];
+                similarItemProviderOrder = ["Tmdb" "Local"];
+              }
+            ];
+          };
+        }
+      ];
+    })
+
   (assertEq "empty virtualFolders array" (mkLibraryConfig {virtualFolders = [];}) {virtualFolders = [];})
 
   (assertThrows "reject empty pathInfos" (mkLibraryConfig {

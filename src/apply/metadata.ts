@@ -4,6 +4,7 @@ import { logger } from "../lib/logger";
 import { mapMetadataConfigToSchema } from "../mappers/metadata";
 import type { MetadataConfig } from "../types/config/metadata";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
+import { withoutUnsupported } from "../lib/objects";
 import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
 export function calculateMetadataDiff(
@@ -14,8 +15,11 @@ export function calculateMetadataDiff(
     return undefined;
   }
 
-  const next: Partial<MetadataConfigurationSchema> =
-    mapMetadataConfigToSchema(desired);
+  const next: Partial<MetadataConfigurationSchema> = withoutUnsupported(
+    current,
+    mapMetadataConfigToSchema(desired),
+    "metadata",
+  );
 
   const patch: IChange[] = new ChangeSetBuilder(
     diff(current, next, { treatTypeChangeAsReplace: false }),

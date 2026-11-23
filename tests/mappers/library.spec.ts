@@ -457,3 +457,29 @@ describe("mappers/library", () => {
     );
   });
 });
+
+describe("mapVirtualFolderConfigToSchema: Jellyfin 12 typeOptions", () => {
+  it("maps similarItemProviders and similarItemProviderOrder", () => {
+    const mapped: ReturnType<typeof mapVirtualFolderConfigToSchema> =
+      mapVirtualFolderConfigToSchema({
+        name: "Movies",
+        collectionType: "movies",
+        libraryOptions: {
+          pathInfos: [{ path: "/m" }],
+          typeOptions: [
+            {
+              type: "Movie",
+              metadataFetchers: [],
+              imageFetchers: [],
+              similarItemProviders: ["Local"],
+              similarItemProviderOrder: ["Local"],
+            },
+          ],
+        },
+      });
+    expect(mapped.LibraryOptions?.TypeOptions?.[0]).toMatchObject({
+      SimilarItemProviders: ["Local"],
+      SimilarItemProviderOrder: ["Local"],
+    });
+  });
+});

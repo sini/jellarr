@@ -83,6 +83,8 @@ export function mapVirtualFolderConfigToSchema(
           MetadataFetcherOrder: typeOption.metadataFetcherOrder,
           ImageFetchers: typeOption.imageFetchers,
           ImageFetcherOrder: typeOption.imageFetcherOrder,
+          SimilarItemProviders: typeOption.similarItemProviders,
+          SimilarItemProviderOrder: typeOption.similarItemProviderOrder,
         }),
     ),
     AutomaticallyAddToCollection: opts.automaticallyAddToCollection,

@@ -122,6 +122,13 @@ export const EncodingOptionsConfigType: z.ZodObject<{
       bwdif: "bwdif";
     }>
   >;
+  subtitleExtractionTimeoutMinutes: z.ZodOptional<z.ZodNumber>;
+  hlsAudioSeekStrategy: z.ZodOptional<
+    z.ZodEnum<{
+      TrimCopiedAudio: "TrimCopiedAudio";
+      TranscodeAudio: "TranscodeAudio";
+    }>
+  >;
   allowOnDemandMetadataBasedKeyframeExtractionForExtensions: z.ZodOptional<
     z.ZodArray<z.ZodString>
   >;
@@ -213,6 +220,10 @@ export const EncodingOptionsConfigType: z.ZodObject<{
       ])
       .optional(),
     deinterlaceMethod: z.enum(["yadif", "bwdif"]).optional(),
+    subtitleExtractionTimeoutMinutes: z.number().int().optional(),
+    hlsAudioSeekStrategy: z
+      .enum(["TrimCopiedAudio", "TranscodeAudio"])
+      .optional(),
     allowOnDemandMetadataBasedKeyframeExtractionForExtensions: z
       .array(z.string())
       .optional(),

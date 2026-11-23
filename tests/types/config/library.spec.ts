@@ -719,3 +719,30 @@ describe("types/config/library", () => {
     });
   });
 });
+
+describe("VirtualFolderConfigType: Jellyfin 12 typeOptions", () => {
+  it("accepts similarItemProviders and similarItemProviderOrder", () => {
+    const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse({
+      name: "Movies",
+      collectionType: "movies",
+      libraryOptions: {
+        pathInfos: [{ path: "/data/movies" }],
+        typeOptions: [
+          {
+            type: "Movie",
+            metadataFetchers: [],
+            imageFetchers: [],
+            similarItemProviders: ["Local", "Tmdb"],
+            similarItemProviderOrder: ["Tmdb", "Local"],
+          },
+        ],
+      },
+    });
+    expect(parsed.libraryOptions.typeOptions?.[0].similarItemProviders).toEqual(
+      ["Local", "Tmdb"],
+    );
+    expect(
+      parsed.libraryOptions.typeOptions?.[0].similarItemProviderOrder,
+    ).toEqual(["Tmdb", "Local"]);
+  });
+});

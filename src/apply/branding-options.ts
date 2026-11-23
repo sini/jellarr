@@ -5,13 +5,17 @@ import type { JellyfinClient } from "../api/jellyfin.types";
 import { logger } from "../lib/logger";
 import { diff, applyChangeset, type IChange } from "json-diff-ts";
 import { ChangeSetBuilder } from "../lib/changeset";
+import { withoutUnsupported } from "../lib/objects";
 
 export function calculateBrandingOptionsDiff(
   current: BrandingOptionsDtoSchema,
   desired: BrandingOptionsConfig,
 ): BrandingOptionsDtoSchema | undefined {
-  const next: BrandingOptionsDtoSchema =
-    mapBrandingOptionsConfigToSchema(desired);
+  const next: BrandingOptionsDtoSchema = withoutUnsupported(
+    current,
+    mapBrandingOptionsConfigToSchema(desired),
+    "branding",
+  );
 
   const patch: IChange[] = new ChangeSetBuilder(
     diff(current, next, {

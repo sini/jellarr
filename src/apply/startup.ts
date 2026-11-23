@@ -37,10 +37,21 @@ export async function applyStartupWizard(
 
   if (startup.remoteAccess) {
     logger.info("→ configuring remote access");
+    const dropsPortMapping: boolean =
+      Number.parseInt(info.Version ?? "", 10) >= 12;
+    if (dropsPortMapping) {
+      logger.warn(
+        `startup.remoteAccess.enableAutomaticPortMapping is not supported by Jellyfin ${info.Version ?? "12"}; skipped`,
+      );
+    }
     await client.setRemoteAccess({
       EnableRemoteAccess: startup.remoteAccess.enableRemoteAccess,
-      EnableAutomaticPortMapping:
-        startup.remoteAccess.enableAutomaticPortMapping,
+      ...(dropsPortMapping
+        ? {}
+        : {
+            EnableAutomaticPortMapping:
+              startup.remoteAccess.enableAutomaticPortMapping,
+          }),
     });
   }
 

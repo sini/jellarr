@@ -4,7 +4,7 @@ import { mapNetworkingConfigToSchema } from "../mappers/networking";
 import { type NetworkingConfig } from "../types/config/networking";
 import { type NetworkConfigurationSchema } from "../types/schema/networking";
 import { deepEqual } from "fast-equals";
-import { overlay } from "../lib/objects";
+import { overlaySupported } from "../lib/objects";
 
 export function calculateNetworkingDiff(
   current: NetworkConfigurationSchema,
@@ -13,9 +13,10 @@ export function calculateNetworkingDiff(
   const next: Partial<NetworkConfigurationSchema> =
     mapNetworkingConfigToSchema(desired);
 
-  const updated: NetworkConfigurationSchema = overlay(
+  const updated: NetworkConfigurationSchema = overlaySupported(
     current,
     next,
+    "networking",
   ) as NetworkConfigurationSchema;
 
   if (deepEqual(updated, current)) return undefined;

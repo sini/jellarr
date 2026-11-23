@@ -63,12 +63,12 @@ describe("user tag restrictions", () => {
         {
           name: "Alex",
           password: "pass",
-          policy: { enableContentDownloading: false },
+          policy: { enableAllFolders: true },
         },
       ])?.get("alex"),
     ).toEqual({
       ...current[0].Policy,
-      EnableContentDownloading: false,
+      EnableAllFolders: true,
     });
   });
 });

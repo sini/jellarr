@@ -303,6 +303,19 @@
         default = null;
         description = "Deinterlacing filter to apply.";
       };
+      subtitleExtractionTimeoutMinutes = mkOption {
+        type = nullOr types.int;
+        default = null;
+        description = "Minutes before subtitle extraction from a media file times out. Jellyfin 12 and later only; skipped with a warning on older servers.";
+      };
+      hlsAudioSeekStrategy = mkOption {
+        type = nullOr (types.enum [
+          "TrimCopiedAudio"
+          "TranscodeAudio"
+        ]);
+        default = null;
+        description = "How HLS audio is handled when seeking in a stream. Jellyfin 12 and later only; skipped with a warning on older servers.";
+      };
 
       # String array options
       allowOnDemandMetadataBasedKeyframeExtractionForExtensions = mkOption {
@@ -361,6 +374,8 @@
     // optionalAttrs (cfg ? tonemappingRange && cfg.tonemappingRange != null) {inherit (cfg) tonemappingRange;}
     // optionalAttrs (cfg ? encoderPreset && cfg.encoderPreset != null) {inherit (cfg) encoderPreset;}
     // optionalAttrs (cfg ? deinterlaceMethod && cfg.deinterlaceMethod != null) {inherit (cfg) deinterlaceMethod;}
+    // optionalAttrs (cfg ? subtitleExtractionTimeoutMinutes && cfg.subtitleExtractionTimeoutMinutes != null) {inherit (cfg) subtitleExtractionTimeoutMinutes;}
+    // optionalAttrs (cfg ? hlsAudioSeekStrategy && cfg.hlsAudioSeekStrategy != null) {inherit (cfg) hlsAudioSeekStrategy;}
     // optionalAttrs (cfg ? allowOnDemandMetadataBasedKeyframeExtractionForExtensions && cfg.allowOnDemandMetadataBasedKeyframeExtractionForExtensions != null) {inherit (cfg) allowOnDemandMetadataBasedKeyframeExtractionForExtensions;};
 in {
   inherit encodingOptionsConfigType mkEncodingOptionsConfig;

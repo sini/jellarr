@@ -347,6 +347,9 @@ describe("calculateUserPoliciesDiff", () => {
         Policy: {
           IsAdministrator: false,
           LoginAttemptsBeforeLockout: 5,
+          MaxActiveSessions: 0,
+          EnableContentDownloading: true,
+          EnabledFolders: [] as string[],
         },
       } as UserDtoSchema,
       {
@@ -356,6 +359,9 @@ describe("calculateUserPoliciesDiff", () => {
         Policy: {
           IsAdministrator: true,
           LoginAttemptsBeforeLockout: 3,
+          MaxActiveSessions: 0,
+          EnableContentDownloading: true,
+          EnabledFolders: [] as string[],
         },
       } as UserDtoSchema,
     ];
@@ -430,6 +436,7 @@ describe("calculateUserPoliciesDiff", () => {
           Name: "user",
           Configuration: {
             DisplayMissingEpisodes: false,
+            SubtitleLanguagePreference: "",
           } as UserConfigurationSchema,
         },
       ];
@@ -696,6 +703,7 @@ describe("calculateUserPoliciesDiff", () => {
           IsAdministrator: false,
           LoginAttemptsBeforeLockout: 5,
           EnableAllFolders: true,
+          EnabledFolders: [] as string[],
         },
       } as UserDtoSchema,
     ];

@@ -54,6 +54,8 @@ export function mapEncodingOptionsConfigToSchema(
     TonemappingRange: desired.tonemappingRange,
     EncoderPreset: desired.encoderPreset,
     DeinterlaceMethod: desired.deinterlaceMethod,
+    SubtitleExtractionTimeoutMinutes: desired.subtitleExtractionTimeoutMinutes,
+    HlsAudioSeekStrategy: desired.hlsAudioSeekStrategy,
     AllowOnDemandMetadataBasedKeyframeExtractionForExtensions:
       desired.allowOnDemandMetadataBasedKeyframeExtractionForExtensions,
   }) as Partial<EncodingOptionsSchema>;

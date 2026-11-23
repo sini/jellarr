@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { deepEqual } from "fast-equals";
 import type { JellyfinClient } from "../api/jellyfin.types";
-import { overlay } from "../lib/objects";
+import { overlaySupported } from "../lib/objects";
 import {
   mapLiveTvOptionsConfigToSchema,
   mapListingProviderConfigToSchema,
@@ -78,7 +78,9 @@ function reconcile<T extends object>(
     const existing: T | undefined = currentList.find(
       (entry: T) => key(entry) === id,
     );
-    const next: T = existing ? (overlay(existing, item) as T) : item;
+    const next: T = existing
+      ? (overlaySupported(existing, item, `livetv ${kind} ${id}`) as T)
+      : item;
     const passwordChanged: boolean =
       password !== undefined &&
       !passwordMatches(
@@ -106,9 +108,10 @@ export function calculateLiveTvDiff(
 ): LiveTvDiff | undefined {
   const authoritative: boolean = desired.authoritative ?? false;
 
-  const nextOptions: LiveTvOptionsSchema = overlay(
+  const nextOptions: LiveTvOptionsSchema = overlaySupported(
     current,
     mapLiveTvOptionsConfigToSchema(desired),
+    "livetv",
   ) as LiveTvOptionsSchema;
 
   const hosts: ReturnType<typeof reconcile<TunerHostInfoSchema>> = reconcile(

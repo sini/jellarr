@@ -1321,3 +1321,24 @@ describe("mappers/encoding", () => {
     });
   });
 });
+
+describe("mappers/encoding: Jellyfin 12 fields", () => {
+  it("maps subtitleExtractionTimeoutMinutes and hlsAudioSeekStrategy", () => {
+    const result: Partial<EncodingOptionsSchema> =
+      mapEncodingOptionsConfigToSchema({
+        subtitleExtractionTimeoutMinutes: 5,
+        hlsAudioSeekStrategy: "TranscodeAudio",
+      });
+    expect(result).toEqual({
+      SubtitleExtractionTimeoutMinutes: 5,
+      HlsAudioSeekStrategy: "TranscodeAudio",
+    });
+  });
+
+  it("omits them when undeclared", () => {
+    const result: Partial<EncodingOptionsSchema> =
+      mapEncodingOptionsConfigToSchema({});
+    expect(result).not.toHaveProperty("SubtitleExtractionTimeoutMinutes");
+    expect(result).not.toHaveProperty("HlsAudioSeekStrategy");
+  });
+});

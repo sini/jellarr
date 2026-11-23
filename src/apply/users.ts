@@ -18,7 +18,7 @@ import {
   getPassword,
 } from "../mappers/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
-import { carryServerFields } from "../lib/objects";
+import { carryServerFields, withoutUnsupported } from "../lib/objects";
 import { deepEqual } from "fast-equals";
 
 const POLICY_LIBRARY_KEYS: ReadonlyArray<keyof UserPolicyConfig> = [
@@ -78,9 +78,10 @@ export function calculateUserPolicyDiff(
   desired: UserPolicyConfig,
   folderNameToIdMap?: Map<string, string>,
 ): UserPolicySchema | undefined {
-  const mapped: Partial<UserPolicySchema> = mapUserPolicyConfigToSchema(
-    desired,
-    folderNameToIdMap,
+  const mapped: Partial<UserPolicySchema> = withoutUnsupported(
+    current,
+    mapUserPolicyConfigToSchema(desired, folderNameToIdMap),
+    "users.policy",
   );
 
   const next: UserPolicySchema = {
@@ -212,7 +213,11 @@ export function calculateUserConfigurationsDiff(
         (currentUserDtoSchema.Configuration as
           UserConfigurationSchema | undefined) ?? {};
       const desiredConfig: Partial<UserConfigurationSchema> =
-        mapUserConfigToConfiguration(userConfig, folderNameToIdMap);
+        withoutUnsupported(
+          currentConfig,
+          mapUserConfigToConfiguration(userConfig, folderNameToIdMap),
+          "users.configuration",
+        );
 
       const next: UserConfigurationSchema = {
         ...currentConfig,

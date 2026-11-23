@@ -37,6 +37,16 @@
         description = "List defining the order of image fetchers for this type. Defaults to imageFetchers if not set.";
         default = null;
       };
+      similarItemProviders = mkOption {
+        type = types.nullOr (types.listOf secret.str);
+        description = "List of similar-item providers to use for this type. Jellyfin 12 and later only; skipped with a warning on older servers.";
+        default = null;
+      };
+      similarItemProviderOrder = mkOption {
+        type = types.nullOr (types.listOf secret.str);
+        description = "List defining the order of similar-item providers for this type. Defaults to similarItemProviders if not set. Jellyfin 12 and later only; skipped with a warning on older servers.";
+        default = null;
+      };
     };
   };
 
@@ -439,8 +449,8 @@
                 inherit (lo) delimiterWhitelist;
               }
               // optionalAttrs ((lo.typeOptions or []) != []) {
-                typeOptions =
-                  map (typeOpt: {
+                typeOptions = map (typeOpt:
+                  {
                     inherit (typeOpt) type metadataFetchers imageFetchers;
                     metadataFetcherOrder =
                       if (typeOpt.metadataFetcherOrder or null) != null
@@ -450,8 +460,15 @@
                       if (typeOpt.imageFetcherOrder or null) != null
                       then typeOpt.imageFetcherOrder
                       else typeOpt.imageFetchers;
+                  }
+                  // optionalAttrs ((typeOpt.similarItemProviders or null) != null) {
+                    inherit (typeOpt) similarItemProviders;
+                    similarItemProviderOrder =
+                      if (typeOpt.similarItemProviderOrder or null) != null
+                      then typeOpt.similarItemProviderOrder
+                      else typeOpt.similarItemProviders;
                   })
-                  (folder.libraryOptions.typeOptions or []);
+                (folder.libraryOptions.typeOptions or []);
               };
           }
           // optionalAttrs ((folder.ignoreChanges or []) != []) {

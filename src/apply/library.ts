@@ -1,6 +1,6 @@
 import { logger } from "../lib/logger";
 import { deepEqual } from "fast-equals";
-import { carryServerFields, overlay } from "../lib/objects";
+import { carryServerFields, overlay, withoutUnsupported } from "../lib/objects";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import type { VirtualFolderConfig } from "../types/config/library";
 import type {
@@ -143,9 +143,10 @@ export function calculateLibraryDiff(
 
     const currentOptions: LibraryOptionsSchema =
       currentFolder?.LibraryOptions ?? ({} as LibraryOptionsSchema);
-    const wanted: LibraryOptionsSchema = withServerElementFields(
-      libraryOptions,
+    const wanted: LibraryOptionsSchema = withoutUnsupported(
       currentOptions,
+      withServerElementFields(libraryOptions, currentOptions),
+      `library ${name}`,
     );
     if (deepEqual(overlay(currentOptions, wanted), currentOptions)) continue;
     logger.info(`Library options differ: ${name}`);

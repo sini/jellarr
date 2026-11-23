@@ -53,6 +53,8 @@
     tonemappingRange = null;
     encoderPreset = null;
     deinterlaceMethod = null;
+    subtitleExtractionTimeoutMinutes = null;
+    hlsAudioSeekStrategy = null;
     allowOnDemandMetadataBasedKeyframeExtractionForExtensions = null;
   };
 in [
@@ -382,6 +384,18 @@ in [
     deinterlaceMethod = "bwdif";
   })
 
+  (assertEq "subtitleExtractionTimeoutMinutes" (mkEncodingOptionsConfig (nullConfig // {subtitleExtractionTimeoutMinutes = 5;})) {
+    subtitleExtractionTimeoutMinutes = 5;
+  })
+
+  (assertEq "hlsAudioSeekStrategy TrimCopiedAudio" (mkEncodingOptionsConfig (nullConfig // {hlsAudioSeekStrategy = "TrimCopiedAudio";})) {
+    hlsAudioSeekStrategy = "TrimCopiedAudio";
+  })
+
+  (assertEq "hlsAudioSeekStrategy TranscodeAudio" (mkEncodingOptionsConfig (nullConfig // {hlsAudioSeekStrategy = "TranscodeAudio";})) {
+    hlsAudioSeekStrategy = "TranscodeAudio";
+  })
+
   # String array option
   (assertEq "allowOnDemandMetadataBasedKeyframeExtractionForExtensions empty" (mkEncodingOptionsConfig (nullConfig
     // {
@@ -444,6 +458,8 @@ in [
       tonemappingRange = "tv";
       encoderPreset = "slow";
       deinterlaceMethod = "yadif";
+      subtitleExtractionTimeoutMinutes = 5;
+      hlsAudioSeekStrategy = "TranscodeAudio";
       allowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv" "mp4"];
     }) {
       enableHardwareEncoding = true;
@@ -492,6 +508,8 @@ in [
       tonemappingRange = "tv";
       encoderPreset = "slow";
       deinterlaceMethod = "yadif";
+      subtitleExtractionTimeoutMinutes = 5;
+      hlsAudioSeekStrategy = "TranscodeAudio";
       allowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv" "mp4"];
     })
 ]

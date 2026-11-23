@@ -12,7 +12,10 @@ interface Calls {
   spies: Record<string, ReturnType<typeof vi.fn>>;
 }
 
-function makeClient(wizardCompleted: boolean | null | undefined): Calls {
+function makeClient(
+  wizardCompleted: boolean | null | undefined,
+  version?: string,
+): Calls {
   const order: string[] = [];
   const record: (name: string) => () => Promise<void> =
     (name: string) => (): Promise<void> => {
@@ -22,6 +25,7 @@ function makeClient(wizardCompleted: boolean | null | undefined): Calls {
   const spies: Record<string, ReturnType<typeof vi.fn>> = {
     getPublicSystemInfo: vi.fn().mockResolvedValue({
       StartupWizardCompleted: wizardCompleted,
+      Version: version,
     }),
     updateStartupConfiguration: vi
       .fn()
@@ -102,6 +106,25 @@ describe("apply/startup", () => {
       // Assert
       expect(ran).toBe(false);
       expect(order).toEqual([]);
+    },
+  );
+
+  it.each([
+    ["10.11.4", true],
+    ["12.4.0", false],
+  ])(
+    "whenServerIs%s_thenAutomaticPortMappingSentIs%s",
+    async (version: string, sent: boolean) => {
+      const { client, spies }: Calls = makeClient(false, version);
+      await applyStartupWizard(client, {
+        remoteAccess: {
+          enableRemoteAccess: true,
+          enableAutomaticPortMapping: true,
+        },
+        completeStartupWizard: false,
+      });
+      const body: object = spies.setRemoteAccess.mock.calls[0][0] as object;
+      expect("EnableAutomaticPortMapping" in body).toBe(sent);
     },
   );
 

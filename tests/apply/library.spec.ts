@@ -289,6 +289,7 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/movies" }],
+            TypeOptions: [] as NonNullable<LibraryOptionsSchema["TypeOptions"]>,
           } as LibraryOptionsSchema,
         },
       ];
@@ -377,6 +378,7 @@ describe("apply/library", () => {
           CollectionType: "tvshows",
           LibraryOptions: {
             PathInfos: [{ Path: "/var/lib/jellyfin/Shokofin/VFS/anime-id" }],
+            EnableRealtimeMonitor: true,
           } as LibraryOptionsSchema,
         },
       ];

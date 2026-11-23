@@ -89,7 +89,8 @@ import {
 } from "../apply/auth";
 import { applyStartupWizard } from "../apply/startup";
 import { Plan } from "../lib/plan";
-import { maskSecrets } from "../lib/logger";
+import { setServerVersion } from "../lib/objects";
+import { maskSecrets, logger } from "../lib/logger";
 import { setDryRun } from "../lib/mode";
 import { guardReadOnly } from "../api/read-only";
 import type { PublicSystemInfoSchema } from "../types/schema/startup";
@@ -219,6 +220,13 @@ export async function runPipeline(
       await jellyfinClient.getSystemConfiguration();
   }
   let currentVirtualFolders: VirtualFolderInfoSchema[] | undefined;
+
+  // NOTE: the version only names the server in "not supported" warnings.
+  try {
+    setServerVersion(await jellyfinClient.getServerVersion());
+  } catch {
+    logger.info("could not read the server version");
+  }
 
   const updatedServerConfigurationSchema:
     ServerConfigurationSchema | undefined = calculateSystemDiff(

@@ -106,6 +106,7 @@ describe("pipeline/plugin restart", () => {
 
     // Assert
     expect(order.filter((name: string) => name !== "system")).toEqual([
+      "version",
       "plugins(before)",
       "packages",
       "version",
