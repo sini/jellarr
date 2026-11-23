@@ -670,7 +670,8 @@ api_keys:
 ```
 
 Jellarr creates any API key whose name (`AppName`) doesn't already exist. It's
-additive and idempotent: existing keys are never modified or deleted.
+additive and idempotent: existing keys are never modified, and are deleted only
+if you opt in with [`authoritative.apiKeys`](#authoritative-mode).
 
 **Caveat:** calling `/Auth/Keys` needs an existing token, so this only adds
 keys. Provision the first credential via the API-key bootstrap or the Jellyfin
@@ -724,6 +725,117 @@ plain text as the `pw` query parameter, so jellarr compares the hash and sends
 the password only when it differs. Providers are saved without the server
 validating the login or the guide. `MediaLocationsCreated` is server state and
 is not configurable. `jellarr dump` exports the section without passwords.
+
+`authoritative.livetv` is accepted as an alias of `livetv.authoritative`. The
+canonical form is `livetv.authoritative`; set only one of them (the two
+disagreeing is a validation error). The alias has no effect without a `livetv`
+section.
+
+### Authoritative Mode
+
+By default jellarr **never deletes** users, libraries, plugins or API keys:
+removing an entry from the config just stops managing it. Authoritative mode is
+the opt-in that makes the config the whole truth for a kind, so entries the
+config does not declare are deleted.
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+authoritative:
+    users: true # DELETE /Users/{id}
+    libraries: true # DELETE /Library/VirtualFolders?name=…
+    plugins: true # uninstall, removable plugins only
+    apiKeys: true # DELETE /Auth/Keys/{key}
+    livetv: false # alias of livetv.authoritative
+    keep:
+        users: [guest]
+        libraries: ["Home Videos"]
+        plugins: ["Some Plugin"]
+        apiKeys: [monitoring]
+    allowMassDelete: false
+```
+
+Every flag is `false` by default. **Deletions are permanent and jellarr keeps no
+backup**, so run `--dry-run` first: each deletion is a plan line that starts
+with `DESTRUCTIVE`, and a dry run never calls a DELETE.
+
+- **Users.** `DELETE /Users/{id}`. A deleted user's **watch history, playback
+  progress and per-user data are lost**, and the plan line says so. A user is
+  matched by name, ignoring case. Users declared in `users` (or `startup.user`)
+  are not touched.
+- **Libraries.** `DELETE /Library/VirtualFolders?name=…`. Files on disk stay,
+  but the library's items and their watch state leave the Jellyfin database.
+  Library deletions run after the Locations reconciliation.
+- **Plugins.** Uninstalls only plugins the server reports as removable
+  (`CanUninstall`); bundled plugins are never considered. Jellyfin restarts to
+  unload them. Declared plugins are matched as for `plugins`.
+- **API keys.** `DELETE /Auth/Keys/{key}`, matched by `AppName`. Session tokens
+  are not API keys and are never listed.
+
+Deletions run after every create and update, so a rename (delete the old entry,
+declare the new one) never leaves a gap. All deletions are worked out before any
+is made, so a refused safety rail leaves the server untouched.
+
+**Safety rails**, always on:
+
+- jellarr never deletes the user it is signed in as, or authenticated through
+  (the admin it falls back to when `JELLARR_API_KEY` is unset or rejected).
+- It never deletes the API key it is using (`JELLARR_API_KEY`).
+- It never deletes the last administrator: if no administrator would remain
+  after the deletions, the run fails. A declared `policy.isAdministrator`
+  counts.
+- `authoritative.keep` spares entries by name, per kind.
+- If a run would delete more than half of the entries of a kind, it refuses with
+  an error, unless `authoritative.allowMassDelete: true`. A typo, or an empty
+  `library.virtualFolders: []`, then cannot wipe a server. A kind whose section
+  is missing from the config counts as an empty list. For plugins the count is
+  of removable plugins only.
+
+### Scheduled Tasks
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+scheduledTasks:
+    - key: RefreshLibrary # the task's stable Key; preferred
+      triggers:
+          - type: DailyTrigger
+            timeOfDay: "03:30"
+            maxRuntime: 2h
+          - type: IntervalTrigger
+            interval: 6h
+    - name: Clean Cache Directory # matched by name when no key is given
+      triggers: []
+    - key: PluginUpdates
+      triggers:
+          - type: WeeklyTrigger
+            dayOfWeek: Sunday
+            timeOfDay: "04:00"
+          - type: StartupTrigger
+```
+
+A task is matched by its `Key` (preferred; `jellarr dump` lists the keys), or
+else by its display `name`. A declared task's trigger list is **authoritative**:
+it replaces the server's list with `POST /ScheduledTasks/{taskId}/Triggers`, and
+`triggers: []` clears it. Tasks you do not declare are not touched. An unknown
+key or name is an error that lists the valid keys.
+
+Triggers follow Jellyfin's `TaskTriggerInfo`:
+
+| `type`            | needs                       | form                                          |
+| ----------------- | --------------------------- | --------------------------------------------- |
+| `DailyTrigger`    | a time of day               | `timeOfDay: "03:30"` or `timeOfDayTicks`      |
+| `WeeklyTrigger`   | a time of day and a weekday | the above plus `dayOfWeek: Sunday`…`Saturday` |
+| `IntervalTrigger` | an interval                 | `interval: 6h` or `intervalTicks`             |
+| `StartupTrigger`  | nothing                     |                                               |
+
+Every type also takes `maxRuntime: 2h` or `maxRuntimeTicks`. The friendly forms
+are converted to .NET ticks (100 ns; one second is `10000000`): `timeOfDay` is
+`HH:MM` or `HH:MM:SS`, and a duration is a run of `<n>d`, `<n>h`, `<n>m` and
+`<n>s` such as `90m` or `1h30m`. Give either the friendly form or the ticks for
+a field, not both; the dump uses ticks. Triggers are compared normalised (server
+nulls and fields a type does not use are ignored, and order does not matter), so
+two runs with the same config change nothing.
 
 ### Plugin Management
 

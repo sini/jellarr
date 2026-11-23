@@ -216,9 +216,9 @@ one:
 - **Reuse a key declarative-jellyfin already created.** If you have
   `apikeys.<name>.keyPath = "/run/secrets/x"`, set
   `services.jellarr.apiKeyFile = "/run/secrets/x"`. The key is already in the
-  database and jellarr never deletes keys, so this needs no further step and no
-  Jellyfin restart. This is the simplest path and also lets you dry-run before
-  you switch.
+  database and jellarr only deletes keys with `authoritative.apiKeys` (and never
+  the one it uses), so this needs no further step and no Jellyfin restart. This
+  is the simplest path and also lets you dry-run before you switch.
 - **`services.jellarr.bootstrap.enable = true`** with `bootstrap.apiKeyFile`
   (defaults to `services.jellarr.apiKeyFile`). A unit
   `jellarr-api-key-bootstrap` runs before jellarr, as root, on the Jellyfin
@@ -313,7 +313,8 @@ limitations of the approach, not missing options:
   `bootstrap` does that for jellarr's own key and, through
   `bootstrap.extraKeys = { <name> = <file>; }`, for any other application's key
   you want to keep. Keys that are already in the database keep working, and
-  jellarr never deletes keys.
+  jellarr deletes keys only with `authoritative.apiKeys`; list them under
+  `authoritative.keep.apiKeys` to spare them.
 - **A dry run without an API key.** Signing in creates a session and a failed
   sign-in counts toward the user's lockout limit, so `--dry-run` never signs in.
   Reuse a key declarative-jellyfin created, or provision one, before the first
@@ -330,14 +331,21 @@ limitations of the approach, not missing options:
   `mutable = false` for declared fields and `mutable = true` for everything
   else.
 - **`removeOldPlugins`.** jellarr uninstalls only older copies of plugins you
-  declare, and only once Jellyfin reports them as superseded. It never removes a
-  plugin you haven't declared.
+  declare, and only once Jellyfin reports them as superseded. It removes a
+  plugin you haven't declared only with `authoritative.plugins`, and then only
+  plugins the server reports as removable.
 
 A few jellarr behaviours are worth knowing before you rely on them:
 
-- jellarr never deletes users, libraries, undeclared plugins or API keys.
-  Removing one from the config stops jellarr managing it; it stays on the
-  server.
+- By default jellarr does not delete users, libraries, undeclared plugins or API
+  keys: removing one from the config stops jellarr managing it, and it stays on
+  the server. It deletes them if you opt in with `authoritative.users`,
+  `authoritative.libraries`, `authoritative.plugins` and `authoritative.apiKeys`
+  (see the README's Authoritative Mode). That is destructive, and a deleted user
+  loses their watch history, so dry-run it first. It never deletes the user or
+  key it is signed in with or the last administrator, spares anything in
+  `authoritative.keep`, and refuses to delete more than half of a kind unless
+  `authoritative.allowMassDelete` is set.
 - Declared lists replace the server's lists, and `[]` clears one. That includes
   `policy.enabledLibraries = [ ]`, which removes the user's access to every
   library unless `enableAllFolders` is true.
@@ -388,7 +396,8 @@ changes even when your config matches the old one. These are expected:
 Checked against `src/` on this branch:
 
 - Users you do not declare are never touched (`src/apply/users.ts` only
-  processes declared names). jellarr never deletes users.
+  processes declared names). jellarr deletes users only when
+  `authoritative.users` is set.
 - Libraries are matched by name and updated in place through
   `updateLibraryOptions`; they are not recreated. A declared library whose name
   does not exist is created. Changing an existing library's `collectionType` is
