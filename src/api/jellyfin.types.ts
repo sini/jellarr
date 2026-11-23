@@ -22,6 +22,10 @@ import {
 } from "../types/schema/plugins";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type {
+  TaskInfoSchema,
+  TaskTriggerInfoSchema,
+} from "../types/schema/scheduled-tasks";
+import type {
   LiveTvOptionsSchema,
   ListingsProviderInfoSchema,
   TunerHostInfoSchema,
@@ -157,6 +161,18 @@ export interface JellyfinClient {
     body: BasePluginConfigurationSchema,
   ): Promise<void>;
   getApiKeys(): Promise<AuthenticationInfoSchema[]>;
+  /** Revokes an API key by its access token. */
+  deleteApiKey(accessToken: string): Promise<void>;
+  /** The user the current token belongs to; undefined for an API key, which has none. */
+  getCurrentUser(): Promise<UserDtoSchema | undefined>;
+  /** Deletes the user and, with it, their watch history. */
+  deleteUser(userId: string): Promise<void>;
+  deleteVirtualFolder(name: string): Promise<void>;
+  getScheduledTasks(): Promise<TaskInfoSchema[]>;
+  updateTaskTriggers(
+    taskId: string,
+    triggers: TaskTriggerInfoSchema[],
+  ): Promise<void>;
   createApiKey(appName: string): Promise<void>;
   getLiveTvOptions(): Promise<LiveTvOptionsSchema>;
   updateLiveTvOptions(body: LiveTvOptionsSchema): Promise<void>;

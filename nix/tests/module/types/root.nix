@@ -21,6 +21,8 @@
     startup = null;
     api_keys = null;
     livetv = null;
+    authoritative = null;
+    scheduledTasks = null;
   };
 
   nullSystemConfig = {
@@ -505,4 +507,52 @@ in [
       ];
       startup = {completeStartupWizard = true;};
     })
+
+  (assertEq "with authoritative and scheduledTasks sections" (mkConfig (nullConfig
+    // {
+      system = nullSystemConfig;
+      authoritative = {
+        users = true;
+        libraries = null;
+        plugins = null;
+        apiKeys = null;
+        livetv = null;
+        allowMassDelete = null;
+        keep = null;
+      };
+      scheduledTasks = [
+        {
+          key = "RefreshLibrary";
+          name = null;
+          triggers = [
+            {
+              type = "IntervalTrigger";
+              interval = "6h";
+              timeOfDay = null;
+              timeOfDayTicks = null;
+              intervalTicks = null;
+              dayOfWeek = null;
+              maxRuntime = null;
+              maxRuntimeTicks = null;
+            }
+          ];
+        }
+      ];
+    })) {
+    version = 1;
+    base_url = "http://10.0.0.76:8096";
+    system = {};
+    authoritative = {users = true;};
+    scheduledTasks = [
+      {
+        key = "RefreshLibrary";
+        triggers = [
+          {
+            type = "IntervalTrigger";
+            interval = "6h";
+          }
+        ];
+      }
+    ];
+  })
 ]

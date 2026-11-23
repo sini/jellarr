@@ -19,6 +19,23 @@ vi.mock("../../src/api/jellyfin_client", () => ({
     getPlugins: () => Promise.resolve([]),
     getApiKeys: () => Promise.resolve([]),
     getLiveTvOptions: () => Promise.resolve({}),
+    getScheduledTasks: () =>
+      Promise.resolve([
+        {
+          Id: "t1",
+          Key: "RefreshLibrary",
+          Name: "Scan",
+          Triggers: [
+            {
+              Type: "DailyTrigger",
+              TimeOfDayTicks: 108000000000,
+              MaxRuntimeTicks: null,
+            },
+          ],
+        },
+        { Id: "t2", Key: "CleanCache", Triggers: [] },
+        { Id: "t3", Name: "keyless", Triggers: [] },
+      ]),
     getVirtualFolders: () => Promise.resolve([]),
     getUsers: () => Promise.resolve([]),
   }),
@@ -49,5 +66,26 @@ describe("dump: system arrays of objects", () => {
       pathSubstitutions: [{ from: "/data", to: "/mnt/data" }],
       castReceiverApplications: [{ id: "ABC123", name: "Stable" }],
     });
+  });
+
+  it("exports every keyed task's current triggers", async () => {
+    process.env.JELLARR_API_KEY = "key";
+    vi.spyOn(console, "error").mockImplementation((): void => undefined);
+    const log: MockInstance<typeof console.log> = vi
+      .spyOn(console, "log")
+      .mockImplementation((): void => undefined);
+
+    await runDump("http://localhost:8096");
+
+    const dumped: { scheduledTasks: unknown[] } = yaml.parse(
+      String(log.mock.calls[0]?.[0]),
+    ) as { scheduledTasks: unknown[] };
+    expect(dumped.scheduledTasks).toEqual([
+      {
+        key: "RefreshLibrary",
+        triggers: [{ type: "DailyTrigger", timeOfDayTicks: 108000000000 }],
+      },
+      { key: "CleanCache", triggers: [] },
+    ]);
   });
 });

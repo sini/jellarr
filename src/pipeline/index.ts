@@ -82,6 +82,20 @@ import type { LiveTvOptionsSchema } from "../types/schema/livetv";
 import { calculateApiKeysToCreate, createApiKeys } from "../apply/api-keys";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { ApiKeyConfig } from "../types/config/api-keys";
+import {
+  planDeletions,
+  applyDeletions,
+  type Deletion,
+  type Declared,
+} from "../apply/authoritative";
+import {
+  calculateTaskTriggerChanges,
+  applyTaskTriggerChanges,
+  type TaskTriggerChange,
+} from "../apply/scheduled-tasks";
+import type { TaskInfoSchema } from "../types/schema/scheduled-tasks";
+import type { LiveTvConfig } from "../types/config/livetv";
+import type { VirtualFolderConfig } from "../types/config/library";
 import { calculateMetadataDiff, applyMetadata } from "../apply/metadata";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
 import {
@@ -669,9 +683,17 @@ export async function runPipeline(
   if (cfg.livetv) {
     const currentLiveTv: LiveTvOptionsSchema =
       await jellyfinClient.getLiveTvOptions();
+    // NOTE: authoritative.livetv is an alias of livetv.authoritative; the root schema rejects a disagreement.
+    const liveTvConfig: LiveTvConfig = {
+      ...cfg.livetv,
+      ...(cfg.livetv.authoritative === undefined &&
+      cfg.authoritative?.livetv !== undefined
+        ? { authoritative: cfg.authoritative.livetv }
+        : {}),
+    };
     const liveTvDiff: LiveTvDiff | undefined = calculateLiveTvDiff(
       currentLiveTv,
-      cfg.livetv,
+      liveTvConfig,
     );
     if (liveTvDiff && plan) {
       if (liveTvDiff.options) {
@@ -700,6 +722,104 @@ export async function runPipeline(
       console.log("✓ updated live TV config");
     } else {
       console.log("✓ live TV config already up to date");
+    }
+  }
+
+  if (cfg.scheduledTasks) {
+    const currentTasks: TaskInfoSchema[] =
+      await jellyfinClient.getScheduledTasks();
+    const taskChanges: TaskTriggerChange[] = calculateTaskTriggerChanges(
+      currentTasks,
+      cfg.scheduledTasks,
+    );
+    if (taskChanges.length > 0 && plan) {
+      for (const change of taskChanges) {
+        plan.change(change.label, change.current, change.next);
+      }
+    } else if (taskChanges.length > 0) {
+      console.log("→ updating scheduled task triggers");
+      await applyTaskTriggerChanges(jellyfinClient, taskChanges);
+      console.log("✓ updated scheduled task triggers");
+    } else {
+      console.log("✓ scheduled task triggers already up to date");
+    }
+  }
+
+  // NOTE: deletions come last, after every create and update, so a rename (delete old, declare new) never leaves a gap; library deletions follow the Locations reconciliation above.
+  const authoritative: NonNullable<RootConfig["authoritative"]> | undefined =
+    cfg.authoritative;
+  if (
+    authoritative &&
+    (authoritative.users ||
+      authoritative.libraries ||
+      authoritative.plugins ||
+      authoritative.apiKeys)
+  ) {
+    const currentUser: UserDtoSchema | undefined = authoritative.users
+      ? await jellyfinClient.getCurrentUser()
+      : undefined;
+    const state: Parameters<typeof planDeletions>[1] = {
+      users: authoritative.users ? await jellyfinClient.getUsers() : [],
+      folders: authoritative.libraries
+        ? await jellyfinClient.getVirtualFolders()
+        : [],
+      apiKeys: authoritative.apiKeys ? await jellyfinClient.getApiKeys() : [],
+      plugins: authoritative.plugins ? await jellyfinClient.getPlugins() : [],
+    };
+    const declaredPlugins: PluginConfigList =
+      authoritative.plugins && cfg.plugins
+        ? resolveInstalledPluginNames(
+            state.plugins,
+            await jellyfinClient.getPackages(),
+            cfg.plugins,
+          )
+        : [];
+    const declared: Declared = {
+      users: [
+        ...(cfg.users ?? []).map((user: UserConfig) => user.name),
+        ...(cfg.startup?.user ? [cfg.startup.user.name] : []),
+      ],
+      libraries: (cfg.library?.virtualFolders ?? []).map(
+        (folder: VirtualFolderConfig) => folder.name,
+      ),
+      plugins: [
+        ...(cfg.plugins ?? []).map((plugin: PluginConfig) => plugin.name),
+        ...declaredPlugins.map((plugin: PluginConfig) => plugin.name),
+      ],
+      apiKeys: (cfg.api_keys ?? []).map((key: ApiKeyConfig) => key.name),
+      adminOverrides: new Map(
+        (cfg.users ?? []).flatMap(
+          (user: UserConfig): Array<[string, boolean]> =>
+            user.policy?.isAdministrator === undefined
+              ? []
+              : [[user.name.toLowerCase(), user.policy.isAdministrator]],
+        ),
+      ),
+    };
+    const deletions: Deletion[] = planDeletions(
+      authoritative,
+      state,
+      declared,
+      {
+        users: [verifiedAdmin?.name, currentUser?.Name].flatMap(
+          (name: string | null | undefined) => (name ? [name] : []),
+        ),
+        apiKeyToken: apiKey,
+      },
+    );
+    if (deletions.length > 0 && plan) {
+      for (const deletion of deletions) plan.action(deletion.plan);
+    } else if (deletions.length > 0) {
+      console.log("→ deleting entries the config does not declare");
+      await applyDeletions(jellyfinClient, deletions);
+      console.log("✓ deleted entries the config does not declare");
+      if (deletions.some((deletion: Deletion) => deletion.kind === "plugins")) {
+        console.log("→ restarting Jellyfin to unload removed plugins");
+        await restartJellyfin(jellyfinClient, cfg.base_url, waitTimeoutMs);
+        console.log("✓ restarted Jellyfin");
+      }
+    } else {
+      console.log("✓ nothing undeclared to delete");
     }
   }
 

@@ -18,6 +18,8 @@ const READ_ONLY: ReadonlySet<string> = new Set([
   "getPackages",
   "getPluginConfiguration",
   "getApiKeys",
+  "getCurrentUser",
+  "getScheduledTasks",
   "getPublicSystemInfo",
 ]);
 

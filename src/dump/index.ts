@@ -36,6 +36,8 @@ import type {
   ListingsProviderInfoSchema,
   TunerHostInfoSchema,
 } from "../types/schema/livetv";
+import type { TaskInfoSchema } from "../types/schema/scheduled-tasks";
+import { dumpTaskTriggers } from "../mappers/scheduled-tasks";
 import * as yaml from "yaml";
 
 interface PluginWithConfig {
@@ -64,6 +66,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     plugins,
     apiKeys,
     liveTv,
+    scheduledTasks,
   ]: [
     ServerConfigurationSchema,
     MetadataConfigurationSchema,
@@ -75,6 +78,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     PluginInfoSchema[],
     AuthenticationInfoSchema[],
     LiveTvOptionsSchema,
+    TaskInfoSchema[],
   ] = await Promise.all([
     client.getSystemConfiguration(),
     client.getMetadataConfiguration(),
@@ -86,6 +90,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     client.getPlugins(),
     client.getApiKeys(),
     client.getLiveTvOptions(),
+    client.getScheduledTasks(),
   ]);
 
   const pluginsWithConfig: PluginWithConfig[] = await Promise.all(
@@ -452,6 +457,12 @@ export async function runDump(baseUrl: string): Promise<void> {
     api_keys: apiKeys.map((key: AuthenticationInfoSchema) => ({
       name: key.AppName,
     })),
+
+    scheduledTasks: scheduledTasks.flatMap((task: TaskInfoSchema) => {
+      const dumped: ReturnType<typeof dumpTaskTriggers> =
+        dumpTaskTriggers(task);
+      return dumped ? [dumped] : [];
+    }),
 
     livetv: {
       guideDays: liveTv.GuideDays ?? undefined,

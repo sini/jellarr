@@ -107,6 +107,17 @@
         };
       }).config.services.jellarr.config.system
       true)).success;
+  authoritativeAccepted = cfg:
+    (builtins.tryEval (builtins.deepSeq
+      (eval {
+        services.jellarr.config =
+          {
+            version = 1;
+            base_url = "http://x";
+          }
+          // cfg;
+      }).config.services.jellarr.config
+      true)).success;
   failing = e: builtins.filter (a: !a.assertion && nixpkgs.lib.hasInfix "jellarr" a.message) e.config.assertions != [];
 in
   assert nixpkgs.lib.elem "jellyfin.service" svc.after;
@@ -118,6 +129,33 @@ in
   assert !(failing typed);
   assert !(failing withFile);
   assert failing both;
+  assert authoritativeAccepted {
+    authoritative = {
+      users = true;
+      keep.users = ["admin"];
+    };
+    scheduledTasks = [
+      {
+        key = "RefreshLibrary";
+        triggers = [
+          {
+            type = "DailyTrigger";
+            timeOfDay = "03:30";
+          }
+        ];
+      }
+    ];
+  };
+  assert !(authoritativeAccepted {authoritative.users = "yes";});
+  assert !(authoritativeAccepted {authoritative.keep.tasks = [];});
+  assert !(authoritativeAccepted {
+    scheduledTasks = [
+      {
+        key = "x";
+        triggers = [{type = "HourlyTrigger";}];
+      }
+    ];
+  });
   assert failing neither;
   assert refAccepted {_file = "/run/secrets/ok";};
   assert !(refAccepted {

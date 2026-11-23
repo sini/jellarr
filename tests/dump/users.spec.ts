@@ -11,6 +11,7 @@ vi.mock("../../src/api/jellyfin_client", () => ({
     getPlugins: () => Promise.resolve([]),
     getApiKeys: () => Promise.resolve([]),
     getLiveTvOptions: () => Promise.resolve({}),
+    getScheduledTasks: () => Promise.resolve([]),
     getVirtualFolders: () =>
       Promise.resolve([
         { Name: "Movies", ItemId: "m1" },

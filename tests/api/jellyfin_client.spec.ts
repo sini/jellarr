@@ -1599,4 +1599,52 @@ describe("api/jf library media paths", () => {
       createJellyfinClient(baseUrl, apiKey).removeMediaPath("Movies", "/m"),
     ).rejects.toThrow(/DELETE \/Library\/VirtualFolders\/Paths failed: 500/);
   });
+
+  it("deletes a user, a library, an API key and reads the current user", async (): Promise<void> => {
+    mockFetchNoContent();
+    const jf: JellyfinClient = createJellyfinClient(baseUrl, apiKey);
+    await jf.deleteUser("u-1");
+    expect(getLastRequest().method).toBe("DELETE");
+    expect(getLastRequest().url).toMatch(/\/Users\/u-1$/);
+
+    await jf.deleteVirtualFolder('Odd "name"');
+    expect(getLastRequest().method).toBe("DELETE");
+    expect(new URL(getLastRequest().url).pathname).toBe(
+      "/Library/VirtualFolders",
+    );
+    expect(new URL(getLastRequest().url).searchParams.get("name")).toBe(
+      'Odd "name"',
+    );
+
+    await jf.deleteApiKey("tok/en");
+    expect(getLastRequest().method).toBe("DELETE");
+    expect(new URL(getLastRequest().url).pathname).toBe("/Auth/Keys/tok%2Fen");
+
+    mockFetchNoContent(500);
+    await expect(jf.deleteUser("u-1")).rejects.toThrow(
+      /DELETE \/Users\/u-1 failed: 500/,
+    );
+
+    mockFetchJson({ Name: "root" });
+    expect(await jf.getCurrentUser()).toEqual({ Name: "root" });
+    mockFetchNoContent(400);
+    expect(await jf.getCurrentUser()).toBeUndefined();
+    mockFetchNoContent(401);
+    await expect(jf.getCurrentUser()).rejects.toThrow(/401/);
+  });
+
+  it("reads scheduled tasks and replaces a task's triggers", async (): Promise<void> => {
+    mockFetchJson([{ Id: "t1", Key: "RefreshLibrary" }]);
+    const jf: JellyfinClient = createJellyfinClient(baseUrl, apiKey);
+    expect(await jf.getScheduledTasks()).toEqual([
+      { Id: "t1", Key: "RefreshLibrary" },
+    ]);
+
+    mockFetchNoContent();
+    await jf.updateTaskTriggers("t1", [{ Type: "StartupTrigger" }]);
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/ScheduledTasks\/t1\/Triggers$/);
+    expect(await req.json()).toEqual([{ Type: "StartupTrigger" }]);
+  });
 });

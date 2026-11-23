@@ -10,10 +10,20 @@ import { StartupConfigType } from "./startup";
 import { PluginConfigListType } from "./plugins";
 import { ApiKeyConfigListType } from "./api-keys";
 import { LiveTvConfigType } from "./livetv";
+import { AuthoritativeConfigType } from "./authoritative";
+import {
+  ScheduledTaskConfigListType,
+  type ScheduledTaskConfig,
+  type TaskTriggerConfig,
+} from "./scheduled-tasks";
+import { triggerProblem } from "../../mappers/scheduled-tasks";
 
 interface RootConfigInput {
   system: { pluginRepositories?: Array<{ name: string }> | undefined };
   plugins?: Array<{ repository?: string | undefined }> | undefined;
+  livetv?: { authoritative?: boolean | undefined } | undefined;
+  authoritative?: { livetv?: boolean | undefined } | undefined;
+  scheduledTasks?: ScheduledTaskConfig[] | undefined;
 }
 
 export const RootConfigType: z.ZodObject<{
@@ -30,6 +40,8 @@ export const RootConfigType: z.ZodObject<{
   startup: z.ZodOptional<typeof StartupConfigType>;
   api_keys: z.ZodOptional<typeof ApiKeyConfigListType>;
   livetv: z.ZodOptional<typeof LiveTvConfigType>;
+  authoritative: z.ZodOptional<typeof AuthoritativeConfigType>;
+  scheduledTasks: z.ZodOptional<typeof ScheduledTaskConfigListType>;
 }> = z
   .object({
     version: z.number().int().positive("Version must be a positive integer"),
@@ -45,9 +57,44 @@ export const RootConfigType: z.ZodObject<{
     startup: StartupConfigType.optional(),
     api_keys: ApiKeyConfigListType.optional(),
     livetv: LiveTvConfigType.optional(),
+    authoritative: AuthoritativeConfigType.optional(),
+    scheduledTasks: ScheduledTaskConfigListType.optional(),
   })
   .strict()
   .superRefine((cfg: RootConfigInput, ctx: z.RefinementCtx): void => {
+    const alias: boolean | undefined = cfg.authoritative?.livetv;
+    const canonical: boolean | undefined = cfg.livetv?.authoritative;
+    if (alias !== undefined && canonical !== undefined && alias !== canonical) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["authoritative", "livetv"],
+        message:
+          "authoritative.livetv is an alias of livetv.authoritative and the two disagree; set only livetv.authoritative",
+      });
+    }
+    (cfg.scheduledTasks ?? []).forEach(
+      (task: ScheduledTaskConfig, index: number): void => {
+        if (!task.key && !task.name) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["scheduledTasks", index],
+            message: "a scheduled task needs a key (preferred) or a name",
+          });
+        }
+        task.triggers.forEach(
+          (trigger: TaskTriggerConfig, triggerIndex: number): void => {
+            const problem: string | undefined = triggerProblem(trigger);
+            if (problem) {
+              ctx.addIssue({
+                code: "custom",
+                path: ["scheduledTasks", index, "triggers", triggerIndex],
+                message: problem,
+              });
+            }
+          },
+        );
+      },
+    );
     const known: Set<string> = new Set(
       (cfg.system.pluginRepositories ?? []).map(
         (repository: { name: string }) => repository.name,

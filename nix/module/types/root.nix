@@ -4,6 +4,8 @@
   inherit (types) nullOr;
 
   subTypes = {
+    authoritative = import ./authoritative.nix {inherit lib;};
+    scheduledTasks = import ./scheduled-tasks.nix {inherit lib;};
     apiKeys = import ./api-keys.nix {inherit lib;};
     brandingOptions = import ./branding-options.nix {inherit lib;};
     encodingOptions = import ./encoding-options.nix {inherit lib;};
@@ -82,6 +84,20 @@
         default = null;
         description = "Live TV configuration.";
       };
+      authoritative = mkOption {
+        type = nullOr subTypes.authoritative.authoritativeConfigType;
+        default = null;
+        description = ''
+          Opt-in deletion of server entries the config does not declare. Off by
+          default: jellarr never deletes users, libraries, plugins or API keys
+          unless a flag here is set.
+        '';
+      };
+      scheduledTasks = mkOption {
+        type = nullOr subTypes.scheduledTasks.scheduledTasksConfigType;
+        default = null;
+        description = "Scheduled task triggers. A declared task's trigger list replaces the server's; undeclared tasks are untouched.";
+      };
     };
   };
 
@@ -123,6 +139,12 @@
       }
       // optionalAttrs (cfg ? livetv && cfg.livetv != null) {
         livetv = subTypes.livetv.mkLiveTvConfig cfg.livetv;
+      }
+      // optionalAttrs (cfg ? authoritative && cfg.authoritative != null) {
+        authoritative = subTypes.authoritative.mkAuthoritativeConfig cfg.authoritative;
+      }
+      // optionalAttrs (cfg ? scheduledTasks && cfg.scheduledTasks != null) {
+        scheduledTasks = subTypes.scheduledTasks.mkScheduledTasksConfig cfg.scheduledTasks;
       };
 in {
   inherit rootConfigType mkConfig;

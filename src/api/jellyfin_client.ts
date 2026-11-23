@@ -69,6 +69,10 @@ import type {
 } from "../types/schema/startup";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type {
+  TaskInfoSchema,
+  TaskTriggerInfoSchema,
+} from "../types/schema/scheduled-tasks";
+import type {
   LiveTvOptionsSchema,
   ListingsProviderInfoSchema,
   TunerHostInfoSchema,
@@ -777,6 +781,76 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Auth/Keys failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async deleteApiKey(accessToken: string): Promise<void> {
+      const res: ApiResponse = await client.DELETE("/Auth/Keys/{key}", {
+        params: { path: { key: accessToken } },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `DELETE /Auth/Keys/{key} failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getCurrentUser(): Promise<UserDtoSchema | undefined> {
+      const res: ApiResponse<UserDtoSchema> = await client.GET("/Users/Me");
+      // NOTE: an API key belongs to no user, so the server refuses with a 4xx other than 401.
+      if (res.response.status === 401 || res.response.status >= 500) {
+        throw new Error(
+          `GET /Users/Me failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.response.ok ? res.data : undefined;
+    },
+
+    async deleteUser(userId: string): Promise<void> {
+      const res: ApiResponse = await client.DELETE("/Users/{userId}", {
+        params: { path: { userId } },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `DELETE /Users/${userId} failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async deleteVirtualFolder(name: string): Promise<void> {
+      const res: ApiResponse = await client.DELETE("/Library/VirtualFolders", {
+        params: { query: { name, refreshLibrary: false } },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `DELETE /Library/VirtualFolders failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getScheduledTasks(): Promise<TaskInfoSchema[]> {
+      const res: ApiResponse<TaskInfoSchema[]> =
+        await client.GET("/ScheduledTasks");
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /ScheduledTasks failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data ?? [];
+    },
+
+    async updateTaskTriggers(
+      taskId: string,
+      triggers: TaskTriggerInfoSchema[],
+    ): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/ScheduledTasks/{taskId}/Triggers",
+        { params: { path: { taskId } }, body: triggers },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /ScheduledTasks/${taskId}/Triggers failed: ${res.response.status.toString()}`,
         );
       }
     },
