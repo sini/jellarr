@@ -342,8 +342,9 @@ describe("api/jf Encoding façade", () => {
     // Arrange
     const payload: EncodingOptionsSchema = {
       EnableHardwareEncoding: true,
-      EnableHardwareDecoding: false,
-    } as EncodingOptionsSchema;
+      EnableTonemapping: false,
+      HlsAudioSeekStrategy: "TrimCopiedAudio",
+    };
     mockFetchJson(payload);
 
     // Act

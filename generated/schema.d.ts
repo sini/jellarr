@@ -63,7 +63,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Gets all artists from a given item, folder, or the entire library. */
+    /**
+     * Gets all artists from a given item, folder, or the entire library.
+     * @deprecated
+     */
     get: operations["GetArtists"];
     put?: never;
     post?: never;
@@ -80,7 +83,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Gets an artist by name. */
+    /**
+     * Gets an artist by name.
+     * @deprecated
+     */
     get: operations["GetArtistByName"];
     put?: never;
     post?: never;
@@ -97,7 +103,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Gets all album artists from a given item, folder, or the entire library. */
+    /**
+     * Gets all album artists from a given item, folder, or the entire library.
+     * @deprecated
+     */
     get: operations["GetAlbumArtists"];
     put?: never;
     post?: never;
@@ -514,7 +523,7 @@ export interface paths {
     get: operations["GetDevices"];
     put?: never;
     post?: never;
-    /** Deletes a device. */
+    /** Deletes devices. */
     delete: operations["DeleteDevice"];
     options?: never;
     head?: never;
@@ -574,127 +583,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets a video stream using HTTP live streaming. */
-    get: operations["GetHlsAudioSegment"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Audio/{itemId}/main.m3u8": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets an audio stream using HTTP live streaming. */
-    get: operations["GetVariantHlsAudioPlaylist"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Audio/{itemId}/master.m3u8": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets an audio hls playlist stream. */
-    get: operations["GetMasterHlsAudioPlaylist"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    /** Gets an audio hls playlist stream. */
-    head: operations["HeadMasterHlsAudioPlaylist"];
-    patch?: never;
-    trace?: never;
-  };
-  "/Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets a video stream using HTTP live streaming. */
-    get: operations["GetHlsVideoSegment"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Videos/{itemId}/live.m3u8": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets a hls live stream. */
-    get: operations["GetLiveHlsStream"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Videos/{itemId}/main.m3u8": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets a video stream using HTTP live streaming. */
-    get: operations["GetVariantHlsVideoPlaylist"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Videos/{itemId}/master.m3u8": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets a video hls playlist stream. */
-    get: operations["GetMasterHlsVideoPlaylist"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    /** Gets a video hls playlist stream. */
-    head: operations["HeadMasterHlsVideoPlaylist"];
-    patch?: never;
-    trace?: never;
-  };
   "/Environment/DefaultDirectoryBrowser": {
     parameters: {
       query?: never;
@@ -738,26 +626,6 @@ export interface paths {
     };
     /** Gets available drives from the server's file system. */
     get: operations["GetDrives"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Environment/NetworkShares": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Gets network paths.
-     * @deprecated
-     */
-    get: operations["GetNetworkShares"];
     put?: never;
     post?: never;
     delete?: never;
@@ -863,91 +731,6 @@ export interface paths {
     put?: never;
     post?: never;
     delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Audio/{itemId}/hls/{segmentId}/stream.aac": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets the specified audio segment for an audio item. */
-    get: operations["GetHlsAudioSegmentLegacyAac"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Audio/{itemId}/hls/{segmentId}/stream.mp3": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets the specified audio segment for an audio item. */
-    get: operations["GetHlsAudioSegmentLegacyMp3"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets a hls video segment. */
-    get: operations["GetHlsVideoSegmentLegacy"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Videos/{itemId}/hls/{playlistId}/stream.m3u8": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets a hls video playlist. */
-    get: operations["GetHlsPlaylistLegacy"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/Videos/ActiveEncodings": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Stops an active encoding. */
-    delete: operations["StopEncodingProcess"];
     options?: never;
     head?: never;
     patch?: never;
@@ -1283,26 +1066,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/Artists/InstantMix": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Creates an instant playlist based on a given artist.
-     * @deprecated
-     */
-    get: operations["GetInstantMixFromArtists2"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/Items/{itemId}/InstantMix": {
     parameters: {
       query?: never;
@@ -1327,7 +1090,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Creates an instant playlist based on a given genre. */
+    /**
+     * Creates an instant playlist based on a given genre.
+     * @deprecated
+     */
     get: operations["GetInstantMixFromMusicGenreByName"];
     put?: never;
     post?: never;
@@ -1344,7 +1110,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Creates an instant playlist based on a given genre. */
+    /**
+     * Creates an instant playlist based on a given genre.
+     * @deprecated
+     */
     get: operations["GetInstantMixFromMusicGenreById"];
     put?: never;
     post?: never;
@@ -1749,18 +1518,15 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/Items/{itemId}/CriticReviews": {
+  "/Items/{itemId}/Collections": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /**
-     * Gets critic review for an item.
-     * @deprecated
-     */
-    get: operations["GetCriticReviews"];
+    /** Gets the collections that include the specified item. */
+    get: operations["GetItemCollections"];
     put?: never;
     post?: never;
     delete?: never;
@@ -2489,66 +2255,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/LiveTv/Recordings/Groups": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Gets live tv recording groups.
-     * @deprecated
-     */
-    get: operations["GetRecordingGroups"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/LiveTv/Recordings/Groups/{groupId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get recording group.
-     * @deprecated
-     */
-    get: operations["GetRecordingGroup"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/LiveTv/Recordings/Series": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Gets live tv recording series.
-     * @deprecated
-     */
-    get: operations["GetRecordingsSeries"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/LiveTv/SeriesTimers": {
     parameters: {
       query?: never;
@@ -2971,26 +2677,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/MusicGenres": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Gets all music genres from a given item, folder, or the entire library.
-     * @deprecated
-     */
-    get: operations["GetMusicGenres"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/MusicGenres/{genreName}": {
     parameters: {
       query?: never;
@@ -2998,7 +2684,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Gets a music genre, by name. */
+    /**
+     * Gets a music genre, by name.
+     * @deprecated
+     */
     get: operations["GetMusicGenre"];
     put?: never;
     post?: never;
@@ -3239,50 +2928,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/PlayingItems/{itemId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Reports that a session has begun playing an item.
-     * @deprecated
-     */
-    post: operations["OnPlaybackStart"];
-    /**
-     * Reports that a session has stopped playing an item.
-     * @deprecated
-     */
-    delete: operations["OnPlaybackStopped"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/PlayingItems/{itemId}/Progress": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Reports a session's playback progress.
-     * @deprecated
-     */
-    post: operations["OnPlaybackProgress"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/Sessions/Playing": {
     parameters: {
       query?: never;
@@ -3396,10 +3041,7 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    /**
-     * Uninstalls a plugin.
-     * @deprecated
-     */
+    /** Uninstalls a plugin. */
     delete: operations["UninstallPlugin"];
     options?: never;
     head?: never;
@@ -3997,10 +3639,16 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Gets the initial startup wizard configuration. */
+    /**
+     * Gets the initial startup wizard configuration.
+     * @deprecated
+     */
     get: operations["GetStartupConfiguration"];
     put?: never;
-    /** Sets the initial startup wizard configuration. */
+    /**
+     * Sets the initial startup wizard configuration.
+     * @deprecated
+     */
     post: operations["UpdateInitialConfiguration"];
     delete?: never;
     options?: never;
@@ -4015,7 +3663,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Gets the first user. */
+    /**
+     * Gets the first user.
+     * @deprecated
+     */
     get: operations["GetFirstUser_2"];
     put?: never;
     post?: never;
@@ -4034,7 +3685,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Sets remote access and UPnP. */
+    /**
+     * Sets remote access and UPnP.
+     * @deprecated
+     */
     post: operations["SetRemoteAccess"];
     delete?: never;
     options?: never;
@@ -4049,7 +3703,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Gets the first user. */
+    /**
+     * Gets the first user.
+     * @deprecated
+     */
     get: operations["GetFirstUser"];
     put?: never;
     /** Sets the user name and password. */
@@ -4826,23 +4483,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/Tmdb/ClientConfiguration": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Gets the TMDb image configuration options. */
-    get: operations["TmdbClientConfiguration"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/Trailers": {
     parameters: {
       query?: never;
@@ -4850,7 +4490,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Finds movies and trailers similar to a given trailer. */
+    /**
+     * Finds movies and trailers similar to a given trailer.
+     * @deprecated
+     */
     get: operations["GetTrailers"];
     put?: never;
     post?: never;
@@ -5617,6 +5260,18 @@ export interface components {
        */
       MessageType: "ActivityLogEntryStop";
     };
+    /**
+     * @description Activity log sorting options.
+     * @enum {string}
+     */
+    ActivityLogSortBy:
+      | "Name"
+      | "Overiew"
+      | "ShortOverview"
+      | "Type"
+      | "DateCreated"
+      | "Username"
+      | "LogSeverity";
     /** @description Add virtual folder dto. */
     AddVirtualFolderDto: {
       /** @description Gets or sets library options. */
@@ -5653,7 +5308,7 @@ export interface components {
       AlbumArtists?: string[];
       /** @description Gets or sets the artist provider ids. */
       ArtistProviderIds?: {
-        [key: string]: string | null;
+        [key: string]: string;
       };
       SongInfos?: components["schemas"]["SongInfo"][];
     };
@@ -5790,18 +5445,18 @@ export interface components {
     /** @description Manifest type for backups internal structure. */
     BackupManifestDto: {
       /** @description Gets or sets the jellyfin version this backup was created with. */
-      ServerVersion?: string;
+      ServerVersion: string;
       /** @description Gets or sets the backup engine version this backup was created with. */
-      BackupEngineVersion?: string;
+      BackupEngineVersion: string;
       /**
        * Format: date-time
        * @description Gets or sets the date this backup was created with.
        */
-      DateCreated?: string;
+      DateCreated: string;
       /** @description Gets or sets the path to the backup on the system. */
-      Path?: string;
+      Path: string;
       /** @description Gets or sets the contents of the backup archive. */
-      Options?: components["schemas"]["BackupOptionsDto"];
+      Options: components["schemas"]["BackupOptionsDto"];
     };
     /** @description Defines the optional contents of the backup archive. */
     BackupOptionsDto: {
@@ -5817,7 +5472,7 @@ export interface components {
     /** @description Defines properties used to start a restore process. */
     BackupRestoreRequestDto: {
       /** @description Gets or Sets the name of the backup archive to restore from. Must be present in MediaBrowser.Common.Configuration.IApplicationPaths.BackupPath. */
-      ArchiveFileName?: string;
+      ArchiveFileName: string;
     };
     /**
      * @description This is strictly used as a data transfer object from the api layer.
@@ -5986,7 +5641,7 @@ export interface components {
        */
       ParentId?: string | null;
       /**
-       * @description Gets or sets the type.
+       * @description The base item kind.
        * @enum {unknown}
        */
       Type?:
@@ -6151,7 +5806,7 @@ export interface components {
       MediaSourceCount?: number | null;
       /** @description Gets or sets the image tags. */
       ImageTags?: {
-        [key: string]: string;
+        [key: string]: string | null;
       } | null;
       /** @description Gets or sets the backdrop image tags. */
       BackdropImageTags?: string[] | null;
@@ -6174,43 +5829,43 @@ export interface components {
        */
       ImageBlurHashes?: {
         Primary?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Art?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Backdrop?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Banner?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Logo?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Thumb?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Disc?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Box?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Screenshot?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Menu?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Chapter?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         BoxRear?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Profile?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
       } | null;
       /** @description Gets or sets the series studio. */
@@ -6235,7 +5890,7 @@ export interface components {
       Trickplay?: {
         [key: string]: {
           [key: string]: components["schemas"]["TrickplayInfoDto"];
-        };
+        } | null;
       } | null;
       /**
        * @description Gets or sets the type of the location.
@@ -6248,7 +5903,7 @@ export interface components {
        */
       IsoType?: "Dvd" | "BluRay" | null;
       /**
-       * @description Gets or sets the type of the media.
+       * @description Media types.
        * @default Unknown
        * @enum {unknown}
        */
@@ -6387,8 +6042,14 @@ export interface components {
        * @description Gets or sets the gain required for audio normalization.
        */
       NormalizationGain?: number | null;
+      /**
+       * Format: float
+       * @description Gets or sets the gain required for audio normalization. This field is inherited from music album normalization gain.
+       */
+      AlbumNormalizationGain?: number | null;
       /** @description Gets or sets the current program. */
       CurrentProgram?: components["schemas"]["BaseItemDto"] | null;
+      OriginalLanguage?: string | null;
     };
     /** @description Query result container. */
     BaseItemDtoQueryResult: {
@@ -6459,7 +6120,7 @@ export interface components {
       /** @description Gets or sets the role. */
       Role?: string | null;
       /**
-       * @description Gets or sets the type.
+       * @description The person kind.
        * @default Unknown
        * @enum {unknown}
        */
@@ -6488,54 +6149,56 @@ export interface components {
         | "Letterer"
         | "CoverArtist"
         | "Editor"
-        | "Translator";
+        | "Translator"
+        | "Narrator";
       /** @description Gets or sets the primary image tag. */
       PrimaryImageTag?: string | null;
       /** @description Gets or sets the primary image blurhash. */
       ImageBlurHashes?: {
         Primary?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Art?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Backdrop?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Banner?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Logo?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Thumb?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Disc?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Box?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Screenshot?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Menu?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Chapter?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         BoxRear?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
         Profile?: {
-          [key: string]: string;
+          [key: string]: string | null;
         };
       } | null;
     };
     /** @description Class BasePluginConfiguration. */
     BasePluginConfiguration: Record<string, never>;
+    /** @description The lookup info for books. */
     BookInfo: {
       /** @description Gets or sets the name. */
       Name?: string | null;
@@ -6563,9 +6226,11 @@ export interface components {
       /** Format: date-time */
       PremiereDate?: string | null;
       IsAutomated?: boolean;
+      /** @description Gets or sets the name of the series the book belongs to. */
       SeriesName?: string | null;
     };
     BookInfoRemoteSearchQuery: {
+      /** @description The lookup info for books. */
       SearchInfo?: components["schemas"]["BookInfo"] | null;
       /** Format: uuid */
       ItemId?: string;
@@ -6574,6 +6239,7 @@ export interface components {
       /** @description Gets or sets a value indicating whether disabled providers should be included. */
       IncludeDisabledProviders?: boolean;
     };
+    /** @description The lookup info for box sets. */
     BoxSetInfo: {
       /** @description Gets or sets the name. */
       Name?: string | null;
@@ -6603,6 +6269,7 @@ export interface components {
       IsAutomated?: boolean;
     };
     BoxSetInfoRemoteSearchQuery: {
+      /** @description The lookup info for box sets. */
       SearchInfo?: components["schemas"]["BoxSetInfo"] | null;
       /** Format: uuid */
       ItemId?: string;
@@ -6646,9 +6313,9 @@ export interface components {
     /** @description The cast receiver application model. */
     CastReceiverApplication: {
       /** @description Gets or sets the cast receiver application id. */
-      Id?: string;
+      Id: string;
       /** @description Gets or sets the cast receiver application name. */
-      Name?: string;
+      Name: string;
     };
     ChannelFeatures: {
       /** @description Gets or sets the name. */
@@ -6697,9 +6364,9 @@ export interface components {
     /** @description Channel mapping options dto. */
     ChannelMappingOptionsDto: {
       /** @description Gets or sets list of tuner channels. */
-      TunerChannels?: components["schemas"]["TunerChannelMapping"][];
+      TunerChannels: components["schemas"]["TunerChannelMapping"][];
       /** @description Gets or sets list of provider channels. */
-      ProviderChannels?: components["schemas"]["NameIdPair"][];
+      ProviderChannels: components["schemas"]["NameIdPair"][];
       /** @description Gets or sets list of mappings. */
       Mappings?: components["schemas"]["NameValuePair"][];
       /** @description Gets or sets provider name. */
@@ -6777,7 +6444,10 @@ export interface components {
       /** @description Gets or sets the sub-container(s) which this profile will be applied to. */
       SubContainer?: string | null;
     };
-    /** @enum {string} */
+    /**
+     * @description The codec type of a codec profile.
+     * @enum {string}
+     */
     CodecType: "Video" | "VideoAudio" | "Audio";
     CollectionCreationResult: {
       /** Format: uuid */
@@ -6814,15 +6484,6 @@ export interface components {
       | "boxsets"
       | "books"
       | "mixed";
-    ConfigImageTypes: {
-      BackdropSizes?: string[] | null;
-      BaseUrl?: string | null;
-      LogoSizes?: string[] | null;
-      PosterSizes?: string[] | null;
-      ProfileSizes?: string[] | null;
-      SecureBaseUrl?: string | null;
-      StillSizes?: string[] | null;
-    };
     /** @description The configuration page info. */
     ConfigurationPageInfo: {
       /** @description Gets or sets the name. */
@@ -6869,7 +6530,7 @@ export interface components {
     /** @description Create new playlist dto. */
     CreatePlaylistDto: {
       /** @description Gets or sets the name of the new playlist. */
-      Name?: string;
+      Name: string;
       /** @description Gets or sets item ids to add to the playlist. */
       Ids?: string[];
       /**
@@ -6909,25 +6570,25 @@ export interface components {
     /** @description The custom value option for custom database providers. */
     CustomDatabaseOption: {
       /** @description Gets or sets the key of the value. */
-      Key?: string;
+      Key: string;
       /** @description Gets or sets the value. */
-      Value?: string;
+      Value: string;
     };
     /** @description Defines the options for a custom database connector. */
     CustomDatabaseOptions: {
       /** @description Gets or sets the Plugin name to search for database providers. */
-      PluginName?: string;
+      PluginName: string;
       /** @description Gets or sets the plugin assembly to search for providers. */
-      PluginAssembly?: string;
+      PluginAssembly: string;
       /** @description Gets or sets the connection string for the custom database provider. */
-      ConnectionString?: string;
+      ConnectionString: string;
       /** @description Gets or sets the list of extra options for the custom provider. */
       Options?: components["schemas"]["CustomDatabaseOption"][];
     };
     /** @description Options to configure jellyfins managed database. */
     DatabaseConfigurationOptions: {
       /** @description Gets or Sets the type of database jellyfin should use. */
-      DatabaseType?: string;
+      DatabaseType: string;
       /** @description Gets or sets the options required to use a custom database provider. */
       CustomProviderOptions?:
         components["schemas"]["CustomDatabaseOptions"] | null;
@@ -6952,7 +6613,10 @@ export interface components {
       | "Thursday"
       | "Friday"
       | "Saturday";
-    /** @enum {string} */
+    /**
+     * @description The day pattern of a recurring timer.
+     * @enum {string}
+     */
     DayPattern: "Daily" | "Weekdays" | "Weekends";
     /** @description Default directory browser info. */
     DefaultDirectoryBrowserInfoDto: {
@@ -7024,7 +6688,8 @@ export interface components {
     };
     /**
      * @description A MediaBrowser.Model.Dlna.DeviceProfile represents a set of metadata which determines which content a certain device is able to play.
-     *     <br />
+     *
+     *
      *     Specifically, it defines the supported <see cref="P:MediaBrowser.Model.Dlna.DeviceProfile.ContainerProfiles">containers</see> and
      *     <see cref="P:MediaBrowser.Model.Dlna.DeviceProfile.CodecProfiles">codecs</see> (video and/or audio, including codec profiles and levels)
      *     the device is able to direct play (without transcoding or remuxing),
@@ -7173,7 +6838,10 @@ export interface components {
       | "veryfast"
       | "superfast"
       | "ultrafast";
-    /** @enum {string} */
+    /**
+     * @description The encoding context.
+     * @enum {string}
+     */
     EncodingContext: "Streaming" | "Static";
     /** @description Class EncodingOptions. */
     EncodingOptions: {
@@ -7307,7 +6975,7 @@ export interface components {
       H265Crf?: number;
       /**
        * @description Gets or sets the encoder preset.
-       * @enum {unknown|null}
+       * @enum {unknown}
        */
       EncoderPreset?:
         | "auto"
@@ -7320,8 +6988,7 @@ export interface components {
         | "faster"
         | "veryfast"
         | "superfast"
-        | "ultrafast"
-        | null;
+        | "ultrafast";
       /** @description Gets or sets a value indicating whether the framerate is doubled when deinterlacing. */
       DeinterlaceDoubleRate?: boolean;
       /**
@@ -7353,11 +7020,22 @@ export interface components {
       AllowAv1Encoding?: boolean;
       /** @description Gets or sets a value indicating whether subtitle extraction is enabled. */
       EnableSubtitleExtraction?: boolean;
+      /**
+       * Format: int32
+       * @description Gets or sets the timeout for subtitle extraction in minutes.
+       */
+      SubtitleExtractionTimeoutMinutes?: number;
       /** @description Gets or sets the codecs hardware encoding is used for. */
       HardwareDecodingCodecs?: string[] | null;
       /** @description Gets or sets the file extensions on-demand metadata based keyframe extraction is enabled for. */
       AllowOnDemandMetadataBasedKeyframeExtractionForExtensions?:
         string[] | null;
+      /**
+       * @description Gets or sets the method used for audio seeking in HLS.
+       * @default TrimCopiedAudio
+       * @enum {unknown}
+       */
+      HlsAudioSeekStrategy: "TrimCopiedAudio" | "TranscodeAudio";
     };
     EndPointInfo: {
       IsLocal?: boolean;
@@ -7453,7 +7131,7 @@ export interface components {
     /** @description Contains information about a specific folder. */
     FolderStorageDto: {
       /** @description Gets the path of the folder in question. */
-      Path?: string;
+      Path: string;
       /**
        * Format: int64
        * @description Gets the free space of the underlying storage device of the Jellyfin.Api.Models.SystemInfoDtos.FolderStorageDto.Path.
@@ -7489,7 +7167,11 @@ export interface components {
        */
       DateModified?: string;
     };
-    /** @description Force keep alive websocket messages. */
+    /**
+     * @description Force keep alive websocket messages. The data is the timeout in seconds after which the
+     *     server considers the connection lost; clients are expected to answer with a KeepAlive
+     *     message and to keep sending one at least every half of that timeout.
+     */
     ForceKeepAliveMessage: {
       /**
        * Format: int32
@@ -7585,7 +7267,7 @@ export interface components {
       /** Format: uuid */
       ControllingUserId?: string;
       Arguments?: {
-        [key: string]: string | null;
+        [key: string]: string;
       };
     };
     /** @description General command websocket message. */
@@ -7860,6 +7542,32 @@ export interface components {
       | "vaapi"
       | "videotoolbox"
       | "rkmpp";
+    /**
+     * @description An enum representing the options to seek the input audio stream when
+     *     transcoding HLS segments.
+     * @enum {string}
+     */
+    HlsAudioSeekStrategy: "TrimCopiedAudio" | "TranscodeAudio";
+    /** @description Defines the MediaBrowser.Common.Plugins.IPlugin. */
+    IPlugin: {
+      /** @description Gets the name of the plugin. */
+      readonly Name?: string | null;
+      /** @description Gets the Description. */
+      readonly Description?: string | null;
+      /**
+       * Format: uuid
+       * @description Gets the unique id.
+       */
+      readonly Id?: string;
+      /** @description Gets the plugin version. */
+      readonly Version?: string | null;
+      /** @description Gets the path to the assembly file. */
+      readonly AssemblyFilePath?: string | null;
+      /** @description Gets a value indicating whether the plugin can be uninstalled. */
+      readonly CanUninstall?: boolean;
+      /** @description Gets the full path to the data folder, where the plugin can store any miscellaneous files needed. */
+      readonly DataFolderPath?: string | null;
+    };
     /** @description Class IgnoreWaitRequestDto. */
     IgnoreWaitRequestDto: {
       /** @description Gets or sets a value indicating whether the client should be ignored. */
@@ -7978,7 +7686,10 @@ export interface components {
       | "P1080"
       | "P1440"
       | "P2160";
-    /** @enum {string} */
+    /**
+     * @description The convention used for naming saved images.
+     * @enum {string}
+     */
     ImageSavingConvention: "Legacy" | "Compatible";
     /**
      * @description Enum ImageType.
@@ -8034,26 +7745,6 @@ export interface components {
       Checksum?: string | null;
       /** @description Gets or sets package information for the installation. */
       PackageInfo?: components["schemas"]["PackageInfo"] | null;
-    };
-    /** @description Defines the MediaBrowser.Common.Plugins.IPlugin. */
-    IPlugin: {
-      /** @description Gets the name of the plugin. */
-      readonly Name?: string | null;
-      /** @description Gets the Description. */
-      readonly Description?: string | null;
-      /**
-       * Format: uuid
-       * @description Gets the unique id.
-       */
-      readonly Id?: string;
-      /** @description Gets the plugin version. */
-      readonly Version?: string | null;
-      /** @description Gets the path to the assembly file. */
-      readonly AssemblyFilePath?: string | null;
-      /** @description Gets a value indicating whether the plugin can be uninstalled. */
-      readonly CanUninstall?: boolean;
-      /** @description Gets the full path to the data folder, where the plugin can store any miscellaneous files needed. */
-      readonly DataFolderPath?: string | null;
     };
     /**
      * @description Enum IsoType.
@@ -8337,11 +8028,11 @@ export interface components {
        * Format: uuid
        * @description Gets or sets the Library Id.
        */
-      Id?: string;
+      Id: string;
       /** @description Gets or sets the name of the library. */
-      Name?: string;
+      Name: string;
       /** @description Gets or sets the storage informations about the folders used in a library. */
-      Folders?: components["schemas"]["FolderStorageDto"][];
+      Folders: components["schemas"]["FolderStorageDto"][];
     };
     /** @description Library type options dto. */
     LibraryTypeOptionsDto: {
@@ -8351,6 +8042,8 @@ export interface components {
       MetadataFetchers?: components["schemas"]["LibraryOptionInfoDto"][];
       /** @description Gets or sets the image fetchers. */
       ImageFetchers?: components["schemas"]["LibraryOptionInfoDto"][];
+      /** @description Gets or sets the similar item providers. */
+      SimilarItemProviders?: components["schemas"]["LibraryOptionInfoDto"][];
       /** @description Gets or sets the supported image types. */
       SupportedImageTypes?: components["schemas"]["ImageType"][];
       /** @description Gets or sets the default image options. */
@@ -8443,7 +8136,10 @@ export interface components {
       IsVisible?: boolean;
       Tuners?: string[] | null;
     };
-    /** @enum {string} */
+    /**
+     * @description The status of a live TV service.
+     * @enum {string}
+     */
     LiveTvServiceStatus: "Ok" | "Unavailable";
     LocalizationOption: {
       Name?: string | null;
@@ -8471,7 +8167,7 @@ export interface components {
        */
       Size?: number;
       /** @description Gets or sets the name. */
-      Name?: string;
+      Name: string;
     };
     /** @enum {string} */
     LogLevel:
@@ -8646,7 +8342,10 @@ export interface components {
       /** @enum {unknown|null} */
       EncoderProtocol?:
         "File" | "Http" | "Rtmp" | "Rtsp" | "Udp" | "Rtp" | "Ftp" | null;
-      /** @enum {unknown} */
+      /**
+       * @description The type of a media source.
+       * @enum {unknown}
+       */
       Type?: "Default" | "Grouping" | "Placeholder";
       Container?: string | null;
       /** Format: int64 */
@@ -8718,7 +8417,10 @@ export interface components {
       DefaultSubtitleStreamIndex?: number | null;
       HasSegments?: boolean;
     };
-    /** @enum {string} */
+    /**
+     * @description The type of a media source.
+     * @enum {string}
+     */
     MediaSourceType: "Default" | "Grouping" | "Placeholder";
     /** @description Class MediaStream. */
     MediaStream: {
@@ -8791,13 +8493,13 @@ export interface components {
       Title?: string | null;
       Hdr10PlusPresentFlag?: boolean | null;
       /**
-       * @description Gets the video range.
+       * @description An enum representing video ranges.
        * @default Unknown
        * @enum {unknown}
        */
       readonly VideoRange: "Unknown" | "SDR" | "HDR";
       /**
-       * @description Gets the video range type.
+       * @description An enum representing types of video ranges.
        * @default Unknown
        * @enum {unknown}
        */
@@ -8818,7 +8520,7 @@ export interface components {
       /** @description Gets the video dovi title. */
       readonly VideoDoViTitle?: string | null;
       /**
-       * @description Gets the audio spatial format.
+       * @description An enum representing formats of spatial audio.
        * @default None
        * @enum {unknown}
        */
@@ -8828,6 +8530,8 @@ export interface components {
       LocalizedForced?: string | null;
       LocalizedExternal?: string | null;
       LocalizedHearingImpaired?: string | null;
+      LocalizedLanguage?: string | null;
+      LocalizedOriginal?: string | null;
       readonly DisplayTitle?: string | null;
       NalLengthSize?: string | null;
       /** @description Gets or sets a value indicating whether this instance is interlaced. */
@@ -8871,6 +8575,8 @@ export interface components {
       IsForced?: boolean;
       /** @description Gets or sets a value indicating whether this instance is for the hearing impaired. */
       IsHearingImpaired?: boolean;
+      /** @description Gets or sets a value indicating whether this instance is original. */
+      IsOriginal?: boolean;
       /**
        * Format: int32
        * @description Gets or sets the height.
@@ -8980,10 +8686,16 @@ export interface components {
       Url?: string | null;
       Name?: string | null;
     };
+    /** @description A command to display a message on a client. */
     MessageCommand: {
+      /** @description Gets or sets the message header. */
       Header?: string | null;
+      /** @description Gets or sets the message text. */
       Text: string;
-      /** Format: int64 */
+      /**
+       * Format: int64
+       * @description Gets or sets the timeout in milliseconds after which the message should be dismissed.
+       */
       TimeoutMs?: number | null;
     };
     MetadataConfiguration: {
@@ -9060,6 +8772,7 @@ export interface components {
        */
       NewIndex?: number;
     };
+    /** @description The lookup info for movies. */
     MovieInfo: {
       /** @description Gets or sets the name. */
       Name?: string | null;
@@ -9089,6 +8802,7 @@ export interface components {
       IsAutomated?: boolean;
     };
     MovieInfoRemoteSearchQuery: {
+      /** @description The lookup info for movies. */
       SearchInfo?: components["schemas"]["MovieInfo"] | null;
       /** Format: uuid */
       ItemId?: string;
@@ -9281,7 +8995,8 @@ export interface components {
       AlwaysBurnInSubtitleWhenTranscoding?: boolean | null;
       /**
        * @description A MediaBrowser.Model.Dlna.DeviceProfile represents a set of metadata which determines which content a certain device is able to play.
-       *     <br />
+       *
+       *
        *     Specifically, it defines the supported <see cref="P:MediaBrowser.Model.Dlna.DeviceProfile.ContainerProfiles">containers</see> and
        *     <see cref="P:MediaBrowser.Model.Dlna.DeviceProfile.CodecProfiles">codecs</see> (video and/or audio, including codec profiles and levels)
        *     the device is able to direct play (without transcoding or remuxing),
@@ -9418,7 +9133,9 @@ export interface components {
       | "Letterer"
       | "CoverArtist"
       | "Editor"
-      | "Translator";
+      | "Translator"
+      | "Narrator";
+    /** @description The lookup info for persons. */
     PersonLookupInfo: {
       /** @description Gets or sets the name. */
       Name?: string | null;
@@ -9448,6 +9165,7 @@ export interface components {
       IsAutomated?: boolean;
     };
     PersonLookupInfoRemoteSearchQuery: {
+      /** @description The lookup info for persons. */
       SearchInfo?: components["schemas"]["PersonLookupInfo"] | null;
       /** Format: uuid */
       ItemId?: string;
@@ -9455,6 +9173,12 @@ export interface components {
       SearchProviderName?: string | null;
       /** @description Gets or sets a value indicating whether disabled providers should be included. */
       IncludeDisabledProviders?: boolean;
+    };
+    PinRedeemResult: {
+      /** @description Gets or sets a value indicating whether this MediaBrowser.Model.Users.PinRedeemResult is success. */
+      Success?: boolean;
+      /** @description Gets or sets the users reset. */
+      UsersReset?: string[];
     };
     /** @description Class PingRequestDto. */
     PingRequestDto: {
@@ -9464,15 +9188,146 @@ export interface components {
        */
       Ping?: number;
     };
-    PinRedeemResult: {
-      /** @description Gets or sets a value indicating whether this MediaBrowser.Model.Users.PinRedeemResult is success. */
-      Success?: boolean;
-      /** @description Gets or sets the users reset. */
-      UsersReset?: string[];
-    };
-    /** @enum {string} */
+    /**
+     * @description The play access of an item.
+     * @enum {string}
+     */
     PlayAccess: "Full" | "None";
-    /** @enum {string} */
+    /**
+     * @description Enum PlayCommand.
+     * @enum {string}
+     */
+    PlayCommand:
+      "PlayNow" | "PlayNext" | "PlayLast" | "PlayInstantMix" | "PlayShuffle";
+    /** @description Play command websocket message. */
+    PlayMessage: {
+      /** @description Class PlayRequest. */
+      Data?: components["schemas"]["PlayRequest"] | null;
+      /**
+       * Format: uuid
+       * @description Gets or sets the message id.
+       */
+      MessageId?: string;
+      /**
+       * @description The different kinds of messages that are used in the WebSocket api. (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      MessageType: "Play";
+    };
+    /**
+     * @description The play method.
+     * @enum {string}
+     */
+    PlayMethod: "Transcode" | "DirectStream" | "DirectPlay";
+    /** @description Class PlayQueueUpdate. */
+    PlayQueueUpdate: {
+      /**
+       * @description Gets the request type that originated this update.
+       * @enum {unknown}
+       */
+      Reason?:
+        | "NewPlaylist"
+        | "SetCurrentItem"
+        | "RemoveItems"
+        | "MoveItem"
+        | "Queue"
+        | "QueueNext"
+        | "NextItem"
+        | "PreviousItem"
+        | "RepeatMode"
+        | "ShuffleMode";
+      /**
+       * Format: date-time
+       * @description Gets the UTC time of the last change to the playing queue.
+       */
+      LastUpdate?: string;
+      /** @description Gets the playlist. */
+      Playlist?: components["schemas"]["SyncPlayQueueItem"][];
+      /**
+       * Format: int32
+       * @description Gets the playing item index in the playlist.
+       */
+      PlayingItemIndex?: number;
+      /**
+       * Format: int64
+       * @description Gets the start position ticks.
+       */
+      StartPositionTicks?: number;
+      /** @description Gets a value indicating whether the current item is playing. */
+      IsPlaying?: boolean;
+      /**
+       * @description Gets the shuffle mode.
+       * @enum {unknown}
+       */
+      ShuffleMode?: "Sorted" | "Shuffle";
+      /**
+       * @description Gets the repeat mode.
+       * @enum {unknown}
+       */
+      RepeatMode?: "RepeatOne" | "RepeatAll" | "RepeatNone";
+    };
+    /**
+     * @description Enum PlayQueueUpdateReason.
+     * @enum {string}
+     */
+    PlayQueueUpdateReason:
+      | "NewPlaylist"
+      | "SetCurrentItem"
+      | "RemoveItems"
+      | "MoveItem"
+      | "Queue"
+      | "QueueNext"
+      | "NextItem"
+      | "PreviousItem"
+      | "RepeatMode"
+      | "ShuffleMode";
+    /** @description Class PlayRequest. */
+    PlayRequest: {
+      /** @description Gets or sets the item ids. */
+      ItemIds?: string[] | null;
+      /**
+       * Format: int64
+       * @description Gets or sets the start position ticks that the first item should be played at.
+       */
+      StartPositionTicks?: number | null;
+      /**
+       * @description Gets or sets the play command.
+       * @enum {unknown}
+       */
+      PlayCommand?:
+        "PlayNow" | "PlayNext" | "PlayLast" | "PlayInstantMix" | "PlayShuffle";
+      /**
+       * Format: uuid
+       * @description Gets or sets the controlling user identifier.
+       */
+      ControllingUserId?: string;
+      /** Format: int32 */
+      SubtitleStreamIndex?: number | null;
+      /** Format: int32 */
+      AudioStreamIndex?: number | null;
+      MediaSourceId?: string | null;
+      /** Format: int32 */
+      StartIndex?: number | null;
+    };
+    /** @description Class PlayRequestDto. */
+    PlayRequestDto: {
+      /** @description Gets or sets the playing queue. */
+      PlayingQueue?: string[];
+      /**
+       * Format: int32
+       * @description Gets or sets the position of the playing item in the queue.
+       */
+      PlayingItemPosition?: number;
+      /**
+       * Format: int64
+       * @description Gets or sets the start position ticks.
+       */
+      StartPositionTicks?: number;
+    };
+    /**
+     * @description The playback error code.
+     * @enum {string}
+     */
     PlaybackErrorCode:
       "NotAllowed" | "NoCompatibleStream" | "RateLimitExceeded";
     /** @description Playback info dto. */
@@ -9513,7 +9368,8 @@ export interface components {
       LiveStreamId?: string | null;
       /**
        * @description A MediaBrowser.Model.Dlna.DeviceProfile represents a set of metadata which determines which content a certain device is able to play.
-       *     <br />
+       *
+       *
        *     Specifically, it defines the supported <see cref="P:MediaBrowser.Model.Dlna.DeviceProfile.ContainerProfiles">containers</see> and
        *     <see cref="P:MediaBrowser.Model.Dlna.DeviceProfile.CodecProfiles">codecs</see> (video and/or audio, including codec profiles and levels)
        *     the device is able to direct play (without transcoding or remuxing),
@@ -9735,12 +9591,6 @@ export interface components {
       PlaylistItemId?: string | null;
       NowPlayingQueue?: components["schemas"]["QueueItem"][] | null;
     };
-    /**
-     * @description Enum PlayCommand.
-     * @enum {string}
-     */
-    PlayCommand:
-      "PlayNow" | "PlayNext" | "PlayLast" | "PlayInstantMix" | "PlayShuffle";
     PlayerStateInfo: {
       /**
        * Format: int64
@@ -9796,9 +9646,9 @@ export interface components {
       /** @description Gets or sets a value indicating whether the playlist is publicly readable. */
       OpenAccess?: boolean;
       /** @description Gets or sets the share permissions. */
-      Shares?: components["schemas"]["PlaylistUserPermissions"][];
+      Shares: components["schemas"]["PlaylistUserPermissions"][];
       /** @description Gets or sets the item ids. */
-      ItemIds?: string[];
+      ItemIds: string[];
     };
     /** @description Class to hold data on user permissions for playlists. */
     PlaylistUserPermissions: {
@@ -9809,128 +9659,6 @@ export interface components {
       UserId?: string;
       /** @description Gets or sets a value indicating whether the user has edit permissions. */
       CanEdit?: boolean;
-    };
-    /** @description Play command websocket message. */
-    PlayMessage: {
-      /** @description Class PlayRequest. */
-      Data?: components["schemas"]["PlayRequest"] | null;
-      /**
-       * Format: uuid
-       * @description Gets or sets the message id.
-       */
-      MessageId?: string;
-      /**
-       * @description The different kinds of messages that are used in the WebSocket api. (enum property replaced by openapi-typescript)
-       * @enum {string}
-       */
-      MessageType: "Play";
-    };
-    /** @enum {string} */
-    PlayMethod: "Transcode" | "DirectStream" | "DirectPlay";
-    /** @description Class PlayQueueUpdate. */
-    PlayQueueUpdate: {
-      /**
-       * @description Gets the request type that originated this update.
-       * @enum {unknown}
-       */
-      Reason?:
-        | "NewPlaylist"
-        | "SetCurrentItem"
-        | "RemoveItems"
-        | "MoveItem"
-        | "Queue"
-        | "QueueNext"
-        | "NextItem"
-        | "PreviousItem"
-        | "RepeatMode"
-        | "ShuffleMode";
-      /**
-       * Format: date-time
-       * @description Gets the UTC time of the last change to the playing queue.
-       */
-      LastUpdate?: string;
-      /** @description Gets the playlist. */
-      Playlist?: components["schemas"]["SyncPlayQueueItem"][];
-      /**
-       * Format: int32
-       * @description Gets the playing item index in the playlist.
-       */
-      PlayingItemIndex?: number;
-      /**
-       * Format: int64
-       * @description Gets the start position ticks.
-       */
-      StartPositionTicks?: number;
-      /** @description Gets a value indicating whether the current item is playing. */
-      IsPlaying?: boolean;
-      /**
-       * @description Gets the shuffle mode.
-       * @enum {unknown}
-       */
-      ShuffleMode?: "Sorted" | "Shuffle";
-      /**
-       * @description Gets the repeat mode.
-       * @enum {unknown}
-       */
-      RepeatMode?: "RepeatOne" | "RepeatAll" | "RepeatNone";
-    };
-    /**
-     * @description Enum PlayQueueUpdateReason.
-     * @enum {string}
-     */
-    PlayQueueUpdateReason:
-      | "NewPlaylist"
-      | "SetCurrentItem"
-      | "RemoveItems"
-      | "MoveItem"
-      | "Queue"
-      | "QueueNext"
-      | "NextItem"
-      | "PreviousItem"
-      | "RepeatMode"
-      | "ShuffleMode";
-    /** @description Class PlayRequest. */
-    PlayRequest: {
-      /** @description Gets or sets the item ids. */
-      ItemIds?: string[] | null;
-      /**
-       * Format: int64
-       * @description Gets or sets the start position ticks that the first item should be played at.
-       */
-      StartPositionTicks?: number | null;
-      /**
-       * @description Gets or sets the play command.
-       * @enum {unknown}
-       */
-      PlayCommand?:
-        "PlayNow" | "PlayNext" | "PlayLast" | "PlayInstantMix" | "PlayShuffle";
-      /**
-       * Format: uuid
-       * @description Gets or sets the controlling user identifier.
-       */
-      ControllingUserId?: string;
-      /** Format: int32 */
-      SubtitleStreamIndex?: number | null;
-      /** Format: int32 */
-      AudioStreamIndex?: number | null;
-      MediaSourceId?: string | null;
-      /** Format: int32 */
-      StartIndex?: number | null;
-    };
-    /** @description Class PlayRequestDto. */
-    PlayRequestDto: {
-      /** @description Gets or sets the playing queue. */
-      PlayingQueue?: string[];
-      /**
-       * Format: int32
-       * @description Gets or sets the position of the playing item in the queue.
-       */
-      PlayingItemPosition?: number;
-      /**
-       * Format: int64
-       * @description Gets or sets the start position ticks.
-       */
-      StartPositionTicks?: number;
     };
     /**
      * @description Enum PlaystateCommand.
@@ -9948,7 +9676,7 @@ export interface components {
       | "PlayPause";
     /** @description Playstate message. */
     PlaystateMessage: {
-      /** @description Gets or sets the data. */
+      /** @description A request to change the playstate of a session. */
       Data?: components["schemas"]["PlaystateRequest"] | null;
       /**
        * Format: uuid
@@ -9961,9 +9689,10 @@ export interface components {
        */
       MessageType: "Playstate";
     };
+    /** @description A request to change the playstate of a session. */
     PlaystateRequest: {
       /**
-       * @description Enum PlaystateCommand.
+       * @description Gets or sets the playstate command.
        * @enum {unknown}
        */
       Command?:
@@ -9976,7 +9705,10 @@ export interface components {
         | "Rewind"
         | "FastForward"
         | "PlayPause";
-      /** Format: int64 */
+      /**
+       * Format: int64
+       * @description Gets or sets the seek position in ticks.
+       */
       SeekPositionTicks?: number | null;
       /** @description Gets or sets the controlling user identifier. */
       ControllingUserId?: string | null;
@@ -10157,7 +9889,8 @@ export interface components {
         | "AudioSampleRate"
         | "AudioBitDepth"
         | "VideoRangeType"
-        | "NumStreams";
+        | "NumStreams"
+        | "VideoRotation";
       Value?: string | null;
       IsRequired?: boolean;
     };
@@ -10194,7 +9927,8 @@ export interface components {
       | "AudioSampleRate"
       | "AudioBitDepth"
       | "VideoRangeType"
-      | "NumStreams";
+      | "NumStreams"
+      | "VideoRotation";
     /** @enum {string} */
     ProgramAudio:
       "Mono" | "Stereo" | "Dolby" | "DolbyDigital" | "Thx" | "Atmos";
@@ -10220,6 +9954,8 @@ export interface components {
     QueryFilters: {
       Genres?: components["schemas"]["NameGuidPair"][] | null;
       Tags?: string[] | null;
+      AudioLanguages?: components["schemas"]["NameValuePair"][] | null;
+      SubtitleLanguages?: components["schemas"]["NameValuePair"][] | null;
     };
     QueryFiltersLegacy: {
       Genres?: string[] | null;
@@ -10227,9 +9963,14 @@ export interface components {
       OfficialRatings?: string[] | null;
       Years?: number[] | null;
     };
+    /** @description An item in a play queue. */
     QueueItem: {
-      /** Format: uuid */
+      /**
+       * Format: uuid
+       * @description Gets or sets the item id.
+       */
       Id?: string;
+      /** @description Gets or sets the playlist item id. */
       PlaylistItemId?: string | null;
     };
     /** @description Class QueueRequestDto. */
@@ -10269,7 +10010,10 @@ export interface components {
        */
       DateAdded?: string;
     };
-    /** @enum {string} */
+    /**
+     * @description The type of a community rating.
+     * @enum {string}
+     */
     RatingType: "Score" | "Likes";
     /** @description Class ReadyRequest. */
     ReadyRequestDto: {
@@ -10408,19 +10152,19 @@ export interface components {
     /** @description The remote lyric info dto. */
     RemoteLyricInfoDto: {
       /** @description Gets or sets the id for the lyric. */
-      Id?: string;
+      Id: string;
       /** @description Gets the provider name. */
-      ProviderName?: string;
+      ProviderName: string;
       /** @description Gets the lyrics. */
-      Lyrics?: components["schemas"]["LyricDto"];
+      Lyrics: components["schemas"]["LyricDto"];
     };
     RemoteSearchResult: {
       /** @description Gets or sets the name. */
       Name?: string | null;
       /** @description Gets or sets the provider ids. */
       ProviderIds?: {
-        [key: string]: string | null;
-      } | null;
+        [key: string]: string;
+      };
       /**
        * Format: int32
        * @description Gets or sets the year.
@@ -10438,7 +10182,7 @@ export interface components {
       SearchProviderName?: string | null;
       Overview?: string | null;
       AlbumArtist?: components["schemas"]["RemoteSearchResult"] | null;
-      Artists?: components["schemas"]["RemoteSearchResult"][] | null;
+      Artists?: components["schemas"]["RemoteSearchResult"][];
     };
     RemoteSubtitleInfo: {
       ThreeLetterISOLanguageName?: string | null;
@@ -10471,7 +10215,10 @@ export interface components {
       /** @description Gets or sets a value indicating whether the playing item should be removed as well. Used only when clearing the playlist. */
       ClearPlayingItem?: boolean;
     };
-    /** @enum {string} */
+    /**
+     * @description The repeat mode of a play queue.
+     * @enum {string}
+     */
     RepeatMode: "RepeatNone" | "RepeatAll" | "RepeatOne";
     /** @description Class RepositoryInfo. */
     RepositoryInfo: {
@@ -10594,7 +10341,7 @@ export interface components {
       /** @description Gets or sets the backdrop image item identifier. */
       BackdropImageItemId?: string | null;
       /**
-       * @description Gets or sets the type.
+       * @description The base item kind.
        * @enum {unknown}
        */
       Type?:
@@ -10643,7 +10390,7 @@ export interface components {
        */
       RunTimeTicks?: number | null;
       /**
-       * @description Gets or sets the type of the media.
+       * @description Media types.
        * @default Unknown
        * @enum {unknown}
        */
@@ -10752,6 +10499,7 @@ export interface components {
      * @enum {string}
      */
     SendCommandType: "Unpause" | "Pause" | "Stop" | "Seek";
+    /** @description The lookup info for series. */
     SeriesInfo: {
       /** @description Gets or sets the name. */
       Name?: string | null;
@@ -10781,6 +10529,7 @@ export interface components {
       IsAutomated?: boolean;
     };
     SeriesInfoRemoteSearchQuery: {
+      /** @description The lookup info for series. */
       SearchInfo?: components["schemas"]["SeriesInfo"] | null;
       /** Format: uuid */
       ItemId?: string;
@@ -10907,7 +10656,7 @@ export interface components {
       DayPattern?: "Daily" | "Weekdays" | "Weekends" | null;
       /** @description Gets or sets the image tags. */
       ImageTags?: {
-        [key: string]: string;
+        [key: string]: string | null;
       } | null;
       /** @description Gets or sets the parent thumb item id. */
       ParentThumbItemId?: string | null;
@@ -11201,9 +10950,7 @@ export interface components {
       SupportsRemoteControl?: boolean;
       /** @description Gets or sets the now playing queue. */
       NowPlayingQueue?: components["schemas"]["QueueItem"][] | null;
-      /** @description Gets or sets the now playing queue full items. */
-      NowPlayingQueueFullItems?: components["schemas"]["BaseItemDto"][] | null;
-      /** @description Gets or sets a value indicating whether the session has a custom device name. */
+      /** @description Gets or sets a value indicating whether this session has a custom device name. */
       HasCustomDeviceName?: boolean;
       /** @description Gets or sets the playlist item id. */
       PlaylistItemId?: string | null;
@@ -11253,6 +11000,16 @@ export interface components {
       | "ScheduledTasksInfoStart"
       | "ScheduledTasksInfoStop"
       | "KeepAlive";
+    /** @description Class SessionUserInfo. */
+    SessionUserInfo: {
+      /**
+       * Format: uuid
+       * @description Gets or sets the user identifier.
+       */
+      UserId?: string;
+      /** @description Gets or sets the name of the user. */
+      UserName?: string | null;
+    };
     /** @description Sessions message. */
     SessionsMessage: {
       /** @description Gets or sets the data. */
@@ -11288,16 +11045,6 @@ export interface components {
        * @enum {string}
        */
       MessageType: "SessionsStop";
-    };
-    /** @description Class SessionUserInfo. */
-    SessionUserInfo: {
-      /**
-       * Format: uuid
-       * @description Gets or sets the user identifier.
-       */
-      UserId?: string;
-      /** @description Gets or sets the name of the user. */
-      UserName?: string | null;
     };
     /** @description Set channel mapping dto. */
     SetChannelMappingDto: {
@@ -11390,11 +11137,6 @@ export interface components {
     StartupRemoteAccessDto: {
       /** @description Gets or sets a value indicating whether enable remote access. */
       EnableRemoteAccess: boolean;
-      /**
-       * @deprecated
-       * @description Gets or sets a value indicating whether enable automatic port mapping.
-       */
-      EnableAutomaticPortMapping: boolean;
     };
     /** @description The startup user DTO. */
     StartupUserDto: {
@@ -11408,17 +11150,6 @@ export interface components {
      * @enum {string}
      */
     SubtitleDeliveryMethod: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-    SubtitleOptions: {
-      SkipIfEmbeddedSubtitlesPresent?: boolean;
-      SkipIfAudioTrackMatches?: boolean;
-      DownloadLanguages?: string[] | null;
-      DownloadMovieSubtitles?: boolean;
-      DownloadEpisodeSubtitles?: boolean;
-      OpenSubtitlesUsername?: string | null;
-      OpenSubtitlesPasswordHash?: string | null;
-      IsOpenSubtitleVipAccount?: boolean;
-      RequirePerfectMatch?: boolean;
-    };
     /**
      * @description An enum representing a subtitle playback mode.
      * @enum {string}
@@ -11723,21 +11454,21 @@ export interface components {
     /** @description Contains informations about the systems storage. */
     SystemStorageDto: {
       /** @description Gets or sets the Storage information of the program data folder. */
-      ProgramDataFolder?: components["schemas"]["FolderStorageDto"];
+      ProgramDataFolder: components["schemas"]["FolderStorageDto"];
       /** @description Gets or sets the Storage information of the web UI resources folder. */
-      WebFolder?: components["schemas"]["FolderStorageDto"];
+      WebFolder: components["schemas"]["FolderStorageDto"];
       /** @description Gets or sets the Storage information of the folder where images are cached. */
-      ImageCacheFolder?: components["schemas"]["FolderStorageDto"];
+      ImageCacheFolder: components["schemas"]["FolderStorageDto"];
       /** @description Gets or sets the Storage information of the cache folder. */
-      CacheFolder?: components["schemas"]["FolderStorageDto"];
+      CacheFolder: components["schemas"]["FolderStorageDto"];
       /** @description Gets or sets the Storage information of the folder where logfiles are saved to. */
-      LogFolder?: components["schemas"]["FolderStorageDto"];
+      LogFolder: components["schemas"]["FolderStorageDto"];
       /** @description Gets or sets the Storage information of the folder where metadata is stored. */
-      InternalMetadataFolder?: components["schemas"]["FolderStorageDto"];
+      InternalMetadataFolder: components["schemas"]["FolderStorageDto"];
       /** @description Gets or sets the Storage information of the transcoding cache. */
-      TranscodingTempFolder?: components["schemas"]["FolderStorageDto"];
+      TranscodingTempFolder: components["schemas"]["FolderStorageDto"];
       /** @description Gets or sets the storage informations of all libraries. */
-      Libraries?: components["schemas"]["LibraryStorageDto"][];
+      Libraries: components["schemas"]["LibraryStorageDto"][];
     };
     /**
      * @description Enum TaskCompletionStatus.
@@ -12030,6 +11761,7 @@ export interface components {
      * @enum {string}
      */
     TonemappingRange: "auto" | "tv" | "pc";
+    /** @description The lookup info for trailers. */
     TrailerInfo: {
       /** @description Gets or sets the name. */
       Name?: string | null;
@@ -12059,6 +11791,7 @@ export interface components {
       IsAutomated?: boolean;
     };
     TrailerInfoRemoteSearchQuery: {
+      /** @description The lookup info for trailers. */
       SearchInfo?: components["schemas"]["TrailerInfo"] | null;
       /** Format: uuid */
       ItemId?: string;
@@ -12095,8 +11828,12 @@ export interface components {
       | "DirectPlayError"
       | "VideoRangeTypeNotSupported"
       | "VideoCodecTagNotSupported"
-      | "StreamCountExceedsLimit";
-    /** @enum {string} */
+      | "StreamCountExceedsLimit"
+      | "VideoRotationNotSupported";
+    /**
+     * @description The transcode seek info.
+     * @enum {string}
+     */
     TranscodeSeekInfo: "Auto" | "Bytes";
     /** @description Class holding information on a running transcode. */
     TranscodingInfo: {
@@ -12154,38 +11891,8 @@ export interface components {
         | "videotoolbox"
         | "rkmpp"
         | null;
-      /**
-       * @description Gets or sets the transcode reasons.
-       * @enum {array}
-       */
-      TranscodeReasons?:
-        | "ContainerNotSupported"
-        | "VideoCodecNotSupported"
-        | "AudioCodecNotSupported"
-        | "SubtitleCodecNotSupported"
-        | "AudioIsExternal"
-        | "SecondaryAudioNotSupported"
-        | "VideoProfileNotSupported"
-        | "VideoLevelNotSupported"
-        | "VideoResolutionNotSupported"
-        | "VideoBitDepthNotSupported"
-        | "VideoFramerateNotSupported"
-        | "RefFramesNotSupported"
-        | "AnamorphicVideoNotSupported"
-        | "InterlacedVideoNotSupported"
-        | "AudioChannelsNotSupported"
-        | "AudioProfileNotSupported"
-        | "AudioSampleRateNotSupported"
-        | "AudioBitDepthNotSupported"
-        | "ContainerBitrateExceedsLimit"
-        | "VideoBitrateNotSupported"
-        | "AudioBitrateNotSupported"
-        | "UnknownVideoStreamInfo"
-        | "UnknownAudioStreamInfo"
-        | "DirectPlayError"
-        | "VideoRangeTypeNotSupported"
-        | "VideoCodecTagNotSupported"
-        | "StreamCountExceedsLimit";
+      /** @description Gets or sets the transcode reasons. */
+      TranscodeReasons?: components["schemas"]["TranscodeReason"][];
     };
     /**
      * @description A class for transcoding profile information.
@@ -12204,7 +11911,8 @@ export interface components {
       /** @description Gets or sets the audio codec. */
       AudioCodec?: string;
       /**
-       * @description Gets or sets the protocol.
+       * @description Media streaming protocol.
+       *     Lowercase for backwards compatibility.
        * @enum {unknown}
        */
       Protocol?: "http" | "hls";
@@ -12255,10 +11963,11 @@ export interface components {
        */
       SegmentLength: number;
       /**
+       * @deprecated
        * @description Gets or sets a value indicating whether breaking the video stream on non-keyframes is supported.
        * @default false
        */
-      BreakOnNonKeyFrames: boolean;
+      BreakOnNonKeyFrames: boolean | null;
       /** @description Gets or sets the profile conditions. */
       Conditions?: components["schemas"]["ProfileCondition"][];
       /**
@@ -12267,7 +11976,10 @@ export interface components {
        */
       EnableAudioVbrEncoding: boolean;
     };
-    /** @enum {string} */
+    /**
+     * @description The type of timestamps used in a transport stream.
+     * @enum {string}
+     */
     TransportStreamTimestamp: "None" | "Zero" | "Valid";
     /** @description The trickplay api model. */
     TrickplayInfoDto: {
@@ -12400,6 +12112,8 @@ export interface components {
       ImageFetchers?: string[] | null;
       ImageFetcherOrder?: string[] | null;
       ImageOptions?: components["schemas"]["ImageOption"][] | null;
+      SimilarItemProviders?: string[] | null;
+      SimilarItemProviderOrder?: string[] | null;
     };
     /**
      * @description An enum representing an unrated item.
@@ -12542,6 +12256,16 @@ export interface components {
       /** @description Gets or sets the id of the selected cast receiver. */
       CastReceiverId?: string | null;
     };
+    /** @description Class UserDataChangeInfo. */
+    UserDataChangeInfo: {
+      /**
+       * Format: uuid
+       * @description Gets or sets the user id.
+       */
+      UserId?: string;
+      /** @description Gets or sets the user data list. */
+      UserDataList: components["schemas"]["UserItemDataDto"][];
+    };
     /** @description User data changed message. */
     UserDataChangedMessage: {
       /** @description Class UserDataChangeInfo. */
@@ -12556,16 +12280,6 @@ export interface components {
        * @enum {string}
        */
       MessageType: "UserDataChanged";
-    };
-    /** @description Class UserDataChangeInfo. */
-    UserDataChangeInfo: {
-      /**
-       * Format: uuid
-       * @description Gets or sets the user id.
-       */
-      UserId?: string;
-      /** @description Gets or sets the user data list. */
-      UserDataList?: components["schemas"]["UserItemDataDto"][];
     };
     /** @description User deleted message. */
     UserDeletedMessage: {
@@ -12603,15 +12317,21 @@ export interface components {
       Id?: string;
       /** @description Gets or sets the primary image tag. */
       PrimaryImageTag?: string | null;
-      /** @description Gets or sets a value indicating whether this instance has password. */
-      HasPassword?: boolean;
-      /** @description Gets or sets a value indicating whether this instance has configured password. */
-      HasConfiguredPassword?: boolean;
+      /**
+       * @deprecated
+       * @description Gets or sets a value indicating whether this instance has password.
+       */
+      HasPassword?: boolean | null;
+      /**
+       * @deprecated
+       * @description Gets or sets a value indicating whether this instance has configured password.
+       */
+      HasConfiguredPassword?: boolean | null;
       /**
        * @deprecated
        * @description Gets or sets a value indicating whether this instance has configured easy password.
        */
-      HasConfiguredEasyPassword?: boolean;
+      HasConfiguredEasyPassword?: boolean | null;
       /** @description Gets or sets whether async login is enabled or not. */
       EnableAutoLogin?: boolean | null;
       /**
@@ -12673,7 +12393,7 @@ export interface components {
       /** @description Gets or sets a value indicating whether this MediaBrowser.Model.Dto.UserItemDataDto is played. */
       Played?: boolean;
       /** @description Gets or sets the key. */
-      Key?: string;
+      Key: string;
       /**
        * Format: uuid
        * @description Gets or sets the item identifier.
@@ -12900,14 +12620,41 @@ export interface operations {
   GetLogEntries: {
     parameters: {
       query?: {
-        /** @description Optional. The record index to start at. All items with a lower index will be dropped from the results. */
+        /** @description The record index to start at. All items with a lower index will be dropped from the results. */
         startIndex?: number;
-        /** @description Optional. The maximum number of records to return. */
+        /** @description The maximum number of records to return. */
         limit?: number;
-        /** @description Optional. The minimum date. Format = ISO. */
+        /** @description The minimum date. */
         minDate?: string;
-        /** @description Optional. Filter log entries if it has user id, or not. */
+        /** @description The maximum date. */
+        maxDate?: string;
+        /** @description Filter log entries if it has user id, or not. */
         hasUserId?: boolean;
+        /** @description Filter by name. */
+        name?: string;
+        /** @description Filter by overview. */
+        overview?: string;
+        /** @description Filter by short overview. */
+        shortOverview?: string;
+        /** @description Filter by type. */
+        type?: string;
+        /** @description Filter by item id. */
+        itemId?: string;
+        /** @description Filter by username. */
+        username?: string;
+        /** @description Filter by log severity. */
+        severity?:
+          | "Trace"
+          | "Debug"
+          | "Information"
+          | "Warning"
+          | "Error"
+          | "Critical"
+          | "None";
+        /** @description Specify one or more sort orders. Format: SortBy=Name,Type. */
+        sortBy?: components["schemas"]["ActivityLogSortBy"][];
+        /** @description Sort Order.. */
+        sortOrder?: components["schemas"]["SortOrder"][];
       };
       header?: never;
       path?: never;
@@ -13419,8 +13166,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */
@@ -13559,8 +13304,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */
@@ -13697,8 +13440,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */
@@ -13837,8 +13578,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */
@@ -15312,9 +15051,9 @@ export interface operations {
   };
   DeleteDevice: {
     parameters: {
-      query: {
-        /** @description Device Id. */
-        id: string;
+      query?: {
+        /** @description Device Ids. */
+        id?: string[];
       };
       header?: never;
       path?: never;
@@ -15329,6 +15068,17 @@ export interface operations {
         };
         content?: never;
       };
+      /** @description A requested device is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProblemDetails"];
+          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
+          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
+        };
+      };
       /** @description Unauthorized */
       401: {
         headers: {
@@ -15342,17 +15092,6 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
-      };
-      /** @description Device not found. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ProblemDetails"];
-          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
-          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
-        };
       };
       /** @description The server is currently starting or is temporarily not available. */
       503: {
@@ -15667,1448 +15406,6 @@ export interface operations {
       };
     };
   };
-  GetHlsAudioSegment: {
-    parameters: {
-      query: {
-        /** @description The position of the requested segment in ticks. */
-        runtimeTicks: number;
-        /** @description The length of the requested segment in ticks. */
-        actualSegmentLengthTicks: number;
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId?: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. The maximum streaming bitrate. */
-        maxStreamingBitrate?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Optional. Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-        /** @description The playlist id. */
-        playlistId: string;
-        /** @description The segment id. */
-        segmentId: number;
-        /** @description The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. */
-        container: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Video stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "audio/*": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetVariantHlsAudioPlaylist: {
-    parameters: {
-      query?: {
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId?: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. The maximum streaming bitrate. */
-        maxStreamingBitrate?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Optional. Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Audio stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetMasterHlsAudioPlaylist: {
-    parameters: {
-      query: {
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. The maximum streaming bitrate. */
-        maxStreamingBitrate?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Enable adaptive bitrate streaming. */
-        enableAdaptiveBitrateStreaming?: boolean;
-        /** @description Optional. Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Audio stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  HeadMasterHlsAudioPlaylist: {
-    parameters: {
-      query: {
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. The maximum streaming bitrate. */
-        maxStreamingBitrate?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Enable adaptive bitrate streaming. */
-        enableAdaptiveBitrateStreaming?: boolean;
-        /** @description Optional. Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Audio stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetHlsVideoSegment: {
-    parameters: {
-      query: {
-        /** @description The position of the requested segment in ticks. */
-        runtimeTicks: number;
-        /** @description The length of the requested segment in ticks. */
-        actualSegmentLengthTicks: number;
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The desired segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId?: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. The maximum horizontal resolution of the encoded video. */
-        maxWidth?: number;
-        /** @description Optional. The maximum vertical resolution of the encoded video. */
-        maxHeight?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Optional. Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-        /** @description Whether to always burn in subtitles when transcoding. */
-        alwaysBurnInSubtitleWhenTranscoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-        /** @description The playlist id. */
-        playlistId: string;
-        /** @description The segment id. */
-        segmentId: number;
-        /** @description The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. */
-        container: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Video stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "video/*": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetLiveHlsStream: {
-    parameters: {
-      query?: {
-        /** @description The audio container. */
-        container?: string;
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId?: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Optional. The max width. */
-        maxWidth?: number;
-        /** @description Optional. The max height. */
-        maxHeight?: number;
-        /** @description Optional. Whether to enable subtitles in the manifest. */
-        enableSubtitlesInManifest?: boolean;
-        /** @description Optional. Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-        /** @description Whether to always burn in subtitles when transcoding. */
-        alwaysBurnInSubtitleWhenTranscoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Hls live stream retrieved. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetVariantHlsVideoPlaylist: {
-    parameters: {
-      query?: {
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId?: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. The maximum horizontal resolution of the encoded video. */
-        maxWidth?: number;
-        /** @description Optional. The maximum vertical resolution of the encoded video. */
-        maxHeight?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Optional. Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-        /** @description Whether to always burn in subtitles when transcoding. */
-        alwaysBurnInSubtitleWhenTranscoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Video stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetMasterHlsVideoPlaylist: {
-    parameters: {
-      query: {
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. The maximum horizontal resolution of the encoded video. */
-        maxWidth?: number;
-        /** @description Optional. The maximum vertical resolution of the encoded video. */
-        maxHeight?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Enable adaptive bitrate streaming. */
-        enableAdaptiveBitrateStreaming?: boolean;
-        /** @description Enable trickplay image playlists being added to master playlist. */
-        enableTrickplay?: boolean;
-        /** @description Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-        /** @description Whether to always burn in subtitles when transcoding. */
-        alwaysBurnInSubtitleWhenTranscoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Video stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  HeadMasterHlsVideoPlaylist: {
-    parameters: {
-      query: {
-        /** @description Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false. */
-        static?: boolean;
-        /** @description The streaming parameters. */
-        params?: string;
-        /** @description The tag. */
-        tag?: string;
-        /**
-         * @deprecated
-         * @description Optional. The dlna device profile id to utilize.
-         */
-        deviceProfileId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The segment container. */
-        segmentContainer?: string;
-        /** @description The segment length. */
-        segmentLength?: number;
-        /** @description The minimum number of segments. */
-        minSegments?: number;
-        /** @description The media version id, if playing an alternate version. */
-        mediaSourceId: string;
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId?: string;
-        /** @description Optional. Specify an audio codec to encode to, e.g. mp3. */
-        audioCodec?: string;
-        /** @description Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true. */
-        enableAutoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the video stream url. */
-        allowVideoStreamCopy?: boolean;
-        /** @description Whether or not to allow copying of the audio stream url. */
-        allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
-        /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
-        audioSampleRate?: number;
-        /** @description Optional. The maximum audio bit depth. */
-        maxAudioBitDepth?: number;
-        /** @description Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults. */
-        audioBitRate?: number;
-        /** @description Optional. Specify a specific number of audio channels to encode to, e.g. 2. */
-        audioChannels?: number;
-        /** @description Optional. Specify a maximum number of audio channels to encode to, e.g. 2. */
-        maxAudioChannels?: number;
-        /** @description Optional. Specify a specific an encoder profile (varies by encoder), e.g. main, baseline, high. */
-        profile?: string;
-        /** @description Optional. Specify a level for the encoder profile (varies by encoder), e.g. 3, 3.1. */
-        level?: string;
-        /** @description Optional. A specific video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        framerate?: number;
-        /** @description Optional. A specific maximum video framerate to encode to, e.g. 23.976. Generally this should be omitted unless the device has specific requirements. */
-        maxFramerate?: number;
-        /** @description Whether or not to copy timestamps when transcoding with an offset. Defaults to false. */
-        copyTimestamps?: boolean;
-        /** @description Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms. */
-        startTimeTicks?: number;
-        /** @description Optional. The fixed horizontal resolution of the encoded video. */
-        width?: number;
-        /** @description Optional. The fixed vertical resolution of the encoded video. */
-        height?: number;
-        /** @description Optional. The maximum horizontal resolution of the encoded video. */
-        maxWidth?: number;
-        /** @description Optional. The maximum vertical resolution of the encoded video. */
-        maxHeight?: number;
-        /** @description Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults. */
-        videoBitRate?: number;
-        /** @description Optional. The index of the subtitle stream to use. If omitted no subtitles will be used. */
-        subtitleStreamIndex?: number;
-        /** @description Optional. Specify the subtitle delivery method. */
-        subtitleMethod?: "Encode" | "Embed" | "External" | "Hls" | "Drop";
-        /** @description Optional. */
-        maxRefFrames?: number;
-        /** @description Optional. The maximum video bit depth. */
-        maxVideoBitDepth?: number;
-        /** @description Optional. Whether to require avc. */
-        requireAvc?: boolean;
-        /** @description Optional. Whether to deinterlace the video. */
-        deInterlace?: boolean;
-        /** @description Optional. Whether to require a non anamorphic stream. */
-        requireNonAnamorphic?: boolean;
-        /** @description Optional. The maximum number of audio channels to transcode. */
-        transcodingMaxAudioChannels?: number;
-        /** @description Optional. The limit of how many cpu cores to use. */
-        cpuCoreLimit?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description Optional. Whether to enable the MpegtsM2Ts mode. */
-        enableMpegtsM2TsMode?: boolean;
-        /** @description Optional. Specify a video codec to encode to, e.g. h264. */
-        videoCodec?: string;
-        /** @description Optional. Specify a subtitle codec to encode to. */
-        subtitleCodec?: string;
-        /** @description Optional. The transcoding reason. */
-        transcodeReasons?: string;
-        /** @description Optional. The index of the audio stream to use. If omitted the first audio stream will be used. */
-        audioStreamIndex?: number;
-        /** @description Optional. The index of the video stream to use. If omitted the first video stream will be used. */
-        videoStreamIndex?: number;
-        /** @description Optional. The MediaBrowser.Model.Dlna.EncodingContext. */
-        context?: "Streaming" | "Static";
-        /** @description Optional. The streaming options. */
-        streamOptions?: {
-          [key: string]: string | null;
-        };
-        /** @description Enable adaptive bitrate streaming. */
-        enableAdaptiveBitrateStreaming?: boolean;
-        /** @description Enable trickplay image playlists being added to master playlist. */
-        enableTrickplay?: boolean;
-        /** @description Whether to enable Audio Encoding. */
-        enableAudioVbrEncoding?: boolean;
-        /** @description Whether to always burn in subtitles when transcoding. */
-        alwaysBurnInSubtitleWhenTranscoding?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Video stream returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
   GetDefaultDirectoryBrowser: {
     parameters: {
       query?: never;
@@ -17263,55 +15560,6 @@ export interface operations {
       };
     };
   };
-  GetNetworkShares: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Empty array returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["FileSystemEntryInfo"][];
-          'application/json; profile="CamelCase"': components["schemas"]["FileSystemEntryInfo"][];
-          'application/json; profile="PascalCase"': components["schemas"]["FileSystemEntryInfo"][];
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
   GetParentPath: {
     parameters: {
       query: {
@@ -17324,7 +15572,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -17666,237 +15914,6 @@ export interface operations {
           'application/json; profile="CamelCase"': components["schemas"]["BaseItemDto"];
           'application/json; profile="PascalCase"': components["schemas"]["BaseItemDto"];
         };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetHlsAudioSegmentLegacyAac: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-        /** @description The segment id. */
-        segmentId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Hls audio segment returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "audio/*": string;
-        };
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetHlsAudioSegmentLegacyMp3: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-        /** @description The segment id. */
-        segmentId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Hls audio segment returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "audio/*": string;
-        };
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetHlsVideoSegmentLegacy: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description The item id. */
-        itemId: string;
-        /** @description The playlist id. */
-        playlistId: string;
-        /** @description The segment id. */
-        segmentId: string;
-        /** @description The segment container. */
-        segmentContainer: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Hls video segment returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "video/*": string;
-        };
-      };
-      /** @description Hls segment not found. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ProblemDetails"];
-          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
-          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
-        };
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetHlsPlaylistLegacy: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description The video id. */
-        itemId: string;
-        /** @description The playlist id. */
-        playlistId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Hls video playlist returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/x-mpegURL": string;
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  StopEncodingProcess: {
-    parameters: {
-      query: {
-        /** @description The device id of the client requesting. Used to stop encoding processes when needed. */
-        deviceId: string;
-        /** @description The play session id. */
-        playSessionId: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Encoding stopped successfully. */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
       /** @description Unauthorized */
       401: {
@@ -21191,83 +19208,6 @@ export interface operations {
       };
     };
   };
-  GetInstantMixFromArtists2: {
-    parameters: {
-      query: {
-        /** @description The item id. */
-        id: string;
-        /** @description Optional. Filter by user id, and attach user data. */
-        userId?: string;
-        /** @description Optional. The maximum number of records to return. */
-        limit?: number;
-        /** @description Optional. Specify additional fields of information to return in the output. */
-        fields?: components["schemas"]["ItemFields"][];
-        /** @description Optional. Include image information in output. */
-        enableImages?: boolean;
-        /** @description Optional. Include user data. */
-        enableUserData?: boolean;
-        /** @description Optional. The max number of images to return, per image type. */
-        imageTypeLimit?: number;
-        /** @description Optional. The image types to include in the output. */
-        enableImageTypes?: components["schemas"]["ImageType"][];
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Instant playlist returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="CamelCase"': components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="PascalCase"': components["schemas"]["BaseItemDtoQueryResult"];
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Item not found. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ProblemDetails"];
-          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
-          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
-        };
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
   GetInstantMixFromItem: {
     parameters: {
       query?: {
@@ -22525,6 +20465,10 @@ export interface operations {
         studioIds?: string[];
         /** @description Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited. */
         genreIds?: string[];
+        /** @description Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values. */
+        audioLanguages?: string[];
+        /** @description Optional. If specified, results will be filtered based on subtitle language. This allows multiple, comma delimited values. */
+        subtitleLanguages?: string[];
         /** @description Optional. Enable the total record count. */
         enableTotalRecordCount?: boolean;
         /** @description Optional, include image information in output. */
@@ -22536,7 +20480,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -23355,18 +21299,28 @@ export interface operations {
       };
     };
   };
-  GetCriticReviews: {
+  GetItemCollections: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Optional. Filter by user id, and attach user data. */
+        userId?: string;
+        /** @description Optional. The index of the first record in the output. */
+        startIndex?: number;
+        /** @description Optional. The maximum number of records to return. */
+        limit?: number;
+        /** @description Optional. Specify additional fields of information to return in the output. */
+        fields?: components["schemas"]["ItemFields"][];
+      };
       header?: never;
       path: {
+        /** @description The item id. */
         itemId: string;
       };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description Critic reviews returned. */
+      /** @description Collections returned. */
       200: {
         headers: {
           [name: string]: unknown;
@@ -23377,7 +21331,7 @@ export interface operations {
           'application/json; profile="PascalCase"': components["schemas"]["BaseItemDtoQueryResult"];
         };
       };
-      /** @description Unauthorized */
+      /** @description User context missing. */
       401: {
         headers: {
           [name: string]: unknown;
@@ -23390,6 +21344,17 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Item not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProblemDetails"];
+          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
+          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
+        };
       };
       /** @description The server is currently starting or is temporarily not available. */
       503: {
@@ -24762,6 +22727,17 @@ export interface operations {
         };
         content?: never;
       };
+      /** @description The new name is not a valid library name. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProblemDetails"];
+          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
+          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
+        };
+      };
       /** @description Unauthorized */
       401: {
         headers: {
@@ -25897,6 +23873,17 @@ export interface operations {
         };
         content?: never;
       };
+      /** @description Program not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProblemDetails"];
+          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
+          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
+        };
+      };
       /** @description The server is currently starting or is temporarily not available. */
       503: {
         headers: {
@@ -26268,195 +24255,6 @@ export interface operations {
       };
     };
   };
-  GetRecordingGroups: {
-    parameters: {
-      query?: {
-        /** @description Optional. Filter by user and attach user data. */
-        userId?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Recording groups returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="CamelCase"': components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="PascalCase"': components["schemas"]["BaseItemDtoQueryResult"];
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetRecordingGroup: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Group id. */
-        groupId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Not Found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ProblemDetails"];
-          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
-          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
-        };
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  GetRecordingsSeries: {
-    parameters: {
-      query?: {
-        /** @description Optional. Filter by channel id. */
-        channelId?: string;
-        /** @description Optional. Filter by user and attach user data. */
-        userId?: string;
-        /** @description Optional. Filter by recording group. */
-        groupId?: string;
-        /** @description Optional. The record index to start at. All items with a lower index will be dropped from the results. */
-        startIndex?: number;
-        /** @description Optional. The maximum number of records to return. */
-        limit?: number;
-        /** @description Optional. Filter by recording status. */
-        status?:
-          | "New"
-          | "InProgress"
-          | "Completed"
-          | "Cancelled"
-          | "ConflictedOk"
-          | "ConflictedNotOk"
-          | "Error";
-        /** @description Optional. Filter by recordings that are in progress, or not. */
-        isInProgress?: boolean;
-        /** @description Optional. Filter by recordings belonging to a series timer. */
-        seriesTimerId?: string;
-        /** @description Optional. Include image information in output. */
-        enableImages?: boolean;
-        /** @description Optional. The max number of images to return, per image type. */
-        imageTypeLimit?: number;
-        /** @description Optional. The image types to include in the output. */
-        enableImageTypes?: components["schemas"]["ImageType"][];
-        /** @description Optional. Specify additional fields of information to return in the output. */
-        fields?: components["schemas"]["ItemFields"][];
-        /** @description Optional. Include user data. */
-        enableUserData?: boolean;
-        /** @description Optional. Return total record count. */
-        enableTotalRecordCount?: boolean;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Live tv recordings returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="CamelCase"': components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="PascalCase"': components["schemas"]["BaseItemDtoQueryResult"];
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
   GetSeriesTimers: {
     parameters: {
       query?: {
@@ -26747,7 +24545,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -28342,7 +26140,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -28453,92 +26251,6 @@ export interface operations {
       };
     };
   };
-  GetMusicGenres: {
-    parameters: {
-      query?: {
-        /** @description Optional. The record index to start at. All items with a lower index will be dropped from the results. */
-        startIndex?: number;
-        /** @description Optional. The maximum number of records to return. */
-        limit?: number;
-        /** @description The search term. */
-        searchTerm?: string;
-        /** @description Specify this to localize the search to a specific item or folder. Omit to use the root. */
-        parentId?: string;
-        /** @description Optional. Specify additional fields of information to return in the output. */
-        fields?: components["schemas"]["ItemFields"][];
-        /** @description Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited. */
-        excludeItemTypes?: components["schemas"]["BaseItemKind"][];
-        /** @description Optional. If specified, results will be filtered in based on item type. This allows multiple, comma delimited. */
-        includeItemTypes?: components["schemas"]["BaseItemKind"][];
-        /** @description Optional filter by items that are marked as favorite, or not. */
-        isFavorite?: boolean;
-        /** @description Optional, the max number of images to return, per image type. */
-        imageTypeLimit?: number;
-        /** @description Optional. The image types to include in the output. */
-        enableImageTypes?: components["schemas"]["ImageType"][];
-        /** @description User id. */
-        userId?: string;
-        /** @description Optional filter by items whose name is sorted equally or greater than a given input string. */
-        nameStartsWithOrGreater?: string;
-        /** @description Optional filter by items whose name is sorted equally than a given input string. */
-        nameStartsWith?: string;
-        /** @description Optional filter by items whose name is equally or lesser than a given input string. */
-        nameLessThan?: string;
-        /** @description Optional. Specify one or more sort orders, comma delimited. */
-        sortBy?: components["schemas"]["ItemSortBy"][];
-        /** @description Sort Order - Ascending,Descending. */
-        sortOrder?: components["schemas"]["SortOrder"][];
-        /** @description Optional, include image information in output. */
-        enableImages?: boolean;
-        /** @description Optional. Include total record count. */
-        enableTotalRecordCount?: boolean;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Music genres returned. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="CamelCase"': components["schemas"]["BaseItemDtoQueryResult"];
-          'application/json; profile="PascalCase"': components["schemas"]["BaseItemDtoQueryResult"];
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
   GetMusicGenre: {
     parameters: {
       query?: {
@@ -28554,7 +26266,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -28916,10 +26628,18 @@ export interface operations {
   GetPersons: {
     parameters: {
       query?: {
+        /** @description Optional. All items with a lower index will be dropped from the response. */
+        startIndex?: number;
         /** @description Optional. The maximum number of records to return. */
         limit?: number;
         /** @description The search term. */
         searchTerm?: string;
+        /** @description Optional. Filter by items whose name starts with the given input string. */
+        nameStartsWith?: string;
+        /** @description Optional. Filter by items whose name will appear before this value when sorted alphabetically. */
+        nameLessThan?: string;
+        /** @description Optional. Filter by items whose name will appear after this value when sorted alphabetically. */
+        nameStartsWithOrGreater?: string;
         /** @description Optional. Specify additional fields of information to return in the output. */
         fields?: components["schemas"]["ItemFields"][];
         /** @description Optional. Specify additional filters to apply. */
@@ -28936,6 +26656,8 @@ export interface operations {
         excludePersonTypes?: string[];
         /** @description Optional. If specified results will be filtered to include only those containing the specified PersonType. Allows multiple, comma-delimited. */
         personTypes?: string[];
+        /** @description Optional. Specify this to localize the search to a specific library. Omit to use the root. */
+        parentId?: string;
         /** @description Optional. If specified, person results will be filtered on items related to said persons. */
         appearsInItemId?: string;
         /** @description User id. */
@@ -29354,6 +27076,8 @@ export interface operations {
       query?: {
         /** @description Item id, comma delimited. */
         ids?: string[];
+        /** @description Optional. 0-based index where to place the items or at the end if `null`. */
+        position?: number;
         /** @description The userId. */
         userId?: string;
       };
@@ -29807,199 +27531,6 @@ export interface operations {
           'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
           'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
         };
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  OnPlaybackStart: {
-    parameters: {
-      query?: {
-        /** @description The id of the MediaSource. */
-        mediaSourceId?: string;
-        /** @description The audio stream index. */
-        audioStreamIndex?: number;
-        /** @description The subtitle stream index. */
-        subtitleStreamIndex?: number;
-        /** @description The play method. */
-        playMethod?: "Transcode" | "DirectStream" | "DirectPlay";
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description Indicates if the client can seek. */
-        canSeek?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description Item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Play start recorded. */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  OnPlaybackStopped: {
-    parameters: {
-      query?: {
-        /** @description The id of the MediaSource. */
-        mediaSourceId?: string;
-        /** @description The next media type that will play. */
-        nextMediaType?: string;
-        /** @description Optional. The position, in ticks, where playback stopped. 1 tick = 10000 ms. */
-        positionTicks?: number;
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-      };
-      header?: never;
-      path: {
-        /** @description Item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Playback stop recorded. */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
-  OnPlaybackProgress: {
-    parameters: {
-      query?: {
-        /** @description The id of the MediaSource. */
-        mediaSourceId?: string;
-        /** @description Optional. The current position, in ticks. 1 tick = 10000 ms. */
-        positionTicks?: number;
-        /** @description The audio stream index. */
-        audioStreamIndex?: number;
-        /** @description The subtitle stream index. */
-        subtitleStreamIndex?: number;
-        /** @description Scale of 0-100. */
-        volumeLevel?: number;
-        /** @description The play method. */
-        playMethod?: "Transcode" | "DirectStream" | "DirectPlay";
-        /** @description The live stream id. */
-        liveStreamId?: string;
-        /** @description The play session id. */
-        playSessionId?: string;
-        /** @description The repeat mode. */
-        repeatMode?: "RepeatNone" | "RepeatAll" | "RepeatOne";
-        /** @description Indicates if the player is paused. */
-        isPaused?: boolean;
-        /** @description Indicates if the player is muted. */
-        isMuted?: boolean;
-      };
-      header?: never;
-      path: {
-        /** @description Item id. */
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Play progress recorded. */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
       /** @description The server is currently starting or is temporarily not available. */
       503: {
@@ -31056,7 +28587,11 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["ProblemDetails"];
+          'application/json; profile="CamelCase"': components["schemas"]["ProblemDetails"];
+          'application/json; profile="PascalCase"': components["schemas"]["ProblemDetails"];
+        };
       };
       /** @description The server is currently starting or is temporarily not available. */
       503: {
@@ -34165,7 +31700,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -35486,53 +33021,6 @@ export interface operations {
       };
     };
   };
-  TmdbClientConfiguration: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Success */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ConfigImageTypes"];
-        };
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description The server is currently starting or is temporarily not available. */
-      503: {
-        headers: {
-          /** @description A hint for when to retry the operation in full seconds. */
-          "Retry-After"?: number;
-          /** @description A short plain-text reason why the server is not available. */
-          Message?: string;
-          [name: string]: unknown;
-        };
-        content: {
-          "text/html": unknown;
-        };
-      };
-    };
-  };
   GetTrailers: {
     parameters: {
       query?: {
@@ -35700,6 +33188,10 @@ export interface operations {
         studioIds?: string[];
         /** @description Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited. */
         genreIds?: string[];
+        /** @description Optional. If specified, results will be filtered based on audio language. This allows multiple, comma delimited values. */
+        audioLanguages?: string[];
+        /** @description Optional. If specified, results will be filtered based on subtitale language. This allows multiple, comma delimited values. */
+        subtitleLanguages?: string[];
         /** @description Optional. Enable the total record count. */
         enableTotalRecordCount?: boolean;
         /** @description Optional, include image information in output. */
@@ -35711,7 +33203,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -35956,7 +33448,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -36038,7 +33530,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -36116,11 +33608,6 @@ export interface operations {
         nextUpDateCutoff?: string;
         /** @description Whether to enable the total records count. Defaults to true. */
         enableTotalRecordCount?: boolean;
-        /**
-         * @deprecated
-         * @description Whether to disable sending the first episode in a series as next up.
-         */
-        disableFirstEpisode?: boolean;
         /** @description Whether to include resumable episodes in next up results. */
         enableResumable?: boolean;
         /** @description Whether to include watched episodes in next up results. */
@@ -36132,7 +33619,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -36200,7 +33687,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Success */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown;
@@ -36275,8 +33762,6 @@ export interface operations {
         enableRemoteMedia?: boolean;
         /** @description Optional. Whether to enable Audio Encoding. */
         enableAudioVbrEncoding?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Whether to enable redirection. Defaults to true. */
         enableRedirection?: boolean;
       };
@@ -36380,8 +33865,6 @@ export interface operations {
         enableRemoteMedia?: boolean;
         /** @description Optional. Whether to enable Audio Encoding. */
         enableAudioVbrEncoding?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Whether to enable redirection. Defaults to true. */
         enableRedirection?: boolean;
       };
@@ -38054,8 +35537,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */
@@ -38198,8 +35679,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */
@@ -38337,8 +35816,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */
@@ -38478,8 +35955,6 @@ export interface operations {
         allowVideoStreamCopy?: boolean;
         /** @description Whether or not to allow copying of the audio stream url. */
         allowAudioStreamCopy?: boolean;
-        /** @description Optional. Whether to break on non key frames. */
-        breakOnNonKeyFrames?: boolean;
         /** @description Optional. Specify a specific audio sample rate, e.g. 44100. */
         audioSampleRate?: number;
         /** @description Optional. The maximum audio bit depth. */

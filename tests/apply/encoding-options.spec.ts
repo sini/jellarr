@@ -1112,7 +1112,8 @@ describe("apply/encoding", () => {
         AllowHevcEncoding: false,
         AllowAv1Encoding: false,
         EncodingThreadCount: 8,
-      } as EncodingOptionsSchema;
+        HlsAudioSeekStrategy: "TrimCopiedAudio",
+      };
 
       const desired: EncodingOptionsConfig = {
         enableHardwareEncoding: true,

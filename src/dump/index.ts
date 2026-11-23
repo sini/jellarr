@@ -161,8 +161,8 @@ export async function runDump(baseUrl: string): Promise<void> {
       ),
       castReceiverApplications: systemConfig.CastReceiverApplications?.map(
         (a: CastReceiverApplicationSchema) => ({
-          id: a.Id ?? "",
-          name: a.Name ?? "",
+          id: a.Id,
+          name: a.Name,
         }),
       ),
       trickplayOptions: {
