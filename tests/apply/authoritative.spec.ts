@@ -638,4 +638,94 @@ describe("authoritative/users disable mode", () => {
       now.toISOString(),
     );
   });
+
+  describe("usersScope", () => {
+    const scoped: AuthoritativeState["users"] = [
+      { Id: "1", Name: "root", Policy: { IsAdministrator: true } },
+      { Id: "2", Name: "sso1", Policy: { AuthenticationProviderId: "p" } },
+      { Id: "3", Name: "sso2", Policy: { AuthenticationProviderId: "q" } },
+      {
+        Id: "4",
+        Name: "sso3",
+        Policy: { AuthenticationProviderId: "p", IsDisabled: true },
+      },
+      { Id: "5", Name: "local", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    const scope: { authenticationProviderId: string | string[] } = {
+      authenticationProviderId: "p",
+    };
+
+    it("whenScoped_thenOnlyThatProvidersUsersAreCandidatesInDisableMode", () => {
+      const result: Deletion[] = plan(
+        { users: "disable", usersScope: scope },
+        { users: scoped, markers: new Map([["5", ago(900)]]) },
+      );
+      expect(
+        result.map((r: Deletion) => `${r.name}:${r.action ?? "delete"}`),
+      ).toEqual(["sso1:disable", "sso3:mark"]);
+    });
+
+    it("whenScoped_thenDeleteModeLeavesOtherUsersAlone", () => {
+      const result: Deletion[] = plan(
+        { users: true, usersScope: scope, allowMassDelete: true },
+        { users: scoped },
+      );
+      expect(names(result)).toEqual(["sso1", "sso3"]);
+    });
+
+    it("whenScoped_thenReEnableTouchesOnlyScopedUsers", () => {
+      const result: Deletion[] = plan(
+        {
+          users: "disable",
+          usersScope: scope,
+          keep: { users: ["sso3", "local"] },
+        },
+        {
+          users: scoped,
+          markers: new Map([
+            ["4", ago(1)],
+            ["5", ago(1)],
+          ]),
+        },
+      );
+      expect(
+        result.map((r: Deletion) => `${r.name}:${r.action ?? "delete"}`),
+      ).toEqual(["sso1:disable", "sso3:enable"]);
+    });
+
+    it("whenScoped_thenTheListFormMatchesAnyListedProvider", () => {
+      const result: Deletion[] = plan(
+        {
+          users: "disable",
+          usersScope: { authenticationProviderId: ["p", "q"] },
+          allowMassDelete: true,
+        },
+        { users: scoped },
+      );
+      expect(result.map((r: Deletion) => r.name)).toEqual([
+        "sso1",
+        "sso2",
+        "sso3",
+      ]);
+    });
+
+    it("whenScoped_thenTheMassRailCountsOnlyUsersInScope", () => {
+      expect(
+        plan({ users: "disable", usersScope: scope }, { users: scoped }),
+      ).toHaveLength(2);
+      expect(() =>
+        plan(
+          { users: "disable", usersScope: { authenticationProviderId: "q" } },
+          { users: scoped },
+        ),
+      ).toThrow(/1 of 1 users, more than half/);
+    });
+
+    it("whenNoScopeIsSet_thenEveryUserIsInScope", () => {
+      expect(
+        plan({ users: "disable", allowMassDelete: true }, { users: scoped })
+          .length,
+      ).toBeGreaterThan(2);
+    });
+  });
 });

@@ -64,4 +64,13 @@ in [
     }) {
       users = "delete";
     })
+
+  (assertEq "usersScope passes through, single id or list" (mkAuthoritativeConfig {
+      users = "disable";
+      usersScope.authenticationProviderId = ["a" "b"];
+      keep = null;
+    }) {
+      users = "disable";
+      usersScope.authenticationProviderId = ["a" "b"];
+    })
 ]

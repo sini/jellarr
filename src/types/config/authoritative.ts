@@ -18,6 +18,19 @@ export const AuthoritativeKeepType: z.ZodObject<{
   })
   .strict();
 
+export const UsersScopeType: z.ZodObject<{
+  authenticationProviderId: z.ZodUnion<
+    readonly [z.ZodString, z.ZodArray<z.ZodString>]
+  >;
+}> = z
+  .object({
+    authenticationProviderId: z.union([
+      z.string().min(1),
+      z.array(z.string().min(1)),
+    ]),
+  })
+  .strict();
+
 export const AuthoritativeConfigType: z.ZodObject<{
   users: z.ZodOptional<
     z.ZodUnion<
@@ -34,6 +47,7 @@ export const AuthoritativeConfigType: z.ZodObject<{
   keep: z.ZodOptional<typeof AuthoritativeKeepType>;
   allowMassDelete: z.ZodOptional<z.ZodBoolean>;
   deleteDisabledAfter: z.ZodOptional<z.ZodString>;
+  usersScope: z.ZodOptional<typeof UsersScopeType>;
 }> = z
   .object({
     users: z.union([z.boolean(), z.enum(["delete", "disable"])]).optional(),
@@ -44,6 +58,7 @@ export const AuthoritativeConfigType: z.ZodObject<{
     keep: AuthoritativeKeepType.optional(),
     allowMassDelete: z.boolean().optional(),
     deleteDisabledAfter: z.string().optional(),
+    usersScope: UsersScopeType.optional(),
   })
   .strict();
 

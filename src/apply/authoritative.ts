@@ -85,6 +85,20 @@ function guardMassDelete(
   );
 }
 
+/** Users inside authoritative.usersScope; every user when no scope is set. */
+function usersInScope(
+  authoritative: AuthoritativeConfig,
+  users: UserDtoSchema[],
+): UserDtoSchema[] {
+  const ids: string | string[] | undefined =
+    authoritative.usersScope?.authenticationProviderId;
+  if (ids === undefined) return users;
+  const wanted: string[] = typeof ids === "string" ? [ids] : ids;
+  return users.filter((user: UserDtoSchema) =>
+    wanted.includes(user.Policy?.AuthenticationProviderId ?? ""),
+  );
+}
+
 const isDisabled: (user: UserDtoSchema) => boolean = (
   user: UserDtoSchema,
 ): boolean => user.Policy?.IsDisabled === true;
@@ -117,7 +131,8 @@ function planUserSync(
   const shrinking: Set<string | undefined> = new Set();
   let removals: number = 0;
 
-  for (const user of state.users) {
+  const scoped: UserDtoSchema[] = usersInScope(authoritative, state.users);
+  for (const user of scoped) {
     if (!user.Id) continue;
     const name: string = user.Name ?? "?";
     const base: Pick<Deletion, "kind" | "name" | "id"> = {
@@ -205,7 +220,7 @@ function planUserSync(
   guardMassDelete(
     "users",
     removals,
-    state.users.length,
+    scoped.length,
     authoritative.allowMassDelete ?? false,
     "disable or delete",
   );
@@ -237,7 +252,8 @@ export function planDeletions(
     const sparedNames: Set<string> = new Set(
       [...declared.users, ...(keep.users ?? []), ...spared.users].map(lower),
     );
-    const doomed: UserDtoSchema[] = state.users.filter(
+    const scoped: UserDtoSchema[] = usersInScope(authoritative, state.users);
+    const doomed: UserDtoSchema[] = scoped.filter(
       (user: UserDtoSchema) => user.Id && !sparedNames.has(lower(user.Name)),
     );
     const doomedIds: Set<string | undefined> = new Set(
@@ -257,7 +273,7 @@ export function planDeletions(
         );
       }
     }
-    guardMassDelete("users", doomed.length, state.users.length, allow);
+    guardMassDelete("users", doomed.length, scoped.length, allow);
     for (const user of doomed) {
       deletions.push({
         kind: "users",

@@ -21,6 +21,17 @@
     };
   };
 
+  usersScopeType = types.submodule {
+    options.authenticationProviderId = mkOption {
+      type = types.either types.str (types.listOf types.str);
+      description = ''
+        Only users whose `Policy.AuthenticationProviderId` is this id (or one of
+        these ids) are candidates; every other user is out of scope and is not
+        counted by the mass rail.
+      '';
+    };
+  };
+
   authoritativeConfigType = types.submodule {
     options = {
       users = opt (types.either types.bool (types.enum ["delete" "disable"])) ''
@@ -51,6 +62,11 @@
         A run that would delete (or, for users in disable mode, disable or
         delete) more than half of the entries of a kind is refused unless this
         is true.
+      '';
+      usersScope = opt usersScopeType ''
+        Limits `users` to the accounts a given authentication provider created,
+        for example the provider id a single sign-on plugin sets. Unset means
+        every user is in scope.
       '';
       deleteDisabledAfter = opt types.str ''
         With `users = "disable"` only: delete a user jellarr disabled once it has

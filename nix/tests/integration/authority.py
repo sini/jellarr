@@ -95,9 +95,13 @@ users:
 MARKER = "jellarr.disabledAt"
 
 
-def disable_yaml(keep, after=None):
+def disable_yaml(keep, after=None, scope=None, mass=False):
     """Disable mode: boss is the declared administrator; keep names are spared."""
     after_line = f"  deleteDisabledAfter: {after}\n" if after else ""
+    after_line += (
+        f"  usersScope: {{authenticationProviderId: {scope}}}\n" if scope else ""
+    )
+    after_line += "  allowMassDelete: true\n" if mass else ""
     return f"""version: 1
 base_url: http://localhost:8096
 system: {{}}
@@ -436,4 +440,28 @@ def run_authority_test(server):
     out = run_ok(server)
     assert "✓ nothing undeclared to delete" in out, out
     assert disabled(server, "keeper") and not disabled(server, "x1")
+
+    # --- usersScope: only users of the named authentication provider are candidates ---
+    provider = "test.provider"
+    for name in ["s1", "s2"]:
+        api_post(server, "/Users/New", {"Name": name, "Password": "x"})
+        user = user_by_name(server, name)
+        api_post(
+            server,
+            f"/Users/{user['Id']}/Policy",
+            {**user["Policy"], "AuthenticationProviderId": provider},
+        )
+    if user_by_name(server, "s1")["Policy"]["AuthenticationProviderId"] == provider:
+        write_config(server, disable_yaml(["keeper"], scope=provider, mass=True))
+        run_ok(server)
+        for name in ["s1", "s2"]:
+            assert disabled(server, name) and marker(server, name), name
+        # out of scope: the default-provider users are untouched
+        assert not disabled(server, "x1") and marker(server, "x1") is None
+        assert disabled(server, "keeper") and marker(server, "keeper") is None
+        assert user_names(server) == ["boss", "keeper", "s1", "s2", "x1"]
+    else:
+        print(
+            "NOTE: Jellyfin kept the default AuthenticationProviderId; usersScope is covered by unit tests only"
+        )
     print("✅ AUTHORITY test passed")

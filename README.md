@@ -112,13 +112,13 @@ pioneered declarative Jellyfin configuration, it takes a risky approach:
 
 ```bash
 # With Nix
-nix run github:sini/jellarr/v0.4.0
+nix run github:sini/jellarr/v0.5.0
 
 # With Docker
-docker pull ghcr.io/sini/jellarr:v0.4.0
+docker pull ghcr.io/sini/jellarr:v0.5.0
 
 # Download binary (requires Node.js 24+)
-node jellarr-v0.4.0.cjs --configFile path/to/config.yml
+node jellarr-v0.5.0.cjs --configFile path/to/config.yml
 ```
 
 **Example config** (`config/config.yml`):
@@ -175,7 +175,7 @@ Add to your `flake.nix`:
 Or run directly:
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.4.0
+JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.5.0
 ```
 
 Coming from declarative-jellyfin? See the
@@ -184,7 +184,7 @@ Coming from declarative-jellyfin? See the
 ### Docker (Recommended)
 
 ```bash
-docker pull ghcr.io/sini/jellarr:v0.4.0
+docker pull ghcr.io/sini/jellarr:v0.5.0
 ```
 
 **With docker-compose:**
@@ -192,7 +192,7 @@ docker pull ghcr.io/sini/jellarr:v0.4.0
 ```yaml
 services:
     jellarr:
-        image: ghcr.io/sini/jellarr:v0.4.0
+        image: ghcr.io/sini/jellarr:v0.5.0
         container_name: jellarr
         environment:
             - JELLARR_API_KEY=${JELLARR_API_KEY}
@@ -208,8 +208,8 @@ Download from [releases](https://github.com/sini/jellarr/releases) (requires
 Node.js 24+):
 
 ```bash
-curl -LO https://github.com/sini/jellarr/releases/download/v0.4.0/jellarr-v0.4.0.cjs
-JELLARR_API_KEY=your_api_key node jellarr-v0.4.0.cjs --configFile path/to/config.yml
+curl -LO https://github.com/sini/jellarr/releases/download/v0.5.0/jellarr-v0.5.0.cjs
+JELLARR_API_KEY=your_api_key node jellarr-v0.5.0.cjs --configFile path/to/config.yml
 ```
 
 **Note:** Requires Node.js 24+ installed on your system.
@@ -817,7 +817,9 @@ disabled it) gets one at jellarr's first sight, so its grace period starts then.
 - **Delete after.** `authoritative.deleteDisabledAfter: 30d` (units `w`, `d`,
   `h`, `m`, `s`; valid only with `users: "disable"`) deletes a user whose marker
   is older than that, through the same deletion path and rails. Unset means
-  never.
+  never. A marker exactly that old is already due (the comparison is inclusive).
+  A marker jellarr cannot parse is logged and rewritten with the current time,
+  and the user is not deleted on that run.
 
 Dry-run lines:
 `would disable user X (not declared or kept); deletion after
@@ -843,6 +845,22 @@ users:
 
 Someone who loses access is disabled on the next run, re-enabled if they regain
 it, and deleted after 30 days if they do not.
+
+**Scoping to one authentication provider.** Set
+`authoritative.usersScope.authenticationProviderId` to an id, or a list of ids,
+and only users whose `Policy.AuthenticationProviderId` is listed are candidates
+for disabling, re-enabling or deleting, in every mode. Other users are out of
+scope: never touched, and not counted by the mass rail, whose denominator is the
+number of users in scope. Unset means every user is in scope. To manage only the
+accounts an SSO plugin creates, use the provider id that plugin sets (see
+`Policy.AuthenticationProviderId` in `GET /Users`):
+
+```yaml
+authoritative:
+    users: disable
+    usersScope:
+        authenticationProviderId: "<the provider id your SSO plugin sets>"
+```
 
 ### Scheduled Tasks
 
@@ -1096,7 +1114,7 @@ jellarr
 ```bash
 docker run -e JELLARR_API_KEY=your_api_key \
   -v ./config:/config:ro \
-  ghcr.io/sini/jellarr:v0.4.0 --configFile /config/config.yml
+  ghcr.io/sini/jellarr:v0.5.0 --configFile /config/config.yml
 ```
 
 The image's entrypoint is jellarr itself and it runs as user `65534`, so
@@ -1107,7 +1125,7 @@ leave `command:` unset:
 ```yaml
 containers:
     - name: jellarr
-      image: ghcr.io/sini/jellarr:v0.4.0
+      image: ghcr.io/sini/jellarr:v0.5.0
       args: ["--configFile", "/config/config.yml"]
       env:
           - name: JELLARR_API_KEY_FILE
