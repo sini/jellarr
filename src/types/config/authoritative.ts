@@ -19,22 +19,31 @@ export const AuthoritativeKeepType: z.ZodObject<{
   .strict();
 
 export const AuthoritativeConfigType: z.ZodObject<{
-  users: z.ZodOptional<z.ZodBoolean>;
+  users: z.ZodOptional<
+    z.ZodUnion<
+      readonly [
+        z.ZodBoolean,
+        z.ZodEnum<{ delete: "delete"; disable: "disable" }>,
+      ]
+    >
+  >;
   libraries: z.ZodOptional<z.ZodBoolean>;
   plugins: z.ZodOptional<z.ZodBoolean>;
   apiKeys: z.ZodOptional<z.ZodBoolean>;
   livetv: z.ZodOptional<z.ZodBoolean>;
   keep: z.ZodOptional<typeof AuthoritativeKeepType>;
   allowMassDelete: z.ZodOptional<z.ZodBoolean>;
+  deleteDisabledAfter: z.ZodOptional<z.ZodString>;
 }> = z
   .object({
-    users: z.boolean().optional(),
+    users: z.union([z.boolean(), z.enum(["delete", "disable"])]).optional(),
     libraries: z.boolean().optional(),
     plugins: z.boolean().optional(),
     apiKeys: z.boolean().optional(),
     livetv: z.boolean().optional(),
     keep: AuthoritativeKeepType.optional(),
     allowMassDelete: z.boolean().optional(),
+    deleteDisabledAfter: z.string().optional(),
   })
   .strict();
 

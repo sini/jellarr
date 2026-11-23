@@ -787,6 +787,21 @@ describe("api/jf Users façade", () => {
     expect(bodyText).toContain("testpass");
   });
 
+  it("getDisplayPreferences reads the jellarr preferences of the user", async () => {
+    mockFetchJson({ CustomPrefs: { "jellarr.disabledAt": "x" } });
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const out: { CustomPrefs?: Record<string, string | null> } =
+      await jellyfinClient.getDisplayPreferences("u1");
+    expect(out.CustomPrefs?.["jellarr.disabledAt"]).toBe("x");
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("GET");
+    expect(req.url).toMatch(
+      /\/DisplayPreferences\/jellarr\?userId=u1&client=jellarr$/,
+    );
+  });
   it("when GET /Users fails then it throws an error with status", async (): Promise<void> => {
     // Arrange
     fetchMock = vi

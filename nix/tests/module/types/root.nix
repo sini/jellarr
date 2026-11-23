@@ -518,6 +518,7 @@ in [
         apiKeys = null;
         livetv = null;
         allowMassDelete = null;
+        deleteDisabledAfter = null;
         keep = null;
       };
       scheduledTasks = [

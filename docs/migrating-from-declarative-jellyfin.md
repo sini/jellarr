@@ -345,7 +345,10 @@ A few jellarr behaviours are worth knowing before you rely on them:
   loses their watch history, so dry-run it first. It never deletes the user or
   key it is signed in with or the last administrator, spares anything in
   `authoritative.keep`, and refuses to delete more than half of a kind unless
-  `authoritative.allowMassDelete` is set.
+  `authoritative.allowMassDelete` is set. `authoritative.users: "disable"`
+  disables undeclared users instead of deleting them (their watch history
+  stays), re-enables one that is kept again, and with `deleteDisabledAfter`
+  deletes it after a grace period.
 - Declared lists replace the server's lists, and `[]` clears one. That includes
   `policy.enabledLibraries = [ ]`, which removes the user's access to every
   library unless `enableAllFolders` is true.

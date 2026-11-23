@@ -742,7 +742,7 @@ config does not declare are deleted.
 version: 1
 base_url: "http://localhost:8096"
 authoritative:
-    users: true # DELETE /Users/{id}
+    users: delete # true or "delete": DELETE /Users/{id}; "disable": IsDisabled = true
     libraries: true # DELETE /Library/VirtualFolders?name=…
     plugins: true # uninstall, removable plugins only
     apiKeys: true # DELETE /Auth/Keys/{key}
@@ -753,6 +753,7 @@ authoritative:
         plugins: ["Some Plugin"]
         apiKeys: [monitoring]
     allowMassDelete: false
+    deleteDisabledAfter: 30d # only with users: disable
 ```
 
 Every flag is `false` by default. **Deletions are permanent and jellarr keeps no
@@ -762,7 +763,7 @@ with `DESTRUCTIVE`, and a dry run never calls a DELETE.
 - **Users.** `DELETE /Users/{id}`. A deleted user's **watch history, playback
   progress and per-user data are lost**, and the plan line says so. A user is
   matched by name, ignoring case. Users declared in `users` (or `startup.user`)
-  are not touched.
+  are not touched. `users: "disable"` is the gentler mode, described below.
 - **Libraries.** `DELETE /Library/VirtualFolders?name=…`. Files on disk stay,
   but the library's items and their watch state leave the Jellyfin database.
   Library deletions run after the Locations reconciliation.
@@ -790,6 +791,58 @@ is made, so a refused safety rail leaves the server untouched.
   `library.virtualFolders: []`, then cannot wipe a server. A kind whose section
   is missing from the config counts as an empty list. For plugins the count is
   of removable plugins only.
+
+#### Disabling users instead of deleting them
+
+`authoritative.users: "disable"` sets `Policy.IsDisabled = true` on every user
+the config does not declare or keep, through the user policy write. The account
+and its watch history stay. The candidates and the rails are those of deletion:
+never the signed-in user, never the last enabled administrator, never
+`keep.users` or declared users, and the mass rail counts disables and deletes
+together against the number of users, so disabling most of a server also needs
+`allowMassDelete: true`.
+
+Jellyfin does not say since when a user is disabled, so jellarr records it in
+the user's display preferences on the server:
+`POST /DisplayPreferences/jellarr?userId=…&client=jellarr` with
+`CustomPrefs["jellarr.disabledAt"]` set to an ISO-8601 UTC timestamp from
+jellarr's clock. The marker lives in Jellyfin's database, so it survives
+stateless runs (a Kubernetes Job with a read-only root filesystem) and goes with
+the user. A user that is already disabled but has no marker (someone else
+disabled it) gets one at jellarr's first sight, so its grace period starts then.
+
+- **Re-enable.** A user that carries a jellarr marker and is declared or in
+  `keep.users` again is re-enabled and loses the marker. A disabled user without
+  a marker is never re-enabled: an administrator's own disable wins.
+- **Delete after.** `authoritative.deleteDisabledAfter: 30d` (units `w`, `d`,
+  `h`, `m`, `s`; valid only with `users: "disable"`) deletes a user whose marker
+  is older than that, through the same deletion path and rails. Unset means
+  never.
+
+Dry-run lines:
+`would disable user X (not declared or kept); deletion after
+<date>` (or
+`never deleted`), `would re-enable user X (kept again)` and
+`DESTRUCTIVE would delete user X (disabled by jellarr since <date>)`.
+
+For users created by an SSO plugin on first login, this keeps the server in step
+with who is allowed in:
+
+```yaml
+authoritative:
+    users: disable
+    deleteDisabledAfter: 30d
+    keep:
+        users: [admin] # accounts the plugin does not manage
+users:
+    - name: admin
+      password: ...
+      policy:
+          isAdministrator: true
+```
+
+Someone who loses access is disabled on the next run, re-enabled if they regain
+it, and deleted after 30 days if they do not.
 
 ### Scheduled Tasks
 

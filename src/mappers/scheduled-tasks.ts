@@ -12,18 +12,19 @@ import type {
 export const TICKS_PER_SECOND: number = 10_000_000;
 
 const UNIT_SECONDS: Record<string, number> = {
+  w: 604_800,
   d: 86_400,
   h: 3_600,
   m: 60,
   s: 1,
 };
 
-/** "6h", "90m", "1h30m", "2d" or "45s" to ticks; undefined when malformed. */
+/** "6h", "90m", "1h30m", "2d", "2w" or "45s" to ticks; undefined when malformed. */
 export function parseDuration(text: string): number | undefined {
   const trimmed: string = text.trim().toLowerCase();
-  if (!/^(\d+[dhms])+$/.test(trimmed)) return undefined;
+  if (!/^(\d+[wdhms])+$/.test(trimmed)) return undefined;
   let seconds: number = 0;
-  for (const [, amount, unit] of trimmed.matchAll(/(\d+)([dhms])/g)) {
+  for (const [, amount, unit] of trimmed.matchAll(/(\d+)([wdhms])/g)) {
     seconds += Number(amount) * (UNIT_SECONDS[unit] ?? 0);
   }
   return seconds > 0 ? seconds * TICKS_PER_SECOND : undefined;

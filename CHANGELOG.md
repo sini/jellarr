@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-11-23
+
+### Added
+
+- `authoritative.users: "disable"` disables the users the config does not
+  declare (`Policy.IsDisabled = true`) instead of deleting them, so the account
+  and its watch history stay. `true` and `"delete"` still delete. The rails are
+  the deletion rails: never the signed-in user or the last enabled
+  administrator, `keep.users` and declared users are spared, and
+  `allowMassDelete` is needed when disabling and deleting together would touch
+  more than half the users.
+- jellarr records when it disabled a user in that user's Jellyfin display
+  preferences (`GET`/`POST /DisplayPreferences/jellarr`, `CustomPrefs` key
+  `jellarr.disabledAt`, UTC), so the record survives stateless runs and goes
+  with the user. A user someone else already disabled gets the marker at
+  jellarr's first sight.
+- A user that carries a jellarr marker and is kept again (declared or in
+  `keep.users`) is re-enabled and loses the marker. A disabled user without a
+  marker is never re-enabled.
+- `authoritative.deleteDisabledAfter` (`30d`, `12h`, `2w`), valid only with
+  `users: "disable"`, deletes a user whose jellarr marker is older than that.
+  Unset means never. Durations now also accept a `w` unit.
+- The NixOS module mirrors both options, and the `jellarr-authority` VM test
+  covers disable, re-enable, delete-after and a no-op second run.
+
 ## [0.4.0] - 2026-11-23
 
 ### Added
@@ -523,6 +548,8 @@ branding:
 - **Library Configuration**: Content scanning intervals, metadata providers,
   subtitle preferences
 
+[0.5.0]: https://github.com/sini/jellarr/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/sini/jellarr/compare/v0.3.5...v0.4.0
 [0.3.5]: https://github.com/sini/jellarr/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/sini/jellarr/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/sini/jellarr/compare/v0.3.2...v0.3.3

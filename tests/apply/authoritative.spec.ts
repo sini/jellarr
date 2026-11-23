@@ -304,3 +304,240 @@ describe("authoritative/applyDeletions", () => {
     expect(client.uninstallPlugin).toHaveBeenCalledWith("pid", "3");
   });
 });
+
+describe("authoritative/users disable mode", () => {
+  const now: Date = new Date("2026-03-10T12:00:00.000Z");
+  const day: number = 86_400_000;
+  const ago: (days: number) => string = (days: number): string =>
+    new Date(now.getTime() - days * day).toISOString();
+  const users: AuthoritativeState["users"] = [
+    { Id: "1", Name: "root", Policy: { IsAdministrator: true } },
+    { Id: "2", Name: "ann", Policy: { IsAdministrator: false } },
+    { Id: "3", Name: "bob", Policy: { IsAdministrator: false } },
+  ] as AuthoritativeState["users"];
+  const declared: Declared = { ...noneDeclared, users: ["root"] };
+  const plan: (
+    cfg: Parameters<typeof planDeletions>[0],
+    st: Partial<AuthoritativeState>,
+    over?: Partial<Declared>,
+  ) => Deletion[] = (
+    cfg: Parameters<typeof planDeletions>[0],
+    st: Partial<AuthoritativeState>,
+    over: Partial<Declared> = {},
+  ): Deletion[] =>
+    planDeletions(
+      cfg,
+      state({ users, ...st }),
+      { ...declared, ...over },
+      nobody,
+      now,
+    );
+
+  it("whenUndeclared_thenDisabledWithAMarkerAndNothingDeleted", () => {
+    const result: Deletion[] = plan(
+      { users: "disable", allowMassDelete: true },
+      {},
+    );
+    expect(result.map((r: Deletion) => r.action)).toEqual([
+      "disable",
+      "disable",
+    ]);
+    expect(result[0]?.policy?.IsDisabled).toBe(true);
+    expect(result[0]?.marker).toBe(now.toISOString());
+    expect(result[0]?.plan).toBe(
+      "would disable user ann (not declared or kept); never deleted",
+    );
+  });
+
+  it("whenDeleteDisabledAfterIsSet_thenThePlanNamesTheDate", () => {
+    const result: Deletion[] = plan(
+      { users: "disable", deleteDisabledAfter: "2d", allowMassDelete: true },
+      {},
+    );
+    expect(result[0]?.plan).toBe(
+      "would disable user ann (not declared or kept); deletion after 2026-03-12T12:00:00.000Z",
+    );
+  });
+
+  it("whenAlreadyDisabledWithoutMarker_thenItGetsAMarkerNowAndStaysDisabled", () => {
+    const disabled: AuthoritativeState["users"] = [
+      users[0],
+      { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    const result: Deletion[] = plan(
+      { users: "disable", deleteDisabledAfter: "1d" },
+      { users: disabled },
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      action: "mark",
+      marker: now.toISOString(),
+    });
+    expect(result[0]?.policy).toBeUndefined();
+  });
+
+  it("whenKeptWithAMarker_thenReEnabledAndMarkerCleared", () => {
+    const disabled: AuthoritativeState["users"] = [
+      users[0],
+      { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    const result: Deletion[] = plan(
+      { users: "disable", keep: { users: ["ann"] } },
+      { users: disabled, markers: new Map([["2", ago(1)]]) },
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ action: "enable", marker: null });
+    expect(result[0]?.policy?.IsDisabled).toBe(false);
+    expect(result[0]?.plan).toBe("would re-enable user ann (kept again)");
+  });
+
+  it("whenKeptWithoutAMarker_thenAnAdministratorsDisableWins", () => {
+    const disabled: AuthoritativeState["users"] = [
+      users[0],
+      { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    expect(
+      plan({ users: "disable", keep: { users: ["ann"] } }, { users: disabled }),
+    ).toEqual([]);
+  });
+
+  it("whenKeptAndDeclaredDisabledInTheConfig_thenItIsNotReEnabled", () => {
+    const disabled: AuthoritativeState["users"] = [
+      users[0],
+      { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    expect(
+      plan(
+        { users: "disable" },
+        { users: disabled, markers: new Map([["2", ago(1)]]) },
+        { users: ["root", "ann"], disabled: ["ann"] },
+      ),
+    ).toEqual([]);
+  });
+
+  it("whenTheMarkerPassesTheThreshold_thenDeleted", () => {
+    const disabled: AuthoritativeState["users"] = [
+      users[0],
+      { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    const result: Deletion[] = plan(
+      { users: "disable", deleteDisabledAfter: "1d" },
+      { users: disabled, markers: new Map([["2", ago(2)]]) },
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]?.action).toBeUndefined();
+    expect(result[0]?.plan).toBe(
+      `DESTRUCTIVE would delete user ann (disabled by jellarr since ${ago(2)}), and its watch history is lost`,
+    );
+  });
+
+  it("whenTheMarkerIsYoungerThanTheThreshold_thenNothingHappens", () => {
+    const disabled: AuthoritativeState["users"] = [
+      users[0],
+      { Id: "2", Name: "ann", Policy: { IsDisabled: true } },
+    ] as AuthoritativeState["users"];
+    expect(
+      plan(
+        { users: "disable", deleteDisabledAfter: "3d" },
+        { users: disabled, markers: new Map([["2", ago(2)]]) },
+      ),
+    ).toEqual([]);
+    expect(
+      plan(
+        { users: "disable" },
+        { users: disabled, markers: new Map([["2", ago(900)]]) },
+      ),
+    ).toEqual([]);
+  });
+
+  it("holdsTheRailsInDisableMode", () => {
+    expect(() => plan({ users: "disable" }, {})).toThrow(
+      /2 of 3 users, more than half.*allowMassDelete/s,
+    );
+    expect(() =>
+      plan(
+        { users: "disable", allowMassDelete: true },
+        {},
+        { users: ["ann", "bob"] },
+      ),
+    ).toThrow(/last enabled administrator/);
+    expect(
+      plan({ users: "disable", keep: { users: ["ann", "bob"] } }, {}),
+    ).toEqual([]);
+  });
+
+  it("whenRunTwice_thenTheSecondRunChangesNothing", async () => {
+    const store: Map<
+      string,
+      { policy: Record<string, unknown>; marker?: string }
+    > = new Map();
+    const cfg: Parameters<typeof planDeletions>[0] = {
+      users: "disable",
+      deleteDisabledAfter: "1d",
+      allowMassDelete: true,
+    };
+    const snapshot: () => AuthoritativeState = (): AuthoritativeState =>
+      state({
+        users: users.map((u: AuthoritativeState["users"][number]) => ({
+          ...u,
+          Policy: { ...u.Policy, ...(store.get(u.Id ?? "")?.policy ?? {}) },
+        })) as AuthoritativeState["users"],
+        markers: new Map(
+          [...store].flatMap(([id, v]: [string, { marker?: string }]) =>
+            v.marker ? [[id, v.marker] as [string, string]] : [],
+          ),
+        ),
+      });
+    const deleteUser: ReturnType<typeof vi.fn> = vi.fn();
+    const fake: JellyfinClient = {
+      updateUserPolicy: (id: string, policy: Record<string, unknown>) => {
+        store.set(id, { ...store.get(id), policy });
+        return Promise.resolve();
+      },
+      getDisplayPreferences: (id: string) =>
+        Promise.resolve({
+          CustomPrefs: store.get(id)?.marker
+            ? { "jellarr.disabledAt": store.get(id)?.marker }
+            : {},
+        }),
+      updateDisplayPreferences: (
+        id: string,
+        body: { CustomPrefs?: Record<string, string> },
+      ) => {
+        const marker: string | undefined =
+          body.CustomPrefs?.["jellarr.disabledAt"];
+        store.set(id, {
+          policy: store.get(id)?.policy ?? {},
+          ...(marker ? { marker } : {}),
+        });
+        return Promise.resolve();
+      },
+      deleteUser,
+    } as unknown as JellyfinClient;
+
+    const first: Deletion[] = planDeletions(
+      cfg,
+      snapshot(),
+      declared,
+      nobody,
+      now,
+    );
+    expect(first).toHaveLength(2);
+    await applyDeletions(fake, first);
+    expect(planDeletions(cfg, snapshot(), declared, nobody, now)).toEqual([]);
+    const later: Date = new Date(now.getTime() + 2 * day);
+    const deletes: Deletion[] = planDeletions(
+      cfg,
+      snapshot(),
+      declared,
+      nobody,
+      later,
+    );
+    expect(deletes.map((d: Deletion) => d.action)).toEqual([
+      undefined,
+      undefined,
+    ]);
+    await applyDeletions(fake, deletes);
+    expect(deleteUser).toHaveBeenCalledTimes(2);
+  });
+});

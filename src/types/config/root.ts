@@ -16,13 +16,19 @@ import {
   type ScheduledTaskConfig,
   type TaskTriggerConfig,
 } from "./scheduled-tasks";
-import { triggerProblem } from "../../mappers/scheduled-tasks";
+import { parseDuration, triggerProblem } from "../../mappers/scheduled-tasks";
 
 interface RootConfigInput {
   system: { pluginRepositories?: Array<{ name: string }> | undefined };
   plugins?: Array<{ repository?: string | undefined }> | undefined;
   livetv?: { authoritative?: boolean | undefined } | undefined;
-  authoritative?: { livetv?: boolean | undefined } | undefined;
+  authoritative?:
+    | {
+        livetv?: boolean | undefined;
+        users?: boolean | "delete" | "disable" | undefined;
+        deleteDisabledAfter?: string | undefined;
+      }
+    | undefined;
   scheduledTasks?: ScheduledTaskConfig[] | undefined;
 }
 
@@ -71,6 +77,22 @@ export const RootConfigType: z.ZodObject<{
         message:
           "authoritative.livetv is an alias of livetv.authoritative and the two disagree; set only livetv.authoritative",
       });
+    }
+    const after: string | undefined = cfg.authoritative?.deleteDisabledAfter;
+    if (after !== undefined) {
+      const message: string | undefined =
+        cfg.authoritative?.users !== "disable"
+          ? 'authoritative.deleteDisabledAfter is only valid with authoritative.users: "disable"'
+          : parseDuration(after) === undefined
+            ? `authoritative.deleteDisabledAfter "${after}" is not a duration such as "30d", "12h" or "2w"`
+            : undefined;
+      if (message) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["authoritative", "deleteDisabledAfter"],
+          message,
+        });
+      }
     }
     (cfg.scheduledTasks ?? []).forEach(
       (task: ScheduledTaskConfig, index: number): void => {

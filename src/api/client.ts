@@ -73,7 +73,7 @@ export function makeClient(
       const tokenPart: string = current ? `Token="${current}", ` : "";
       headers.set(
         "Authorization",
-        `MediaBrowser ${tokenPart}Client="jellarr", Device="cli", DeviceId="${deviceId}", Version="0.4.0"`,
+        `MediaBrowser ${tokenPart}Client="jellarr", Device="cli", DeviceId="${deviceId}", Version="0.5.0"`,
       );
       return new Request(request, { headers });
     },

@@ -13,6 +13,7 @@ import type {
   UserDtoSchema,
   CreateUserByNameSchema,
   UserPolicySchema,
+  DisplayPreferencesDtoSchema,
   UserConfigurationSchema,
 } from "../types/schema/users";
 import {
@@ -165,6 +166,12 @@ export interface JellyfinClient {
   deleteApiKey(accessToken: string): Promise<void>;
   /** The user the current token belongs to; undefined for an API key, which has none. */
   getCurrentUser(): Promise<UserDtoSchema | undefined>;
+  /** Display preferences under the fixed id `jellarr`; CustomPrefs holds jellarr's own markers. */
+  getDisplayPreferences(userId: string): Promise<DisplayPreferencesDtoSchema>;
+  updateDisplayPreferences(
+    userId: string,
+    body: DisplayPreferencesDtoSchema,
+  ): Promise<void>;
   /** Deletes the user and, with it, their watch history. */
   deleteUser(userId: string): Promise<void>;
   deleteVirtualFolder(name: string): Promise<void>;

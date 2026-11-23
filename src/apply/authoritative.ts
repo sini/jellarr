@@ -1,15 +1,32 @@
 import { logger } from "../lib/logger";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import type { AuthoritativeConfig } from "../types/config/authoritative";
-import type { UserDtoSchema } from "../types/schema/users";
+import type {
+  UserDtoSchema,
+  UserPolicySchema,
+  DisplayPreferencesDtoSchema,
+} from "../types/schema/users";
+import { parseDuration, TICKS_PER_SECOND } from "../mappers/scheduled-tasks";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { PluginInfoSchema } from "../types/schema/plugins";
 
 export type DeletionKind = "users" | "libraries" | "plugins" | "apiKeys";
 
+/** The CustomPrefs key under which jellarr records when it disabled a user. */
+export const DISABLED_AT_KEY: string = "jellarr.disabledAt";
+
+/**
+ * A planned change. With no `action` it is a deletion; the user actions are
+ * "disable" and "enable" (policy write plus marker) and "mark" (marker only).
+ */
 export interface Deletion {
   kind: DeletionKind;
+  action?: "disable" | "enable" | "mark";
+  /** The user's policy with IsDisabled already set; for disable and enable. */
+  policy?: UserPolicySchema;
+  /** Marker to write (ISO-8601 UTC), or null to remove it; for user actions. */
+  marker?: string | null;
   name: string;
   /** User id, plugin id, or the API key's access token (never printed). */
   id: string;
@@ -23,6 +40,8 @@ export interface AuthoritativeState {
   folders: VirtualFolderInfoSchema[];
   apiKeys: AuthenticationInfoSchema[];
   plugins: PluginInfoSchema[];
+  /** jellarr's disabledAt markers by user id (disable mode only). */
+  markers?: Map<string, string>;
 }
 
 export interface Declared {
@@ -32,6 +51,8 @@ export interface Declared {
   apiKeys: string[];
   /** Users whose policy.isAdministrator the config sets, by lowercase name. */
   adminOverrides: Map<string, boolean>;
+  /** Users whose policy.isDisabled the config sets to true, by name; never re-enabled. */
+  disabled?: string[];
 }
 
 export interface Protected {
@@ -56,11 +77,132 @@ function guardMassDelete(
   doomed: number,
   total: number,
   allow: boolean,
+  verb: string = "delete",
 ): void {
   if (allow || doomed * 2 <= total) return;
   throw new Error(
-    `authoritative.${kind} would delete ${doomed.toString()} of ${total.toString()} ${kind}, more than half. A typo or an empty list in the config could do this; check the config, or set authoritative.allowMassDelete: true to proceed. Nothing was deleted.`,
+    `authoritative.${kind} would ${verb} ${doomed.toString()} of ${total.toString()} ${kind}, more than half. A typo or an empty list in the config could do this; check the config, or set authoritative.allowMassDelete: true to proceed. Nothing was changed.`,
   );
+}
+
+const isDisabled: (user: UserDtoSchema) => boolean = (
+  user: UserDtoSchema,
+): boolean => user.Policy?.IsDisabled === true;
+
+/** Disable mode: disable, re-enable, mark and age-delete users; same rails as deletion. */
+function planUserSync(
+  authoritative: AuthoritativeConfig,
+  state: AuthoritativeState,
+  declared: Declared,
+  spared: Protected,
+  keep: NonNullable<AuthoritativeConfig["keep"]>,
+  now: Date,
+): Deletion[] {
+  const sparedNames: Set<string> = new Set(
+    [...declared.users, ...(keep.users ?? []), ...spared.users].map(lower),
+  );
+  const markers: Map<string, string> =
+    state.markers ?? new Map<string, string>();
+  const nowIso: string = now.toISOString();
+  const graceMs: number | undefined = authoritative.deleteDisabledAfter
+    ? (parseDuration(authoritative.deleteDisabledAfter) ?? 0) /
+      (TICKS_PER_SECOND / 1000)
+    : undefined;
+  const never: (from: Date) => string = (from: Date): string =>
+    graceMs === undefined
+      ? "never deleted"
+      : `deletion after ${new Date(from.getTime() + graceMs).toISOString()}`;
+  const out: Deletion[] = [];
+  const shrinking: Set<string | undefined> = new Set();
+  let removals: number = 0;
+
+  for (const user of state.users) {
+    if (!user.Id) continue;
+    const name: string = user.Name ?? "?";
+    const base: Pick<Deletion, "kind" | "name" | "id"> = {
+      kind: "users",
+      name,
+      id: user.Id,
+    };
+    const stamp: string | undefined = markers.get(user.Id);
+    const since: Date | undefined = stamp ? new Date(stamp) : undefined;
+    const known: Date | undefined =
+      since && !Number.isNaN(since.getTime()) ? since : undefined;
+    if (sparedNames.has(lower(user.Name))) {
+      // NOTE: only a jellarr marker licenses re-enabling; an administrator's own disable wins.
+      if (
+        stamp === undefined ||
+        (declared.disabled ?? []).map(lower).includes(lower(user.Name))
+      ) {
+        continue;
+      }
+      const enable: boolean = isDisabled(user);
+      out.push({
+        ...base,
+        action: enable ? "enable" : "mark",
+        ...(enable
+          ? {
+              policy: { ...user.Policy, IsDisabled: false } as UserPolicySchema,
+            }
+          : {}),
+        marker: null,
+        plan: enable
+          ? `would re-enable user ${name} (kept again)`
+          : `would clear jellarr's stale disabled marker on user ${name}`,
+      });
+    } else if (!isDisabled(user)) {
+      shrinking.add(user.Id);
+      removals++;
+      out.push({
+        ...base,
+        action: "disable",
+        policy: { ...user.Policy, IsDisabled: true } as UserPolicySchema,
+        marker: nowIso,
+        plan: `would disable user ${name} (not declared or kept); ${never(now)}`,
+      });
+    } else if (!known) {
+      out.push({
+        ...base,
+        action: "mark",
+        marker: nowIso,
+        plan: `would record user ${name} (already disabled) as first seen now; ${never(now)}`,
+      });
+    } else if (
+      graceMs !== undefined &&
+      now.getTime() - known.getTime() >= graceMs
+    ) {
+      shrinking.add(user.Id);
+      removals++;
+      out.push({
+        ...base,
+        plan: `DESTRUCTIVE would delete user ${name} (disabled by jellarr since ${known.toISOString()}), and its watch history is lost`,
+      });
+    }
+  }
+
+  if (removals > 0) {
+    const adminsLeft: number = state.users.filter(
+      (user: UserDtoSchema) =>
+        !shrinking.has(user.Id) &&
+        !isDisabled(user) &&
+        (declared.adminOverrides.get(lower(user.Name)) ??
+          user.Policy?.IsAdministrator ??
+          false),
+    ).length;
+    if (adminsLeft === 0) {
+      throw new Error(
+        "authoritative.users would disable or delete the last enabled administrator; declare an administrator (users[].policy.isAdministrator) or list one under authoritative.keep.users. Nothing was changed.",
+      );
+    }
+  }
+  guardMassDelete(
+    "users",
+    removals,
+    state.users.length,
+    authoritative.allowMassDelete ?? false,
+    "disable or delete",
+  );
+  return out;
 }
 
 /**
@@ -72,6 +214,7 @@ export function planDeletions(
   state: AuthoritativeState,
   declared: Declared,
   spared: Protected,
+  now: Date = new Date(),
 ): Deletion[] {
   if (!authoritative) return [];
   const keep: NonNullable<AuthoritativeConfig["keep"]> =
@@ -79,7 +222,11 @@ export function planDeletions(
   const allow: boolean = authoritative.allowMassDelete ?? false;
   const deletions: Deletion[] = [];
 
-  if (authoritative.users) {
+  if (authoritative.users === "disable") {
+    deletions.push(
+      ...planUserSync(authoritative, state, declared, spared, keep, now),
+    );
+  } else if (authoritative.users) {
     const sparedNames: Set<string> = new Set(
       [...declared.users, ...(keep.users ?? []), ...spared.users].map(lower),
     );
@@ -191,6 +338,14 @@ export async function applyDeletions(
   deletions: Deletion[],
 ): Promise<void> {
   for (const deletion of deletions) {
+    if (deletion.action) {
+      logger.info(`User ${deletion.action}: ${deletion.name}`);
+      if (deletion.policy) {
+        await client.updateUserPolicy(deletion.id, deletion.policy);
+      }
+      await writeMarker(client, deletion.id, deletion.marker ?? null);
+      continue;
+    }
     logger.info(`Deleting ${deletion.kind} entry: ${deletion.name}`);
     switch (deletion.kind) {
       case "users":
@@ -207,4 +362,24 @@ export async function applyDeletions(
         break;
     }
   }
+}
+
+async function writeMarker(
+  client: JellyfinClient,
+  userId: string,
+  marker: string | null,
+): Promise<void> {
+  const prefs: DisplayPreferencesDtoSchema =
+    await client.getDisplayPreferences(userId);
+  const rest: Record<string, string | null> = Object.fromEntries(
+    Object.entries(prefs.CustomPrefs ?? {}).filter(
+      ([key]: [string, string | null]) => key !== DISABLED_AT_KEY,
+    ),
+  );
+  const custom: Record<string, string | null> =
+    marker === null ? rest : { ...rest, [DISABLED_AT_KEY]: marker };
+  await client.updateDisplayPreferences(userId, {
+    ...prefs,
+    CustomPrefs: custom,
+  });
 }

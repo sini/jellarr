@@ -5,3 +5,5 @@ export type CreateUserByNameSchema = components["schemas"]["CreateUserByName"];
 export type UserPolicySchema = components["schemas"]["UserPolicy"];
 export type UserConfigurationSchema =
   components["schemas"]["UserConfiguration"];
+export type DisplayPreferencesDtoSchema =
+  components["schemas"]["DisplayPreferencesDto"];

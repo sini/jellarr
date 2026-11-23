@@ -92,6 +92,44 @@ users:
 """
 
 
+MARKER = "jellarr.disabledAt"
+
+
+def disable_yaml(keep, after=None):
+    """Disable mode: boss is the declared administrator; keep names are spared."""
+    after_line = f"  deleteDisabledAfter: {after}\n" if after else ""
+    return f"""version: 1
+base_url: http://localhost:8096
+system: {{}}
+authoritative:
+  users: disable
+{after_line}  keep:
+    users: [{", ".join(keep)}]
+users:
+  - name: boss
+    password: bosspw
+    policy:
+      isAdministrator: true
+"""
+
+
+def user_by_name(server, name):
+    return [u for u in get_jellyfin_data(server, "/Users") if u["Name"] == name][0]
+
+
+def marker(server, name):
+    """jellarr's disabledAt marker, read back through the DisplayPreferences API."""
+    uid = user_by_name(server, name)["Id"]
+    prefs = get_jellyfin_data(
+        server, f"/DisplayPreferences/jellarr?userId={uid}&client=jellarr"
+    )
+    return (prefs.get("CustomPrefs") or {}).get(MARKER)
+
+
+def disabled(server, name):
+    return user_by_name(server, name)["Policy"]["IsDisabled"]
+
+
 def write_config(server, text):
     server.succeed(f"cat > {CONFIG} <<'EOF'\n{text}EOF")
 
@@ -327,4 +365,58 @@ def run_authority_test(server):
     write_config(server, SIGNED_IN_YAML)
     run_ok(server, env="JELLARR_API_KEY=")
     assert user_names(server) == ["boss", "keeper"], user_names(server)
+
+    # --- disable mode: disable, re-enable, delete after, and idempotence ---
+    for name in ["x1", "x2"]:
+        api_post(server, "/Users/New", {"Name": name, "Password": "x"})
+
+    write_config(server, disable_yaml(["keeper"]))
+    status, out = run(server, "--dry-run")
+    print(out)
+    assert status == 2, f"dry run exited {status}:\n{out}"
+    assert "would disable user x1 (not declared or kept); never deleted" in out, out
+    assert not disabled(server, "x1") and marker(server, "x1") is None
+
+    run_ok(server)
+    for name in ["x1", "x2"]:
+        assert disabled(server, name), f"{name} was not disabled"
+        assert marker(server, name), f"{name} carries no marker"
+    assert not disabled(server, "keeper") and marker(server, "keeper") is None
+    assert user_names(server) == ["boss", "keeper", "x1", "x2"], user_names(server)
+
+    # kept again, with a marker: re-enabled and the marker removed
+    write_config(server, disable_yaml(["keeper", "x1"]))
+    run_ok(server)
+    assert not disabled(server, "x1") and marker(server, "x1") is None
+    assert disabled(server, "x2") and marker(server, "x2")
+
+    # disabled by an administrator, no marker: kept does not re-enable it
+    keeper = user_by_name(server, "keeper")
+    api_post(
+        server,
+        f"/Users/{keeper['Id']}/Policy",
+        {**keeper["Policy"], "IsDisabled": True},
+    )
+    run_ok(server)
+    assert disabled(server, "keeper") and marker(server, "keeper") is None
+
+    # a marker past the threshold: deleted
+    uid = user_by_name(server, "x2")["Id"]
+    api_post(
+        server,
+        f"/DisplayPreferences/jellarr?userId={uid}&client=jellarr",
+        {"CustomPrefs": {MARKER: "2020-01-01T00:00:00.000Z"}},
+    )
+    write_config(server, disable_yaml(["keeper", "x1"], after="1d"))
+    status, out = run(server, "--dry-run")
+    print(out)
+    assert "would delete user x2 (disabled by jellarr since 2020-01-01" in out, out
+    assert "x2" in user_names(server)
+    run_ok(server)
+    assert user_names(server) == ["boss", "keeper", "x1"], user_names(server)
+
+    # a second run changes nothing
+    out = run_ok(server)
+    assert "✓ nothing undeclared to delete" in out, out
+    assert disabled(server, "keeper") and not disabled(server, "x1")
     print("✅ AUTHORITY test passed")

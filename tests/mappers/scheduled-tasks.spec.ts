@@ -13,6 +13,7 @@ describe("mappers/scheduled-tasks", () => {
   it("parsesDurations", () => {
     expect(parseDuration("6h")).toBe(6 * 3600 * TICKS_PER_SECOND);
     expect(parseDuration("1h30m")).toBe(5400 * TICKS_PER_SECOND);
+    expect(parseDuration("2w")).toBe(14 * 86400 * TICKS_PER_SECOND);
     expect(parseDuration("2d")).toBe(172800 * TICKS_PER_SECOND);
     expect(parseDuration("45s")).toBe(45 * TICKS_PER_SECOND);
     expect(parseDuration("soon")).toBeUndefined();

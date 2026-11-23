@@ -10,6 +10,7 @@ import type {
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
+  DisplayPreferencesDtoSchema,
   UserDtoSchema,
   CreateUserByNameSchema,
   UserPolicySchema,
@@ -77,6 +78,9 @@ import type {
   ListingsProviderInfoSchema,
   TunerHostInfoSchema,
 } from "../types/schema/livetv";
+
+/** The display-preferences id, and client name, under which jellarr keeps its own per-user markers. */
+const DISPLAY_PREFERENCES_ID: string = "jellarr";
 
 export function createJellyfinClient(
   baseUrl: string,
@@ -805,6 +809,48 @@ export function createJellyfinClient(
         );
       }
       return res.response.ok ? res.data : undefined;
+    },
+
+    async getDisplayPreferences(
+      userId: string,
+    ): Promise<DisplayPreferencesDtoSchema> {
+      const res: ApiResponse<DisplayPreferencesDtoSchema> = await client.GET(
+        "/DisplayPreferences/{displayPreferencesId}",
+        {
+          params: {
+            path: { displayPreferencesId: DISPLAY_PREFERENCES_ID },
+            query: { userId, client: DISPLAY_PREFERENCES_ID },
+          },
+        },
+      );
+      if (!res.response.ok || !res.data) {
+        throw new Error(
+          `GET /DisplayPreferences/${DISPLAY_PREFERENCES_ID} failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data;
+    },
+
+    async updateDisplayPreferences(
+      userId: string,
+      body: DisplayPreferencesDtoSchema,
+    ): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/DisplayPreferences/{displayPreferencesId}",
+        {
+          params: {
+            path: { displayPreferencesId: DISPLAY_PREFERENCES_ID },
+            query: { userId, client: DISPLAY_PREFERENCES_ID },
+          },
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /DisplayPreferences/${DISPLAY_PREFERENCES_ID} failed: ${res.response.status.toString()}`,
+        );
+      }
     },
 
     async deleteUser(userId: string): Promise<void> {

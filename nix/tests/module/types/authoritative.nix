@@ -13,6 +13,7 @@ in [
       apiKeys = false;
       livetv = null;
       allowMassDelete = null;
+      deleteDisabledAfter = null;
       keep = {
         users = ["admin"];
         libraries = null;
@@ -35,6 +36,7 @@ in [
     apiKeys = null;
     livetv = null;
     allowMassDelete = null;
+    deleteDisabledAfter = null;
     keep = null;
   }) {})
 
@@ -45,5 +47,21 @@ in [
     }) {
       livetv = true;
       allowMassDelete = true;
+    })
+
+  (assertEq "disable mode and deleteDisabledAfter pass through" (mkAuthoritativeConfig {
+      users = "disable";
+      deleteDisabledAfter = "30d";
+      keep = null;
+    }) {
+      users = "disable";
+      deleteDisabledAfter = "30d";
+    })
+
+  (assertEq "delete mode passes through" (mkAuthoritativeConfig {
+      users = "delete";
+      keep = null;
+    }) {
+      users = "delete";
     })
 ]

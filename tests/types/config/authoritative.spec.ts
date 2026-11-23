@@ -126,4 +126,37 @@ describe("config/scheduledTasks", () => {
       }).success,
     ).toBe(false);
   });
+
+  it("acceptsTheDisableAndDeleteModes", () => {
+    for (const users of [true, false, "delete", "disable"]) {
+      expect(parse({ authoritative: { users } }).success).toBe(true);
+    }
+    expect(parse({ authoritative: { users: "purge" } }).success).toBe(false);
+  });
+
+  it("rejectsDeleteDisabledAfterOutsideDisableMode", () => {
+    expect(
+      messages(
+        parse({
+          authoritative: { users: "delete", deleteDisabledAfter: "1d" },
+        }),
+      ),
+    ).toMatch(/only valid with authoritative.users: "disable"/);
+    expect(
+      messages(
+        parse({ authoritative: { users: true, deleteDisabledAfter: "1d" } }),
+      ),
+    ).toMatch(/only valid/);
+    expect(
+      parse({ authoritative: { users: "disable", deleteDisabledAfter: "30d" } })
+        .success,
+    ).toBe(true);
+    expect(
+      messages(
+        parse({
+          authoritative: { users: "disable", deleteDisabledAfter: "soon" },
+        }),
+      ),
+    ).toMatch(/not a duration/);
+  });
 });

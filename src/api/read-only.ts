@@ -14,6 +14,7 @@ const READ_ONLY: ReadonlySet<string> = new Set([
   "getSplashscreen",
   "getLiveTvOptions",
   "getUsers",
+  "getDisplayPreferences",
   "getPlugins",
   "getPackages",
   "getPluginConfiguration",

@@ -84,6 +84,7 @@ import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { ApiKeyConfig } from "../types/config/api-keys";
 import {
   planDeletions,
+  DISABLED_AT_KEY,
   applyDeletions,
   type Deletion,
   type Declared,
@@ -766,6 +767,17 @@ export async function runPipeline(
       apiKeys: authoritative.apiKeys ? await jellyfinClient.getApiKeys() : [],
       plugins: authoritative.plugins ? await jellyfinClient.getPlugins() : [],
     };
+    if (authoritative.users === "disable") {
+      state.markers = new Map();
+      for (const user of state.users) {
+        const stamp: string | null | undefined = user.Id
+          ? (await jellyfinClient.getDisplayPreferences(user.Id)).CustomPrefs?.[
+              DISABLED_AT_KEY
+            ]
+          : undefined;
+        if (user.Id && stamp) state.markers.set(user.Id, stamp);
+      }
+    }
     const declaredPlugins: PluginConfigList =
       authoritative.plugins && cfg.plugins
         ? resolveInstalledPluginNames(
@@ -787,6 +799,9 @@ export async function runPipeline(
         ...declaredPlugins.map((plugin: PluginConfig) => plugin.name),
       ],
       apiKeys: (cfg.api_keys ?? []).map((key: ApiKeyConfig) => key.name),
+      disabled: (cfg.users ?? []).flatMap((user: UserConfig): string[] =>
+        user.policy?.isDisabled ? [user.name] : [],
+      ),
       adminOverrides: new Map(
         (cfg.users ?? []).flatMap(
           (user: UserConfig): Array<[string, boolean]> =>
