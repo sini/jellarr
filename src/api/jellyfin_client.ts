@@ -197,6 +197,21 @@ export function createJellyfinClient(
       return version;
     },
 
+    async getServerSpec(): Promise<unknown> {
+      const res: Response = await fetch(
+        `${baseUrl.replace(/\/+$/, "")}/api-docs/openapi.json`,
+        token
+          ? { headers: { Authorization: `MediaBrowser Token="${token}"` } }
+          : {},
+      );
+      if (!res.ok) {
+        throw new Error(
+          `GET /api-docs/openapi.json failed: ${res.status.toString()}`,
+        );
+      }
+      return res.json();
+    },
+
     async getPendingRestart(): Promise<boolean> {
       const res: GetSystemInfoResponse = await client.GET("/System/Info");
       if (!res.response.ok) {

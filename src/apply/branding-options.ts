@@ -12,7 +12,7 @@ export function calculateBrandingOptionsDiff(
   desired: BrandingOptionsConfig,
 ): BrandingOptionsDtoSchema | undefined {
   const next: BrandingOptionsDtoSchema = withoutUnsupported(
-    current,
+    "BrandingOptionsDto",
     mapBrandingOptionsConfigToSchema(desired),
     "branding",
   );

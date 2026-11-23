@@ -3,6 +3,7 @@ import YAML from "yaml";
 import { calculateUserPolicyDiff } from "../../src/apply/users";
 import { mapUserPolicyConfigToSchema } from "../../src/mappers/users";
 import { resolveValue } from "../../src/lib/file-refs";
+import { overlay } from "../../src/lib/objects";
 import { UserPolicyConfigType } from "../../src/types/config/users";
 import type { UserPolicyConfig } from "../../src/types/config/users";
 import type { UserPolicySchema } from "../../src/types/schema/users";
@@ -52,6 +53,19 @@ describe("clearing parental ratings", () => {
     expect(
       calculateUserPolicyDiff(first as UserPolicySchema, desired),
     ).toBeUndefined();
+  });
+
+  it("treats a null over a key the server omits as already cleared", async () => {
+    // NOTE: Jellyfin omits a null field from the policy it returns.
+    const server: UserPolicySchema = { IsHidden: false } as UserPolicySchema;
+    expect(
+      calculateUserPolicyDiff(
+        server,
+        await parse("maxParentalRating: null\nmaxParentalSubRating: null"),
+      ),
+    ).toBeUndefined();
+    expect(overlay({ A: 1 }, { B: null })).toEqual({ A: 1 });
+    expect(overlay({ A: 1, B: 2 }, { B: null })).toEqual({ A: 1, B: null });
   });
 
   it("leaves a set rating alone when the key is absent", async () => {

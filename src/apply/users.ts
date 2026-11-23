@@ -78,11 +78,19 @@ export function calculateUserPolicyDiff(
   desired: UserPolicyConfig,
   folderNameToIdMap?: Map<string, string>,
 ): UserPolicySchema | undefined {
-  const mapped: Partial<UserPolicySchema> = withoutUnsupported(
-    current,
-    mapUserPolicyConfigToSchema(desired, folderNameToIdMap),
-    "users.policy",
-  );
+  // NOTE: Jellyfin omits a null field, so a declared null over an absent key is already in place.
+  const mapped: Partial<UserPolicySchema> = Object.fromEntries(
+    Object.entries(
+      withoutUnsupported(
+        "UserPolicy",
+        mapUserPolicyConfigToSchema(desired, folderNameToIdMap),
+        "users.policy",
+      ),
+    ).filter(
+      ([key, value]: [string, unknown]) =>
+        !(value === null && (current as Record<string, unknown>)[key] == null),
+    ),
+  ) as Partial<UserPolicySchema>;
 
   const next: UserPolicySchema = {
     ...current,
@@ -214,7 +222,7 @@ export function calculateUserConfigurationsDiff(
           UserConfigurationSchema | undefined) ?? {};
       const desiredConfig: Partial<UserConfigurationSchema> =
         withoutUnsupported(
-          currentConfig,
+          "UserConfiguration",
           mapUserConfigToConfiguration(userConfig, folderNameToIdMap),
           "users.configuration",
         );

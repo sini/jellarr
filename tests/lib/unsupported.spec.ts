@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   overlaySupported,
-  resetUnsupportedWarnings,
+  resetServerSpec,
+  setServerSpec,
   setServerVersion,
   withoutUnsupported,
 } from "../../src/lib/objects";
@@ -16,7 +17,45 @@ vi.mock("../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-// NOTE: a Jellyfin 10.11 EncodingOptions has no HlsAudioSeekStrategy or SubtitleExtractionTimeoutMinutes.
+// NOTE: a Jellyfin 10.11 server's own spec has no HlsAudioSeekStrategy, SubtitleExtractionTimeoutMinutes or SimilarItemProviders.
+const SPEC_10_11: object = {
+  components: {
+    schemas: {
+      Thing: {
+        properties: {
+          A: { type: "integer" },
+          N: { allOf: [{ $ref: "#/components/schemas/Inner" }] },
+          L: { type: "array", items: { $ref: "#/components/schemas/Inner" } },
+        },
+      },
+      Inner: { properties: { T: { type: "string" } } },
+      EncodingOptions: {
+        properties: {
+          EnableHardwareEncoding: { type: "boolean" },
+          EncodingThreadCount: { type: "integer" },
+        },
+      },
+      LibraryOptions: {
+        properties: {
+          PathInfos: { type: "array", items: { type: "object" } },
+          TypeOptions: {
+            type: "array",
+            items: { $ref: "#/components/schemas/TypeOptions" },
+          },
+        },
+      },
+      TypeOptions: {
+        properties: {
+          Type: { type: "string" },
+          MetadataFetchers: { type: "array", items: { type: "string" } },
+          ImageFetchers: { type: "array", items: { type: "string" } },
+        },
+      },
+    },
+  },
+};
+
+// NOTE: Jellyfin omits null fields, so the server's current object cannot be used to tell what it knows.
 const server1011: () => EncodingOptionsSchema = (): EncodingOptionsSchema =>
   ({
     EnableHardwareEncoding: false,
@@ -26,14 +65,14 @@ const server1011: () => EncodingOptionsSchema = (): EncodingOptionsSchema =>
 describe("withoutUnsupported", () => {
   beforeEach((): void => {
     vi.clearAllMocks();
-    resetUnsupportedWarnings();
+    resetServerSpec();
+    setServerSpec(SPEC_10_11);
     setServerVersion("10.11.4");
   });
 
-  it("drops a key the server lacks and warns once with the path and version", () => {
-    const current: object = { A: 1 };
-    const kept: object = withoutUnsupported(current, { A: 2, B: 3 }, "x");
-    withoutUnsupported(current, { B: 3 }, "x");
+  it("drops a key the server's schema lacks and warns once with the path and version", () => {
+    const kept: object = withoutUnsupported("Thing", { A: 2, B: 3 }, "x");
+    withoutUnsupported("Thing", { B: 3 }, "x");
     expect(kept).toEqual({ A: 2 });
     expect(logger.warn).toHaveBeenCalledTimes(1);
     expect(logger.warn).toHaveBeenCalledWith(
@@ -41,21 +80,18 @@ describe("withoutUnsupported", () => {
     );
   });
 
-  it("keeps a key the server has, even when its value is null", () => {
-    expect(withoutUnsupported({ A: null }, { A: "v" }, "x")).toEqual({
-      A: "v",
-    });
+  it("keeps a key the schema defines, whatever the value", () => {
+    expect(withoutUnsupported("Thing", { A: null }, "x")).toEqual({ A: null });
     expect(logger.warn).not.toHaveBeenCalled();
   });
 
-  it("recurses into objects and into the elements of arrays", () => {
-    const current: object = { N: { A: 1 }, L: [{ T: "Movie" }] };
+  it("recurses through $ref, allOf wrappers and array elements", () => {
     const kept: object = withoutUnsupported(
-      current,
-      { N: { A: 2, B: 3 }, L: [{ T: "Movie", S: ["x"] }] },
+      "Thing",
+      { N: { T: "a", B: 3 }, L: [{ T: "Movie", S: ["x"] }] },
       "x",
     );
-    expect(kept).toEqual({ N: { A: 2 }, L: [{ T: "Movie" }] });
+    expect(kept).toEqual({ N: { T: "a" }, L: [{ T: "Movie" }] });
     expect(logger.warn).toHaveBeenCalledWith(
       "x.N.B is not supported by Jellyfin 10.11.4; skipped",
     );
@@ -64,26 +100,25 @@ describe("withoutUnsupported", () => {
     );
   });
 
-  it("keeps everything when the server object or array is empty", () => {
-    expect(withoutUnsupported({}, { A: 1 }, "x")).toEqual({ A: 1 });
-    expect(withoutUnsupported({ L: [] }, { L: [{ A: 1 }] }, "x")).toEqual({
-      L: [{ A: 1 }],
-    });
+  it("keeps everything for a type the spec does not describe, and without a spec", () => {
+    expect(withoutUnsupported("Unknown", { A: 1 }, "x")).toEqual({ A: 1 });
+    resetServerSpec();
+    expect(withoutUnsupported("Thing", { Z: 1 }, "x")).toEqual({ Z: 1 });
     expect(logger.warn).not.toHaveBeenCalled();
   });
 
   it("overlaySupported never adds an unsupported key to the result", () => {
-    expect(overlaySupported({ A: 1, C: 9 }, { A: 2, B: 3 }, "x")).toEqual({
-      A: 2,
-      C: 9,
-    });
+    expect(
+      overlaySupported("Thing", { A: 1, C: 9 }, { A: 2, B: 3 }, "x"),
+    ).toEqual({ A: 2, C: 9 });
   });
 });
 
 describe("a declared field the server does not know", () => {
   beforeEach((): void => {
     vi.clearAllMocks();
-    resetUnsupportedWarnings();
+    resetServerSpec();
+    setServerSpec(SPEC_10_11);
     setServerVersion("10.11.4");
   });
 
@@ -108,6 +143,15 @@ describe("a declared field the server does not know", () => {
     expect(logger.warn).toHaveBeenCalledTimes(2);
   });
 
+  it("encoding: a field the server omits because it is null is still sent", () => {
+    const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+      server1011(),
+      { encodingThreadCount: 4 },
+    );
+    expect(result?.EncodingThreadCount).toBe(4);
+    expect(logger.warn).not.toHaveBeenCalled();
+  });
+
   it("encoding: a config declaring only unsupported fields is a no-op", () => {
     expect(
       calculateEncodingDiff(server1011(), {
@@ -116,7 +160,25 @@ describe("a declared field the server does not know", () => {
     ).toBeUndefined();
   });
 
-  it("encoding: is written when the server reports the field (Jellyfin 12)", () => {
+  it("encoding: is written when the server's schema defines the field (Jellyfin 12)", () => {
+    setServerSpec({
+      components: {
+        schemas: {
+          EncodingOptions: {
+            properties: {
+              ...(
+                SPEC_10_11 as {
+                  components: {
+                    schemas: Record<string, { properties: object }>;
+                  };
+                }
+              ).components.schemas.EncodingOptions.properties,
+              HlsAudioSeekStrategy: { type: "string" },
+            },
+          },
+        },
+      },
+    });
     const server12: EncodingOptionsSchema = {
       ...server1011(),
       HlsAudioSeekStrategy: "TrimCopiedAudio",

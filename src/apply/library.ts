@@ -144,7 +144,7 @@ export function calculateLibraryDiff(
     const currentOptions: LibraryOptionsSchema =
       currentFolder?.LibraryOptions ?? ({} as LibraryOptionsSchema);
     const wanted: LibraryOptionsSchema = withoutUnsupported(
-      currentOptions,
+      "LibraryOptions",
       withServerElementFields(libraryOptions, currentOptions),
       `library ${name}`,
     );

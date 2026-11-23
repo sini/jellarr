@@ -14,6 +14,7 @@ export function calculateNetworkingDiff(
     mapNetworkingConfigToSchema(desired);
 
   const updated: NetworkConfigurationSchema = overlaySupported(
+    "NetworkConfiguration",
     current,
     next,
     "networking",

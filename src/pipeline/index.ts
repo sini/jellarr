@@ -91,7 +91,7 @@ import {
 } from "../apply/auth";
 import { applyStartupWizard } from "../apply/startup";
 import { Plan } from "../lib/plan";
-import { setServerVersion } from "../lib/objects";
+import { setServerSpec, setServerVersion } from "../lib/objects";
 import { maskSecrets, logger } from "../lib/logger";
 import { setDryRun } from "../lib/mode";
 import { guardReadOnly } from "../api/read-only";
@@ -226,8 +226,11 @@ export async function runPipeline(
   // NOTE: the version only names the server in "not supported" warnings.
   try {
     setServerVersion(await jellyfinClient.getServerVersion());
+    setServerSpec(await jellyfinClient.getServerSpec());
   } catch {
-    logger.info("could not read the server version");
+    logger.info(
+      "could not read the server's API description; settings it lacks are not skipped",
+    );
   }
 
   const updatedServerConfigurationSchema:

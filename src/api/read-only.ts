@@ -3,6 +3,7 @@ import type { JellyfinClient } from "./jellyfin.types";
 /** Methods that only issue GET requests with no server-side effect. */
 const READ_ONLY: ReadonlySet<string> = new Set([
   "getServerVersion",
+  "getServerSpec",
   "getPendingRestart",
   "getSystemConfiguration",
   "getEncodingConfiguration",

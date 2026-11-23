@@ -16,7 +16,7 @@ export function calculateMetadataDiff(
   }
 
   const next: Partial<MetadataConfigurationSchema> = withoutUnsupported(
-    current,
+    "MetadataConfiguration",
     mapMetadataConfigToSchema(desired),
     "metadata",
   );

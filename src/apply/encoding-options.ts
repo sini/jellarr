@@ -14,6 +14,7 @@ export function calculateEncodingDiff(
     mapEncodingOptionsConfigToSchema(desired);
 
   const updated: EncodingOptionsSchema = overlaySupported(
+    "EncodingOptions",
     current,
     next,
     "encoding",

@@ -92,6 +92,8 @@ export interface JellyfinClient {
   setAccessToken(accessToken: string): void;
   authenticateByName(username: string, password: string): Promise<string>;
   getServerVersion(): Promise<string>;
+  /** The server's own OpenAPI document, which says which fields it knows. */
+  getServerSpec(): Promise<unknown>;
   getPendingRestart(): Promise<boolean>;
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
   updateSystemConfiguration(

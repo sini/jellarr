@@ -96,7 +96,7 @@ describe("calculateBrandingOptionsDiff", () => {
     expect(result?.LoginDisclaimer).toBe("New message");
   });
 
-  it("should skip a loginDisclaimer the server does not report", () => {
+  it("should handle undefined loginDisclaimer from server", () => {
     const current: BrandingOptionsDtoSchema = {
       CustomCss: "css",
       SplashscreenEnabled: true,
@@ -108,7 +108,8 @@ describe("calculateBrandingOptionsDiff", () => {
     const result: BrandingOptionsDtoSchema | undefined =
       calculateBrandingOptionsDiff(current, desired);
 
-    expect(result).toBeUndefined();
+    expect(result).toBeDefined();
+    expect(result?.LoginDisclaimer).toBe("New message");
   });
 
   it("should handle null customCss from server", () => {
@@ -128,7 +129,7 @@ describe("calculateBrandingOptionsDiff", () => {
     expect(result?.CustomCss).toBe("new css");
   });
 
-  it("should skip a splashscreenEnabled the server does not report", () => {
+  it("should handle undefined splashscreenEnabled from server", () => {
     const current: BrandingOptionsDtoSchema = {
       LoginDisclaimer: "Welcome",
       CustomCss: "css",
@@ -140,7 +141,8 @@ describe("calculateBrandingOptionsDiff", () => {
     const result: BrandingOptionsDtoSchema | undefined =
       calculateBrandingOptionsDiff(current, desired);
 
-    expect(result).toBeUndefined();
+    expect(result).toBeDefined();
+    expect(result?.SplashscreenEnabled).toBe(true);
   });
 
   it("should detect change when setting empty string to null", () => {

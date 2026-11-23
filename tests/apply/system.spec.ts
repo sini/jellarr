@@ -977,14 +977,13 @@ describe("apply/system", () => {
         expect(result2).toBeUndefined();
       });
 
-      it("should add WidthResolutions when current TrickplayOptions has none", () => {
-        // Arrange: TrickplayOptions present with an empty WidthResolutions
+      it("should add WidthResolutions when current TrickplayOptions lacks it", () => {
+        // Arrange: TrickplayOptions present but no WidthResolutions key
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
           TrickplayOptions: {
             EnableHwAcceleration: false,
-            WidthResolutions: [],
           },
         } as ServerConfigurationSchema;
 
@@ -1603,7 +1602,6 @@ describe("apply/system", () => {
           EnableMetrics: true,
           PluginRepositories: [],
           ImageSavingConvention: "Legacy",
-          CachePath: "",
           TrickplayOptions: {
             EnableHwAcceleration: true,
             EnableHwEncoding: false,

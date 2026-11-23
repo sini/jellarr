@@ -60,6 +60,7 @@ export function calculateSystemDiff(
     current,
   );
   const updated: ServerConfigurationSchema = overlaySupported(
+    "ServerConfiguration",
     current,
     next,
     "system",

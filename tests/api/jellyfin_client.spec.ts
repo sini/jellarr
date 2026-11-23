@@ -550,6 +550,20 @@ describe("api/jf Splashscreen", () => {
     expect(await req.text()).toBe("AQID");
   });
 
+  it("when reading the server spec then it GETs /api-docs/openapi.json", async (): Promise<void> => {
+    mockFetchJson({ components: { schemas: {} } });
+
+    const out: unknown = await createJellyfinClient(
+      baseUrl,
+      apiKey,
+    ).getServerSpec();
+
+    expect(out).toEqual({ components: { schemas: {} } });
+    expect(String(fetchMock.mock.calls.at(-1)?.[0])).toMatch(
+      /\/api-docs\/openapi\.json$/,
+    );
+  });
+
   it("when deleting then it sends DELETE /Branding/Splashscreen", async (): Promise<void> => {
     mockFetchNoContent();
 

@@ -153,13 +153,7 @@ describe("a second run with an unchanged config changes nothing", () => {
   it("users: policy and configuration", () => {
     const folders: Map<string, string> = new Map([["Movies", "m1"]]);
     const policy: Pair = twice(
-      {
-        Other: 1,
-        IsAdministrator: true,
-        BlockedTags: [],
-        EnabledFolders: [],
-        EnableAllFolders: true,
-      } as never,
+      { Other: 1 } as never,
       (s: never): object | undefined =>
         calculateUserPolicyDiff(
           s,
@@ -175,9 +169,7 @@ describe("a second run with an unchanged config changes nothing", () => {
     expect(policy.second).toBeUndefined();
 
     const configuration: Pair = twice(
-      {
-        Configuration: { Other: 1, OrderedViews: [], SubtitleMode: "Default" },
-      } as never,
+      { Configuration: { Other: 1 } } as never,
       (s: never): object | undefined => {
         const state: { Configuration: unknown } = s;
         const result: ReturnType<typeof calculateUserConfigurationsDiff> =
@@ -207,10 +199,6 @@ describe("a second run with an unchanged config changes nothing", () => {
     const folders: Map<string, string> = new Map([["Movies", "m1"]]);
     const policy: Pair = twice(
       {
-        IsHidden: false,
-        SyncPlayAccess: "CreateAndJoinGroups",
-        BlockUnratedItems: [],
-        EnableContentDeletionFromFolders: [],
         AccessSchedules: [
           {
             Id: 1,
@@ -267,14 +255,7 @@ describe("a second run with an unchanged config changes nothing", () => {
     expect(unchanged).toBeUndefined();
 
     const configuration: Pair = twice(
-      {
-        Configuration: {
-          Other: 1,
-          GroupedFolders: [],
-          HidePlayedInLatest: false,
-          CastReceiverId: null,
-        },
-      } as never,
+      { Configuration: { Other: 1 } } as never,
       (s: never): object | undefined => {
         const state: { Configuration: unknown } = s;
         const result: ReturnType<typeof calculateUserConfigurationsDiff> =
@@ -328,13 +309,7 @@ describe("a second run with an unchanged config changes nothing", () => {
       }) as never;
 
     const first: ReturnType<typeof calculateLibraryDiff> = calculateLibraryDiff(
-      [
-        folder({
-          PathInfos: [{ Path: "/old" }],
-          MetadataSavers: [],
-          TypeOptions: [],
-        }),
-      ],
+      [folder({ PathInfos: [{ Path: "/old" }] })],
       desired,
     );
     expect(first?.toUpdate).toBeDefined();

@@ -26,7 +26,7 @@ describe("api/client", () => {
 
       const h: Headers = req.headers;
       expect(h.get("Authorization")).toBe(
-        'MediaBrowser Token="XYZ", Client="jellarr", Device="cli", DeviceId="jellarr", Version="0.3.5"',
+        'MediaBrowser Token="XYZ", Client="jellarr", Device="cli", DeviceId="jellarr", Version="0.4.0"',
       );
       expect(h.get("X-Emby-Token")).toBeNull();
       expect(h.get("X-Emby-Authorization")).toBeNull();
@@ -53,7 +53,7 @@ describe("api/client", () => {
       // Assert
       const req: Request = spy.mock.calls[0]?.[0] as Request;
       expect(req.headers.get("Authorization")).toBe(
-        'MediaBrowser Client="jellarr", Device="cli", DeviceId="probe", Version="0.3.5"',
+        'MediaBrowser Client="jellarr", Device="cli", DeviceId="probe", Version="0.4.0"',
       );
     } finally {
       spy.mockRestore();

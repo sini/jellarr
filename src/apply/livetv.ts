@@ -64,6 +64,7 @@ interface Wanted<T> {
 
 function reconcile<T extends object>(
   kind: string,
+  typeName: string,
   currentList: T[],
   desiredList: Array<Wanted<T>>,
   key: (item: T) => string,
@@ -79,7 +80,12 @@ function reconcile<T extends object>(
       (entry: T) => key(entry) === id,
     );
     const next: T = existing
-      ? (overlaySupported(existing, item, `livetv ${kind} ${id}`) as T)
+      ? (overlaySupported(
+          typeName,
+          existing,
+          item,
+          `livetv ${kind} ${id}`,
+        ) as T)
       : item;
     const passwordChanged: boolean =
       password !== undefined &&
@@ -109,6 +115,7 @@ export function calculateLiveTvDiff(
   const authoritative: boolean = desired.authoritative ?? false;
 
   const nextOptions: LiveTvOptionsSchema = overlaySupported(
+    "LiveTvOptions",
     current,
     mapLiveTvOptionsConfigToSchema(desired),
     "livetv",
@@ -116,6 +123,7 @@ export function calculateLiveTvDiff(
 
   const hosts: ReturnType<typeof reconcile<TunerHostInfoSchema>> = reconcile(
     "tuner host",
+    "TunerHostInfo",
     current.TunerHosts ?? [],
     (desired.tunerHosts ?? []).map((host: TunerHostConfig) => ({
       item: mapTunerHostConfigToSchema(host),
@@ -127,6 +135,7 @@ export function calculateLiveTvDiff(
   const providers: ReturnType<typeof reconcile<ListingsProviderInfoSchema>> =
     reconcile(
       "listings provider",
+      "ListingsProviderInfo",
       current.ListingProviders ?? [],
       (desired.listingProviders ?? []).map(
         (provider: ListingProviderConfig) => ({
