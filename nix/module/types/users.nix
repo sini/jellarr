@@ -54,14 +54,20 @@
         description = "Internet streaming bitrate limit for remote clients (bits per second).";
       };
       maxParentalRating = mkOption {
-        type = nullOr types.ints.unsigned;
+        type = nullOr (types.either types.ints.unsigned (types.enum ["unrestricted"]));
         default = null;
-        description = "Maximum parental rating the user may see.";
+        description = ''
+          Maximum parental rating the user may see. `null` leaves it unmanaged;
+          `"unrestricted"` clears the limit on the server.
+        '';
       };
       maxParentalSubRating = mkOption {
-        type = nullOr types.ints.unsigned;
+        type = nullOr (types.either types.ints.unsigned (types.enum ["unrestricted"]));
         default = null;
-        description = "Maximum parental sub-rating the user may see.";
+        description = ''
+          Maximum parental sub-rating the user may see. `null` leaves it
+          unmanaged; `"unrestricted"` clears the limit on the server.
+        '';
       };
       enableAllFolders = mkOption {
         type = nullOr types.bool;
@@ -360,7 +366,9 @@
     == null
     || c.loginAttemptsBeforeLockout >= 1
     || throw "loginAttemptsBeforeLockout must be at least 1";
-      presentOnly c;
+      presentOnly c
+      # "unrestricted" renders as an explicit null, which clears the limit.
+      // lib.genAttrs (lib.filter (n: (c.${n} or null) == "unrestricted") ["maxParentalRating" "maxParentalSubRating"]) (_: null);
 
   mkUsersConfig = cfg:
     map (

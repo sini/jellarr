@@ -508,6 +508,21 @@ in [
       };
     }
   ]))
+  (assertEq "unrestricted renders as an explicit null, unset stays absent" (userPolicy {
+      maxParentalRating = "unrestricted";
+      maxParentalSubRating = null;
+      isHidden = true;
+    }) {
+      maxParentalRating = null;
+      isHidden = true;
+    })
+  (assertEq "unrestricted sub-rating alongside a numeric rating" (userPolicy {
+      maxParentalRating = 9;
+      maxParentalSubRating = "unrestricted";
+    }) {
+      maxParentalRating = 9;
+      maxParentalSubRating = null;
+    })
   (assertEq "full policy passes through, nulls dropped, empty lists kept" (userPolicy {
       isHidden = true;
       isDisabled = null;

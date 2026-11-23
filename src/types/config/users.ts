@@ -41,8 +41,8 @@ export const UserPolicyConfigType: z.ZodObject<{
   loginAttemptsBeforeLockout: z.ZodOptional<z.ZodNumber>;
   maxActiveSessions: z.ZodOptional<z.ZodNumber>;
   remoteClientBitrateLimit: z.ZodOptional<z.ZodNumber>;
-  maxParentalRating: z.ZodOptional<z.ZodNumber>;
-  maxParentalSubRating: z.ZodOptional<z.ZodNumber>;
+  maxParentalRating: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+  maxParentalSubRating: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
   enableAllFolders: z.ZodOptional<z.ZodBoolean>;
   enableCollectionManagement: z.ZodOptional<z.ZodBoolean>;
   enableSubtitleManagement: z.ZodOptional<z.ZodBoolean>;
@@ -103,8 +103,9 @@ export const UserPolicyConfigType: z.ZodObject<{
   loginAttemptsBeforeLockout: z.number().int().min(1).optional(),
   maxActiveSessions: z.number().int().min(1).optional(),
   remoteClientBitrateLimit: z.number().int().min(0).optional(),
-  maxParentalRating: z.number().int().min(0).optional(),
-  maxParentalSubRating: z.number().int().min(0).optional(),
+  // NOTE: an explicit null clears the limit; an absent key leaves it unmanaged.
+  maxParentalRating: z.number().int().min(0).nullable().optional(),
+  maxParentalSubRating: z.number().int().min(0).nullable().optional(),
   enableAllFolders: z.boolean().optional(),
   enableCollectionManagement: z.boolean().optional(),
   enableSubtitleManagement: z.boolean().optional(),
