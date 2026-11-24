@@ -1,5 +1,40 @@
 import { z } from "zod";
 
+export const IMAGE_TYPES: [string, ...string[]] = [
+  "Primary",
+  "Art",
+  "Backdrop",
+  "Banner",
+  "Logo",
+  "Thumb",
+  "Disc",
+  "Box",
+  "Screenshot",
+  "Menu",
+  "Chapter",
+  "BoxRear",
+  "Profile",
+];
+
+export const ImageOptionConfigType: z.ZodObject<
+  {
+    type: z.ZodEnum<{ [K in (typeof IMAGE_TYPES)[number]]: K }>;
+    limit: z.ZodNumber;
+    minWidth: z.ZodNumber;
+  },
+  z.core.$strict
+> = z
+  .object({
+    type: z.enum(IMAGE_TYPES),
+    limit: z.number().int().min(0),
+    minWidth: z.number().int().min(0),
+  })
+  .strict();
+
+export const ImageOptionConfigListType: z.ZodArray<
+  typeof ImageOptionConfigType
+> = z.array(ImageOptionConfigType);
+
 export const LibraryOptionsConfigType: z.ZodObject<{
   pathInfos: z.ZodArray<
     z.ZodObject<{
@@ -20,6 +55,7 @@ export const LibraryOptionsConfigType: z.ZodObject<{
         >;
         similarItemProviders: z.ZodOptional<z.ZodArray<z.ZodString>>;
         similarItemProviderOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        imageOptions: z.ZodOptional<typeof ImageOptionConfigListType>;
       }>
     >
   >;
@@ -86,6 +122,7 @@ export const LibraryOptionsConfigType: z.ZodObject<{
             imageFetcherOrder: z.array(z.string().min(1)).nullable().optional(),
             similarItemProviders: z.array(z.string().min(1)).optional(),
             similarItemProviderOrder: z.array(z.string().min(1)).optional(),
+            imageOptions: ImageOptionConfigListType.optional(),
           })
           .strict(),
       )

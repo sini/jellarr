@@ -538,6 +538,33 @@ library, and can be used by only one library. A dry run reports the rename.
 Users' library lists (`enabledLibraries`, `orderedLibraries` and the rest) refer
 to libraries by name, so write the new name there.
 
+**Image options.** Each entry of `typeOptions` also takes `imageOptions`, how
+many images of each type Jellyfin keeps and the minimum width of one worth
+keeping:
+
+```yaml
+library:
+    virtualFolders:
+        - name: "Movies"
+          collectionType: "movies"
+          libraryOptions:
+              pathInfos:
+                  - path: "/data/movies"
+              typeOptions:
+                  - type: "Movie"
+                    metadataFetchers: ["TheMovieDb"]
+                    imageFetchers: ["TheMovieDb"]
+                    imageOptions:
+                        - { type: "Backdrop", limit: 2, minWidth: 1280 }
+                        - { type: "Primary", limit: 1, minWidth: 0 }
+```
+
+`type` is one of `Primary`, `Art`, `Backdrop`, `Banner`, `Logo`, `Thumb`,
+`Disc`, `Box`, `Screenshot`, `Menu`, `Chapter`, `BoxRear` and `Profile`. A
+declared list replaces the server's whole (`[]` clears it), so an image type you
+leave out loses its setting. Leave `imageOptions` out and the server's list is
+kept as it is; Jellyfin fills it with defaults when a library is created.
+
 The full field set mirrors Jellyfin's `LibraryOptions` object. Each entry of
 `typeOptions` also takes `similarItemProviders` and `similarItemProviderOrder`
 (lists of provider names, Jellyfin 12 and later; skipped with a warning on

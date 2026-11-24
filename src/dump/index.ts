@@ -407,6 +407,17 @@ export async function runDump(baseUrl: string): Promise<void> {
               imageFetcherOrder: typeOpt.ImageFetcherOrder ?? undefined,
               similarItemProviders: typeOpt.SimilarItemProviders,
               similarItemProviderOrder: typeOpt.SimilarItemProviderOrder,
+              imageOptions: typeOpt.ImageOptions?.map(
+                (image: {
+                  Type?: string;
+                  Limit?: number;
+                  MinWidth?: number;
+                }) => ({
+                  type: image.Type,
+                  limit: image.Limit,
+                  minWidth: image.MinWidth,
+                }),
+              ),
             }),
           ),
           automaticallyAddToCollection:

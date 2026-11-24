@@ -23,6 +23,54 @@ in [
   in
     map (f: f.renameFrom or null) out.virtualFolders) ["Films" null])
 
+  (assertEq "imageOptions are emitted per type option and null is omitted" (let
+      out = mkLibraryConfig {
+        virtualFolders = [
+          {
+            name = "Movies";
+            collectionType = "movies";
+            ignoreChanges = [];
+            libraryOptions = {
+              pathInfos = [{path = "/m";}];
+              typeOptions = [
+                {
+                  type = "Movie";
+                  metadataFetchers = ["TheMovieDb"];
+                  imageFetchers = ["TheMovieDb"];
+                  imageOptions = [
+                    {
+                      type = "Backdrop";
+                      limit = 2;
+                      minWidth = 1280;
+                    }
+                  ];
+                }
+                {
+                  type = "Series";
+                  metadataFetchers = [];
+                  imageFetchers = [];
+                  imageOptions = null;
+                }
+              ];
+            };
+          }
+        ];
+      };
+      options = (builtins.elemAt out.virtualFolders 0).libraryOptions.typeOptions;
+    in [
+      (builtins.elemAt options 0).imageOptions
+      ((builtins.elemAt options 1) ? imageOptions)
+    ]) [
+      [
+        {
+          type = "Backdrop";
+          limit = 2;
+          minWidth = 1280;
+        }
+      ]
+      false
+    ])
+
   (assertEq "ignoreChanges is emitted" (mkLibraryConfig {
       virtualFolders = [
         {

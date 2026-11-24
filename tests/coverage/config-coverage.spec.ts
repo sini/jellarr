@@ -23,7 +23,10 @@ import {
   ListingProviderConfigType,
 } from "../../src/types/config/livetv";
 import { BrandingOptionsConfigType } from "../../src/types/config/branding-options";
-import { LibraryOptionsConfigType } from "../../src/types/config/library";
+import {
+  ImageOptionConfigType,
+  LibraryOptionsConfigType,
+} from "../../src/types/config/library";
 import {
   UserConfigType,
   UserPolicyConfigType,
@@ -90,6 +93,7 @@ const targets: Target[] = (
     ["StartupRemoteAccessDto", StartupRemoteAccessConfigType],
     ["TypeOptions", objectOf(LibraryOptionsConfigType).shape.typeOptions],
     ["MetadataOptions", MetadataOptionsConfigType],
+    ["ImageOption", ImageOptionConfigType],
     ["TrickplayOptions", TrickplayOptionsConfigType],
     ["PathSubstitution", PathSubstitutionConfigType],
     ["CastReceiverApplication", CastReceiverApplicationConfigType],
@@ -106,7 +110,6 @@ const targets: Target[] = (
 /** DTOs with no jellarr schema yet; each field is judged against the exclusion lists. */
 const UNCOVERED_DTOS: string[] = [
   "DatabaseConfigurationOptions",
-  "ImageOption",
   "DeviceOptionsDto",
 ];
 

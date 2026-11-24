@@ -25,10 +25,6 @@ export const FIELD_EXCLUSIONS: Record<string, string> = {
 
 /** Fields not yet covered; each entry is deleted by the commit that covers it. */
 export const PENDING_FIELDS: Record<string, string> = {
-  "TypeOptions.ImageOptions": "pending: item 7",
-  "ImageOption.Type": "pending: item 7",
-  "ImageOption.Limit": "pending: item 7",
-  "ImageOption.MinWidth": "pending: item 7",
   "DeviceOptionsDto.Id": "pending: item 8",
   "DeviceOptionsDto.DeviceId": "pending: item 8",
   "DeviceOptionsDto.CustomName": "pending: item 8",

@@ -50,6 +50,9 @@ and this project adheres to
   user's providers. An id the server does not report (`GET /Auth/Providers`,
   `GET /Auth/PasswordResetProviders`) is an error before anything is written,
   because a wrong provider can lock a user out; the README says so.
+- `library.virtualFolders[].libraryOptions.typeOptions[].imageOptions` sets the
+  per-image-type limit and minimum width. A declared list replaces the server's;
+  an undeclared one is carried over unchanged.
 
 ### Changed
 

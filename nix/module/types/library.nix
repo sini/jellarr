@@ -13,6 +13,23 @@
     };
   };
 
+  imageOptionConfigType = types.submodule {
+    options = {
+      type = mkOption {
+        type = types.enum ["Primary" "Art" "Backdrop" "Banner" "Logo" "Thumb" "Disc" "Box" "Screenshot" "Menu" "Chapter" "BoxRear" "Profile"];
+        description = "Image type.";
+      };
+      limit = mkOption {
+        type = types.ints.unsigned;
+        description = "Maximum number of images of this type.";
+      };
+      minWidth = mkOption {
+        type = types.ints.unsigned;
+        description = "Minimum width in pixels for an image to be kept.";
+      };
+    };
+  };
+
   typeOptionsConfigType = types.submodule {
     options = {
       type = mkOption {
@@ -46,6 +63,18 @@
         type = types.nullOr (types.listOf secret.str);
         description = "List defining the order of similar-item providers for this type. Defaults to similarItemProviders if not set. Jellyfin 12 and later only; skipped with a warning on older servers.";
         default = null;
+      };
+      imageOptions = mkOption {
+        type = types.nullOr (types.listOf imageOptionConfigType);
+        description = "How many images of each type to keep, and their minimum width. A declared list replaces the server's; unset leaves it as it is.";
+        default = null;
+        example = [
+          {
+            type = "Backdrop";
+            limit = 2;
+            minWidth = 1280;
+          }
+        ];
       };
     };
   };
@@ -477,6 +506,9 @@
                       if (typeOpt.similarItemProviderOrder or null) != null
                       then typeOpt.similarItemProviderOrder
                       else typeOpt.similarItemProviders;
+                  }
+                  // optionalAttrs ((typeOpt.imageOptions or null) != null) {
+                    imageOptions = map (image: {inherit (image) type limit minWidth;}) typeOpt.imageOptions;
                   })
                 (folder.libraryOptions.typeOptions or []);
               };

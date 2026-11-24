@@ -14,6 +14,7 @@ type TypeOptionConfig = NonNullable<
 type TypeOptionsSchema = NonNullable<
   LibraryOptionsSchema["TypeOptions"]
 >[number];
+type ImageOptionSchema = NonNullable<TypeOptionsSchema["ImageOptions"]>[number];
 
 /** The LibraryOptions field each library option is written to. */
 export const LIBRARY_OPTION_FIELDS: Record<
@@ -85,6 +86,17 @@ export function mapVirtualFolderConfigToSchema(
           ImageFetcherOrder: typeOption.imageFetcherOrder,
           SimilarItemProviders: typeOption.similarItemProviders,
           SimilarItemProviderOrder: typeOption.similarItemProviderOrder,
+          ImageOptions: typeOption.imageOptions?.map(
+            (image: {
+              type: string;
+              limit: number;
+              minWidth: number;
+            }): ImageOptionSchema => ({
+              Type: image.type as ImageOptionSchema["Type"],
+              Limit: image.limit,
+              MinWidth: image.minWidth,
+            }),
+          ),
         }),
     ),
     AutomaticallyAddToCollection: opts.automaticallyAddToCollection,
