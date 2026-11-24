@@ -49,6 +49,27 @@
     };
   };
   neither = eval {};
+  minimalConfig = {
+    version = 1;
+    base_url = "http://x";
+  };
+  # `eval` enables Jellyfin; these two do not
+  noJellyfin = nixpkgs.lib.nixosSystem {
+    inherit system;
+    modules = [
+      ../../module
+      {
+        services.jellarr.enable = true;
+        services.jellarr.config = minimalConfig;
+        system.stateVersion = "26.05";
+      }
+    ];
+  };
+  withJellyfin = eval {services.jellarr.config = minimalConfig;};
+  explicitNull = eval {
+    services.jellarr.jellyfinService = null;
+    services.jellarr.config = minimalConfig;
+  };
   renamed = eval {
     services.jellarr.bootstrap.jellyfinService = "jf.service";
     services.jellarr.config = {
@@ -230,6 +251,12 @@ in
     ];
   });
   assert renamed.config.services.jellarr.jellyfinService == "jf.service";
+  assert withJellyfin.config.services.jellarr.jellyfinService == "jellyfin.service";
+  assert builtins.elem "jellyfin.service" withJellyfin.config.systemd.services.jellarr.after;
+  assert noJellyfin.config.services.jellarr.jellyfinService == null;
+  assert !(builtins.elem "jellyfin.service" noJellyfin.config.systemd.services.jellarr.after);
+  assert !(builtins.elem "jellyfin.service" noJellyfin.config.systemd.services.jellarr.wants);
+  assert explicitNull.config.services.jellarr.jellyfinService == null;
     pkgs.runCommand "jellarr-module-options" {} ''
       grep -F '"certificatePassword":{"_file":"/run/secrets/cert"}' ${rendered}
       grep -F '"_file":"/run/secrets/pw2"' ${rendered}

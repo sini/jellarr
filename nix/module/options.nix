@@ -102,10 +102,16 @@ in {
     };
 
     jellyfinService = lib.mkOption {
-      default = "jellyfin.service";
+      default =
+        if config.services.jellyfin.enable
+        then "jellyfin.service"
+        else null;
+      defaultText = lib.literalExpression ''if config.services.jellyfin.enable then "jellyfin.service" else null'';
       description = ''
-        Jellyfin systemd unit that jellarr runs after and wants. Set to null
-        when Jellyfin runs elsewhere.
+        Jellyfin systemd unit that jellarr runs after and wants. Defaults to
+        `jellyfin.service` when `services.jellyfin.enable` is true on this
+        host and to null otherwise; null adds no ordering, for a Jellyfin that
+        runs elsewhere.
       '';
       type = lib.types.nullOr lib.types.str;
     };
