@@ -1,6 +1,6 @@
 {
   "name": "jellarr",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Declarative configuration management for Jellyfin servers",
   "devDependencies": {
     "@eslint/js": "^9.39.0",

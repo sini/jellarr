@@ -139,13 +139,13 @@ pioneered declarative Jellyfin configuration, it takes a risky approach:
 
 ```bash
 # With Nix
-nix run github:sini/jellarr/v0.5.0
+nix run github:sini/jellarr/v0.5.1
 
 # With Docker
-docker pull ghcr.io/sini/jellarr:v0.5.0
+docker pull ghcr.io/sini/jellarr:v0.5.1
 
 # Download binary (requires Node.js 24+)
-node jellarr-v0.5.0.cjs --configFile path/to/config.yml
+node jellarr-v0.5.1.cjs --configFile path/to/config.yml
 ```
 
 **Example config** (`config/config.yml`):
@@ -202,7 +202,7 @@ Add to your `flake.nix`:
 Or run directly:
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.5.0
+JELLARR_API_KEY=your_api_key nix run github:sini/jellarr/v0.5.1
 ```
 
 Coming from declarative-jellyfin? See the
@@ -211,7 +211,7 @@ Coming from declarative-jellyfin? See the
 ### Docker (Recommended)
 
 ```bash
-docker pull ghcr.io/sini/jellarr:v0.5.0
+docker pull ghcr.io/sini/jellarr:v0.5.1
 ```
 
 **With docker-compose:**
@@ -219,7 +219,7 @@ docker pull ghcr.io/sini/jellarr:v0.5.0
 ```yaml
 services:
     jellarr:
-        image: ghcr.io/sini/jellarr:v0.5.0
+        image: ghcr.io/sini/jellarr:v0.5.1
         container_name: jellarr
         environment:
             - JELLARR_API_KEY=${JELLARR_API_KEY}
@@ -239,8 +239,8 @@ Download from [releases](https://github.com/sini/jellarr/releases) (requires
 Node.js 24+):
 
 ```bash
-curl -LO https://github.com/sini/jellarr/releases/download/v0.5.0/jellarr-v0.5.0.cjs
-JELLARR_API_KEY=your_api_key node jellarr-v0.5.0.cjs --configFile path/to/config.yml
+curl -LO https://github.com/sini/jellarr/releases/download/v0.5.1/jellarr-v0.5.1.cjs
+JELLARR_API_KEY=your_api_key node jellarr-v0.5.1.cjs --configFile path/to/config.yml
 ```
 
 **Note:** Requires Node.js 24+ installed on your system.
@@ -1163,7 +1163,7 @@ jellarr
 ```bash
 docker run -e JELLARR_API_KEY=your_api_key \
   -v ./config:/config:ro \
-  ghcr.io/sini/jellarr:v0.5.0 --configFile /config/config.yml
+  ghcr.io/sini/jellarr:v0.5.1 --configFile /config/config.yml
 ```
 
 The image's entrypoint is jellarr itself and it runs as user `65534`, so
@@ -1174,7 +1174,7 @@ leave `command:` unset:
 ```yaml
 containers:
     - name: jellarr
-      image: ghcr.io/sini/jellarr:v0.5.0
+      image: ghcr.io/sini/jellarr:v0.5.1
       args: ["--configFile", "/config/config.yml"]
       env:
           - name: JELLARR_API_KEY_FILE
@@ -1190,7 +1190,7 @@ Every form below runs the same command as above.
 **cron** (every night at 03:15):
 
 ```cron
-15 3 * * * docker run --rm -e JELLARR_API_KEY_FILE=/secrets/api-key -v /etc/jellarr:/config:ro -v /etc/jellarr/api-key:/secrets/api-key:ro ghcr.io/sini/jellarr:v0.5.0 --configFile /config/config.yml
+15 3 * * * docker run --rm -e JELLARR_API_KEY_FILE=/secrets/api-key -v /etc/jellarr:/config:ro -v /etc/jellarr/api-key:/secrets/api-key:ro ghcr.io/sini/jellarr:v0.5.1 --configFile /config/config.yml
 ```
 
 **systemd timer** for a container (a oneshot service plus a timer):
@@ -1204,7 +1204,7 @@ Requires=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/docker run --rm -e JELLARR_API_KEY_FILE=/secrets/api-key -v /etc/jellarr:/config:ro -v /etc/jellarr/api-key:/secrets/api-key:ro ghcr.io/sini/jellarr:v0.5.0 --configFile /config/config.yml
+ExecStart=/usr/bin/docker run --rm -e JELLARR_API_KEY_FILE=/secrets/api-key -v /etc/jellarr:/config:ro -v /etc/jellarr/api-key:/secrets/api-key:ro ghcr.io/sini/jellarr:v0.5.1 --configFile /config/config.yml
 
 # /etc/systemd/system/jellarr.timer
 [Unit]
@@ -1238,7 +1238,7 @@ spec:
                     restartPolicy: OnFailure
                     containers:
                         - name: jellarr
-                          image: ghcr.io/sini/jellarr:v0.5.0
+                          image: ghcr.io/sini/jellarr:v0.5.1
                           args: ["--configFile", "/config/config.yml"]
                           env:
                               - name: JELLARR_API_KEY_FILE

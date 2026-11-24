@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-11-24
+
+### Added
+
+- `CONTRIBUTING.md`: how to build, the checks, commit conventions, credit
+  trailers for adapted work, and where to open issues.
+- README: running the container from an external scheduler (cron, a systemd
+  timer, a Kubernetes CronJob), and a note that the image is built with nix
+  `dockerTools`.
+- Jellyfin settings that are read only at startup (`baseUrl`, `enableHttps`,
+  `requireHttps`, `certificatePath`, `certificatePassword`, `internalHttpPort`,
+  `internalHttpsPort`, `enableIPv4`, `enableIPv6`, `localNetworkAddresses`,
+  `ignoreVirtualInterfaces`, `virtualInterfaceNames`, `knownProxies`) now make
+  jellarr restart Jellyfin once at the end of the run and wait for it. Dry-run
+  reports `would restart Jellyfin to apply <fields>`. After a `baseUrl` change
+  the server cannot be restarted over the API, so jellarr writes it last, warns,
+  and leaves the restart to you.
+
+### Changed
+
+- The networking section is written after every other section.
+
+### Fixed
+
+- The NixOS module always emits `system`, which the runtime schema requires
+  (upstream #81).
+- `hardwareDecodingCodecs` accepts `mpeg1video` and `mpeg4`, the codecs the
+  Jellyfin dashboard offers (upstream #78).
+- `loginAttemptsBeforeLockout` accepts `-1` (never lock out) and `0` (server
+  default), and `maxActiveSessions` accepts `0` (unlimited), so a `dump` of an
+  ordinary server validates (upstream #78).
+- `services.jellarr.package` defaults to the flake's own build, so a consumer's
+  nixpkgs, such as nixos-25.11, cannot break it (upstream #65).
+
 ## [0.5.0] - 2026-11-23
 
 ### Added
@@ -548,6 +582,7 @@ branding:
 - **Library Configuration**: Content scanning intervals, metadata providers,
   subtitle preferences
 
+[0.5.1]: https://github.com/sini/jellarr/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/sini/jellarr/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/sini/jellarr/compare/v0.3.5...v0.4.0
 [0.3.5]: https://github.com/sini/jellarr/compare/v0.3.4...v0.3.5
