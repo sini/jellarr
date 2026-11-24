@@ -1230,7 +1230,7 @@ All options live under `services.jellarr`.
 | Option                      | Default              | Meaning                                                                                                          |
 | --------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `enable`                    | `false`              | Enable the service and timer                                                                                     |
-| `package`                   | packaged jellarr     | Package whose binary runs                                                                                        |
+| `package`                   | flake's own build    | Package whose binary runs                                                                                        |
 | `config`                    | `null`               | Typed configuration; set exactly one of `config` and `configFile`                                                |
 | `configFile`                | `null`               | Path to a YAML or JSON config used as is (share one settings set with another consumer)                          |
 | `apiKeyFile`                | `null`               | API key file, delivered by systemd `LoadCredential` as `JELLARR_API_KEY_FILE`; do not also set `JELLARR_API_KEY` |

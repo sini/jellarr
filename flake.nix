@@ -14,6 +14,7 @@
   };
 
   outputs = {
+    self,
     flake-parts,
     nixpkgs,
     treefmt-nix,
@@ -27,7 +28,16 @@
       ];
 
       flake = {
-        nixosModules.default = ./nix/module;
+        # The default package is the flake's own build, so a consumer's nixpkgs
+        # (whose fetchPnpmDeps may not know our fetcherVersion) cannot break it.
+        nixosModules.default = {
+          lib,
+          pkgs,
+          ...
+        }: {
+          imports = [./nix/module];
+          services.jellarr.package = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+        };
       };
 
       perSystem = {system, ...}: let
@@ -49,6 +59,13 @@
             {
               module-bootstrap = import ./nix/tests/module/bootstrap.nix {
                 inherit nixpkgs pkgs system;
+              };
+              module-default-package = import ./nix/tests/module/default-package.nix {
+                inherit pkgs system;
+                inherit (inputs.nixpkgs-jellyfin-10_11) lib;
+                nixpkgs = inputs.nixpkgs-jellyfin-10_11;
+                module = inputs.self.nixosModules.default;
+                expected = inputs.self.packages.${system}.default;
               };
               module-options = import ./nix/tests/module/options.nix {
                 inherit nixpkgs pkgs system;
