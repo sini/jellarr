@@ -151,11 +151,11 @@ and this project adheres to
 
 ## [0.3.0] - 2026-11-21
 
-The first release of the community-maintained fork at
-[sini/jellarr](https://github.com/sini/jellarr). It carries upstream's
-unreleased v0.1.1 branch, the open upstream pull requests and work from other
-forks; the README lists who contributed what. Version 0.2.x is skipped because
-another fork has already published it.
+The first release of the fork at
+[sini/jellarr](https://github.com/sini/jellarr), which is not an official or
+endorsed fork. It carries upstream's unreleased v0.1.1 branch, the open upstream
+pull requests and work from other forks; the README lists who contributed what.
+Version 0.2.x is skipped because another fork has already published it.
 
 ### Breaking changes
 
