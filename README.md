@@ -513,6 +513,31 @@ library:
               - pathInfos
 ```
 
+**Renaming a library.** Set `renameFrom` to a library's previous name to rename
+it instead of creating a new, empty one:
+
+```yaml
+library:
+    virtualFolders:
+        - name: "Movies"
+          renameFrom: "Films"
+          collectionType: "movies"
+          libraryOptions:
+              pathInfos:
+                  - path: "/data/movies"
+```
+
+If a library named `Films` exists and none named `Movies` does, Jellarr renames
+it (`POST /Library/VirtualFolders/Name`) and carries on with the usual
+reconciliation under the new name, in the same run. After that `Films` no longer
+exists, so the next run changes nothing and `renameFrom` can stay or go. If
+neither exists, the library is created as `Movies`. If **both** exist, Jellarr
+stops with an error, because it cannot tell which one holds the media you want.
+`renameFrom` must differ from `name`, must not be the name of another declared
+library, and can be used by only one library. A dry run reports the rename.
+Users' library lists (`enabledLibraries`, `orderedLibraries` and the rest) refer
+to libraries by name, so write the new name there.
+
 The full field set mirrors Jellyfin's `LibraryOptions` object. Each entry of
 `typeOptions` also takes `similarItemProviders` and `similarItemProviderOrder`
 (lists of provider names, Jellyfin 12 and later; skipped with a warning on

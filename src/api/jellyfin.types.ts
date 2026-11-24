@@ -190,6 +190,7 @@ export interface JellyfinClient {
   /** Deletes the user and, with it, their watch history. */
   deleteUser(userId: string): Promise<void>;
   deleteVirtualFolder(name: string): Promise<void>;
+  renameVirtualFolder(name: string, newName: string): Promise<void>;
   getScheduledTasks(): Promise<TaskInfoSchema[]>;
   updateTaskTriggers(
     taskId: string,

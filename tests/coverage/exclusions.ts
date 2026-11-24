@@ -52,6 +52,5 @@ export const ENDPOINT_EXCLUSIONS: Record<string, string> = {
 
 export const PENDING_ENDPOINTS: Record<string, string> = {
   "POST /Devices/Options": "pending: item 8",
-  "POST /Library/VirtualFolders/Name": "pending: item 4",
   "POST /Users": "pending: item 5",
 };

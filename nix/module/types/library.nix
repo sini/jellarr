@@ -296,6 +296,16 @@
         type = libraryOptionsConfigType;
         description = "Library options including paths.";
       };
+      renameFrom = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = ''
+          Previous name of this library. When a library with that name exists
+          and none with the new name does, it is renamed instead of created;
+          when both exist, jellarr stops with an error. It does nothing once the
+          rename happened, so it can stay in the config.
+        '';
+      };
       ignoreChanges = mkOption {
         type = types.listOf (types.enum libraryOptionNames);
         default = [];
@@ -470,6 +480,9 @@
                   })
                 (folder.libraryOptions.typeOptions or []);
               };
+          }
+          // optionalAttrs ((folder.renameFrom or null) != null) {
+            inherit (folder) renameFrom;
           }
           // optionalAttrs ((folder.ignoreChanges or []) != []) {
             inherit (folder) ignoreChanges;

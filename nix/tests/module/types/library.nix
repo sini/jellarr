@@ -10,6 +10,19 @@
 
   nullConfig = {virtualFolders = null;};
 in [
+  (assertEq "renameFrom is emitted and null is omitted" (let
+    folder = name: renameFrom: {
+      inherit name renameFrom;
+      collectionType = "movies";
+      ignoreChanges = [];
+      libraryOptions = {pathInfos = [{path = "/m";}];};
+    };
+    out = mkLibraryConfig {
+      virtualFolders = [(folder "Movies" "Films") (folder "Shows" null)];
+    };
+  in
+    map (f: f.renameFrom or null) out.virtualFolders) ["Films" null])
+
   (assertEq "ignoreChanges is emitted" (mkLibraryConfig {
       virtualFolders = [
         {

@@ -33,6 +33,12 @@ import {
   networkRestartTarget,
 } from "../apply/networking";
 import {
+  applyLibraryRenames,
+  calculateLibraryRenames,
+  renameInMemory,
+  type LibraryRename,
+} from "../apply/library-rename";
+import {
   applyDisplayPreferences,
   calculateDisplayPreferencesDiff,
   readDisplayPreferences,
@@ -362,6 +368,24 @@ export async function runPipeline(
 
   if (cfg.library?.virtualFolders) {
     currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+    const libraryRenames: LibraryRename[] | undefined = calculateLibraryRenames(
+      currentVirtualFolders,
+      cfg.library.virtualFolders,
+    );
+    if (libraryRenames && plan) {
+      for (const rename of libraryRenames) {
+        plan.action(`library ${rename.from}: would be renamed to ${rename.to}`);
+      }
+      currentVirtualFolders = renameInMemory(
+        currentVirtualFolders,
+        libraryRenames,
+      );
+    } else if (libraryRenames) {
+      console.log("→ renaming libraries");
+      await applyLibraryRenames(jellyfinClient, libraryRenames);
+      console.log("✓ renamed libraries");
+      currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+    }
     const locationChanges: LocationChange[] = calculateLocationChanges(
       currentVirtualFolders,
       cfg.library.virtualFolders,

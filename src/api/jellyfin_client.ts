@@ -937,6 +937,18 @@ export function createJellyfinClient(
       }
     },
 
+    async renameVirtualFolder(name: string, newName: string): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/Library/VirtualFolders/Name",
+        { params: { query: { name, newName, refreshLibrary: false } } },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Library/VirtualFolders/Name failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async getScheduledTasks(): Promise<TaskInfoSchema[]> {
       const res: ApiResponse<TaskInfoSchema[]> =
         await client.GET("/ScheduledTasks");

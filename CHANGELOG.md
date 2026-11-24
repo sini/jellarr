@@ -38,6 +38,10 @@ and this project adheres to
   `(id, client)` (`id` defaults to `usersettings`). Declared fields and
   `customPrefs` keys are merged into the stored entry; undeclared ones are kept.
   The `jellarr` entry that holds jellarr's own markers cannot be declared.
+- `library.virtualFolders[].renameFrom` renames a library
+  (`POST /Library/VirtualFolders/Name`) when the old name exists and the new one
+  does not, then reconciles it as usual. It does nothing once the rename
+  happened, and is an error when both names exist.
 
 ### Changed
 

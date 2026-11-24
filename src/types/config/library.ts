@@ -155,6 +155,7 @@ export const VirtualFolderConfigType: z.ZodObject<{
     mixed: "mixed";
   }>;
   libraryOptions: typeof LibraryOptionsConfigType;
+  renameFrom: z.ZodOptional<z.ZodString>;
   ignoreChanges: z.ZodOptional<
     z.ZodArray<z.ZodEnum<{ [K in LibraryOptionName]: K }>>
   >;
@@ -172,9 +173,15 @@ export const VirtualFolderConfigType: z.ZodObject<{
       "mixed",
     ]),
     libraryOptions: LibraryOptionsConfigType,
+    renameFrom: z.string().min(1).optional(),
     ignoreChanges: z.array(z.enum(LIBRARY_OPTION_NAMES)).optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (folder: { name: string; renameFrom?: string | undefined }) =>
+      folder.renameFrom !== folder.name,
+    { message: "renameFrom must differ from name", path: ["renameFrom"] },
+  );
 
 export type VirtualFolderConfig = z.infer<typeof VirtualFolderConfigType>;
 
@@ -184,6 +191,34 @@ export const LibraryConfigType: z.ZodObject<{
   .object({
     virtualFolders: z.array(VirtualFolderConfigType).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine(
+    (
+      library: { virtualFolders?: VirtualFolderConfig[] | undefined },
+      ctx: z.RefinementCtx,
+    ): void => {
+      const folders: VirtualFolderConfig[] = library.virtualFolders ?? [];
+      const names: Set<string> = new Set(
+        folders.map((folder: VirtualFolderConfig) => folder.name),
+      );
+      const sources: Set<string> = new Set();
+      folders.forEach((folder: VirtualFolderConfig, index: number): void => {
+        if (folder.renameFrom === undefined) return;
+        const problem: string | undefined = names.has(folder.renameFrom)
+          ? `renameFrom "${folder.renameFrom}" is also a declared library name`
+          : sources.has(folder.renameFrom)
+            ? `renameFrom "${folder.renameFrom}" is used by more than one library`
+            : undefined;
+        sources.add(folder.renameFrom);
+        if (problem) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["virtualFolders", index, "renameFrom"],
+            message: problem,
+          });
+        }
+      });
+    },
+  );
 
 export type LibraryConfig = z.infer<typeof LibraryConfigType>;

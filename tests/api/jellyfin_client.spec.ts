@@ -861,6 +861,20 @@ describe("api/jf Users façade", () => {
     );
   });
 
+  it("renameVirtualFolder posts the old and new names", async () => {
+    mockFetchNoContent();
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.renameVirtualFolder("Films", "Movies");
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(
+      /\/Library\/VirtualFolders\/Name\?name=Films&newName=Movies&refreshLibrary=false$/,
+    );
+  });
+
   it("when GET /Users fails then it throws an error with status", async (): Promise<void> => {
     // Arrange
     fetchMock = vi
