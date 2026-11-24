@@ -176,10 +176,16 @@ export interface JellyfinClient {
   /** The user the current token belongs to; undefined for an API key, which has none. */
   getCurrentUser(): Promise<UserDtoSchema | undefined>;
   /** Display preferences under the fixed id `jellarr`; CustomPrefs holds jellarr's own markers. */
-  getDisplayPreferences(userId: string): Promise<DisplayPreferencesDtoSchema>;
+  getDisplayPreferences(
+    userId: string,
+    id?: string,
+    client?: string,
+  ): Promise<DisplayPreferencesDtoSchema>;
   updateDisplayPreferences(
     userId: string,
     body: DisplayPreferencesDtoSchema,
+    id?: string,
+    client?: string,
   ): Promise<void>;
   /** Deletes the user and, with it, their watch history. */
   deleteUser(userId: string): Promise<void>;

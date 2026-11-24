@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  DEFAULT_DISPLAY_PREFERENCES_ID,
+  DisplayPreferencesConfigType,
+} from "./display-preferences";
 
 export const AccessScheduleConfigType: z.ZodObject<{
   dayOfWeek: z.ZodEnum<{
@@ -197,6 +201,9 @@ export const UserConfigType: z.ZodObject<{
   playDefaultAudioTrack: z.ZodOptional<z.ZodBoolean>;
   castReceiverId: z.ZodOptional<z.ZodString>;
   maxActiveSessions: z.ZodOptional<z.ZodNumber>;
+  displayPreferences: z.ZodOptional<
+    z.ZodArray<typeof DisplayPreferencesConfigType>
+  >;
 }> = z
   .object({
     name: z.string().min(1, "User name is required"),
@@ -230,6 +237,23 @@ export const UserConfigType: z.ZodObject<{
     playDefaultAudioTrack: z.boolean().optional(),
     castReceiverId: z.string().min(1).optional(),
     maxActiveSessions: z.number().int().min(0).optional(),
+    displayPreferences: z
+      .array(DisplayPreferencesConfigType)
+      .refine(
+        (entries: Array<{ id?: string | undefined; client: string }>) =>
+          new Set(
+            entries.map((entry: { id?: string | undefined; client: string }) =>
+              JSON.stringify([
+                entry.id ?? DEFAULT_DISPLAY_PREFERENCES_ID,
+                entry.client,
+              ]),
+            ),
+          ).size === entries.length,
+        {
+          message: "displayPreferences entries must be unique by (id, client)",
+        },
+      )
+      .optional(),
   })
   .strict()
   .refine(

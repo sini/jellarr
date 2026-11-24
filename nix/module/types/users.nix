@@ -237,6 +237,80 @@
     };
   };
 
+  displayPreferencesType = types.submodule {
+    options = {
+      client = mkOption {
+        type = types.str;
+        description = "Client name the entry belongs to, such as `emby` for Jellyfin Web.";
+      };
+      id = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Display preferences id. Defaults to `usersettings`, where Jellyfin Web keeps a user's settings.";
+      };
+      viewType = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Type of the view.";
+      };
+      sortBy = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Field to sort by.";
+      };
+      indexBy = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Field to index by.";
+      };
+      rememberIndexing = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Remember the indexing.";
+      };
+      primaryImageHeight = mkOption {
+        type = nullOr types.ints.unsigned;
+        default = null;
+        description = "Height of the primary image.";
+      };
+      primaryImageWidth = mkOption {
+        type = nullOr types.ints.unsigned;
+        default = null;
+        description = "Width of the primary image.";
+      };
+      customPrefs = mkOption {
+        type = nullOr (types.attrsOf (types.oneOf [types.str types.int types.bool]));
+        default = null;
+        description = "Client-specific preferences. Declared keys are merged; other keys are kept. Values are stored as strings.";
+      };
+      scrollDirection = mkOption {
+        type = nullOr (types.enum ["Horizontal" "Vertical"]);
+        default = null;
+        description = "Scroll direction.";
+      };
+      showBackdrop = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Show backdrops.";
+      };
+      rememberSorting = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Remember the sorting.";
+      };
+      sortOrder = mkOption {
+        type = nullOr (types.enum ["Ascending" "Descending"]);
+        default = null;
+        description = "Sort order.";
+      };
+      showSidebar = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Show the sidebar.";
+      };
+    };
+  };
+
   userConfigType = types.submodule {
     options = {
       name = mkOption {
@@ -338,6 +412,16 @@
         default = null;
         description = "Id of the selected cast receiver.";
       };
+      displayPreferences = mkOption {
+        type = nullOr (types.listOf displayPreferencesType);
+        default = null;
+        description = ''
+          Per-user display preferences, matched by (id, client). Declared
+          fields and `customPrefs` keys are merged into the stored entry;
+          everything else stays as the server has it. The entry jellarr keeps
+          its own markers in cannot be declared.
+        '';
+      };
     };
   };
 
@@ -384,6 +468,10 @@
                 if (user.policy or null) == null
                 then null
                 else mkUserPolicyConfig user.policy;
+              displayPreferences =
+                if (user.displayPreferences or null) == null
+                then null
+                else map presentOnly user.displayPreferences;
             })
     )
     cfg;

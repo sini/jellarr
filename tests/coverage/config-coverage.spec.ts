@@ -15,6 +15,7 @@ import {
 import { EncodingOptionsConfigType } from "../../src/types/config/encoding-options";
 import { NetworkingConfigType } from "../../src/types/config/networking";
 import { MetadataConfigType } from "../../src/types/config/metadata";
+import { DisplayPreferencesConfigType } from "../../src/types/config/display-preferences";
 import { XbmcMetadataConfigType } from "../../src/types/config/xbmc-metadata";
 import {
   LiveTvConfigType,
@@ -80,6 +81,7 @@ const targets: Target[] = (
     ["LibraryOptions", LibraryOptionsConfigType],
     ["UserPolicy", UserPolicyConfigType],
     ["UserConfiguration", UserConfigType],
+    ["DisplayPreferencesDto", DisplayPreferencesConfigType],
     ["TaskTriggerInfo", TaskTriggerConfigType],
     ["TunerHostInfo", TunerHostConfigType],
     ["ListingsProviderInfo", ListingProviderConfigType],
@@ -105,7 +107,6 @@ const targets: Target[] = (
 const UNCOVERED_DTOS: string[] = [
   "DatabaseConfigurationOptions",
   "ImageOption",
-  "DisplayPreferencesDto",
   "DeviceOptionsDto",
 ];
 

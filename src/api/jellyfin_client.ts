@@ -871,19 +871,21 @@ export function createJellyfinClient(
 
     async getDisplayPreferences(
       userId: string,
+      id: string = DISPLAY_PREFERENCES_ID,
+      clientName: string = DISPLAY_PREFERENCES_ID,
     ): Promise<DisplayPreferencesDtoSchema> {
       const res: ApiResponse<DisplayPreferencesDtoSchema> = await client.GET(
         "/DisplayPreferences/{displayPreferencesId}",
         {
           params: {
-            path: { displayPreferencesId: DISPLAY_PREFERENCES_ID },
-            query: { userId, client: DISPLAY_PREFERENCES_ID },
+            path: { displayPreferencesId: id },
+            query: { userId, client: clientName },
           },
         },
       );
       if (!res.response.ok || !res.data) {
         throw new Error(
-          `GET /DisplayPreferences/${DISPLAY_PREFERENCES_ID} failed: ${res.response.status.toString()}`,
+          `GET /DisplayPreferences/${id} failed: ${res.response.status.toString()}`,
         );
       }
       return res.data;
@@ -892,13 +894,15 @@ export function createJellyfinClient(
     async updateDisplayPreferences(
       userId: string,
       body: DisplayPreferencesDtoSchema,
+      id: string = DISPLAY_PREFERENCES_ID,
+      clientName: string = DISPLAY_PREFERENCES_ID,
     ): Promise<void> {
       const res: ApiResponse = await client.POST(
         "/DisplayPreferences/{displayPreferencesId}",
         {
           params: {
-            path: { displayPreferencesId: DISPLAY_PREFERENCES_ID },
-            query: { userId, client: DISPLAY_PREFERENCES_ID },
+            path: { displayPreferencesId: id },
+            query: { userId, client: clientName },
           },
           body,
           headers: { "content-type": "application/json" },
@@ -906,7 +910,7 @@ export function createJellyfinClient(
       );
       if (!res.response.ok) {
         throw new Error(
-          `POST /DisplayPreferences/${DISPLAY_PREFERENCES_ID} failed: ${res.response.status.toString()}`,
+          `POST /DisplayPreferences/${id} failed: ${res.response.status.toString()}`,
         );
       }
     },

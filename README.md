@@ -699,6 +699,47 @@ admin Jellarr signed in as by name is already verified and is not probed.
 }
 ```
 
+### Display Preferences
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+users:
+    - name: "viewer"
+      passwordFile: /run/secrets/viewer
+      displayPreferences:
+          # Jellyfin Web keeps a user's settings under id "usersettings", client "emby"
+          - client: "emby"
+            customPrefs:
+                theme: "dark"
+                enableNextVideoInfoOverlay: false
+            sortOrder: "Descending"
+          # Another entry; ids and clients are whatever the client app uses
+          - client: "emby"
+            id: "movies"
+            viewType: "poster"
+```
+
+`displayPreferences` pins per-user UI settings (home layout, sort, view type).
+Entries are matched by `(id, client)`; `id` defaults to `usersettings`, and
+declaring the same pair twice for one user is an error.
+
+- **Merged, not replaced.** Declared fields overwrite the stored ones and every
+  other field stays; inside `customPrefs` only the declared keys change and the
+  rest are kept. Values are stored as strings (`false` becomes `"false"`), and a
+  list is not accepted as a value because Jellyfin stores custom preferences as
+  plain strings
+- **Jellarr's own entry is off limits.** Jellarr records
+  `authoritative.users:
+"disable"` markers in the entry with id `jellarr` and
+  client `jellarr`. Declaring that id or that client is a configuration error,
+  so the entry is never touched
+- Entries are written only when something differs, so a second run changes
+  nothing. A user that is created in the same run gets its preferences in that
+  run, after creation (not in `--dry-run`, where the user does not exist yet)
+- `--dump` writes the `usersettings`/`emby` entry for users that have custom
+  preferences; Jellyfin has no endpoint that lists the other entries
+
 ### Startup Configuration
 
 ```yaml

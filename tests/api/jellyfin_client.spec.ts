@@ -837,6 +837,30 @@ describe("api/jf Users façade", () => {
       /\/DisplayPreferences\/jellarr\?userId=u1&client=jellarr$/,
     );
   });
+  it("display preferences are read and written under the given id and client", async () => {
+    mockFetchJson({ CustomPrefs: { theme: "dark" } });
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.getDisplayPreferences("u1", "usersettings", "emby");
+    expect(getLastRequest().url).toMatch(
+      /\/DisplayPreferences\/usersettings\?userId=u1&client=emby$/,
+    );
+    mockFetchNoContent();
+    await jellyfinClient.updateDisplayPreferences(
+      "u1",
+      { CustomPrefs: { theme: "light" } },
+      "usersettings",
+      "emby",
+    );
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(
+      /\/DisplayPreferences\/usersettings\?userId=u1&client=emby$/,
+    );
+  });
+
   it("when GET /Users fails then it throws an error with status", async (): Promise<void> => {
     // Arrange
     fetchMock = vi

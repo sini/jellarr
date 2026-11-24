@@ -33,6 +33,13 @@ import {
   networkRestartTarget,
 } from "../apply/networking";
 import {
+  applyDisplayPreferences,
+  calculateDisplayPreferencesDiff,
+  readDisplayPreferences,
+  type CurrentDisplayPreferences,
+  type DisplayPreferencesChange,
+} from "../apply/display-preferences";
+import {
   calculateXbmcMetadataDiff,
   applyXbmcMetadata,
 } from "../apply/xbmc-metadata";
@@ -580,6 +587,28 @@ export async function runPipeline(
       console.log("✓ updated user configurations");
     } else {
       console.log("✓ user configurations already up to date");
+    }
+
+    if (cfg.users.some((user: UserConfig) => user.displayPreferences)) {
+      const currentPreferences: Map<string, CurrentDisplayPreferences> =
+        await readDisplayPreferences(jellyfinClient, currentUsers, cfg.users);
+      const preferencesToUpdate: DisplayPreferencesChange[] | undefined =
+        calculateDisplayPreferencesDiff(currentPreferences, cfg.users);
+      if (preferencesToUpdate && plan) {
+        for (const change of preferencesToUpdate) {
+          plan.change(
+            `user ${change.userName}.displayPreferences ${change.id}/${change.client}`,
+            change.current,
+            change.next,
+          );
+        }
+      } else if (preferencesToUpdate) {
+        console.log("→ updating display preferences");
+        await applyDisplayPreferences(jellyfinClient, preferencesToUpdate);
+        console.log("✓ updated display preferences");
+      } else {
+        console.log("✓ display preferences already up to date");
+      }
     }
   }
 

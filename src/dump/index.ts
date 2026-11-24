@@ -40,6 +40,29 @@ import type {
 import type { TaskInfoSchema } from "../types/schema/scheduled-tasks";
 import { dumpTaskTriggers } from "../mappers/scheduled-tasks";
 import * as yaml from "yaml";
+import { DEFAULT_DISPLAY_PREFERENCES_ID } from "../types/config/display-preferences";
+import type { DisplayPreferencesDtoSchema } from "../types/schema/users";
+
+function dumpDisplayPreferences(
+  prefs: DisplayPreferencesDtoSchema,
+): Record<string, unknown> {
+  return {
+    client: "emby",
+    id: DEFAULT_DISPLAY_PREFERENCES_ID,
+    viewType: prefs.ViewType ?? undefined,
+    sortBy: prefs.SortBy ?? undefined,
+    indexBy: prefs.IndexBy ?? undefined,
+    rememberIndexing: prefs.RememberIndexing,
+    primaryImageHeight: prefs.PrimaryImageHeight,
+    primaryImageWidth: prefs.PrimaryImageWidth,
+    customPrefs: prefs.CustomPrefs,
+    scrollDirection: prefs.ScrollDirection,
+    showBackdrop: prefs.ShowBackdrop,
+    rememberSorting: prefs.RememberSorting,
+    sortOrder: prefs.SortOrder,
+    showSidebar: prefs.ShowSidebar,
+  };
+}
 
 interface PluginWithConfig {
   name: string;
@@ -114,6 +137,24 @@ export async function runDump(baseUrl: string): Promise<void> {
       }
     }),
   );
+
+  const webPreferences: Map<string, DisplayPreferencesDtoSchema> = new Map();
+  for (const user of users) {
+    if (!user.Id) continue;
+    try {
+      const prefs: DisplayPreferencesDtoSchema =
+        await client.getDisplayPreferences(
+          user.Id,
+          DEFAULT_DISPLAY_PREFERENCES_ID,
+          "emby",
+        );
+      if (Object.keys(prefs.CustomPrefs ?? {}).length > 0) {
+        webPreferences.set(user.Id, prefs);
+      }
+    } catch {
+      continue;
+    }
+  }
 
   const folderIdToNameMap: Map<string, string> = new Map(
     virtualFolders.flatMap(
@@ -439,6 +480,15 @@ export async function runDump(baseUrl: string): Promise<void> {
 
     users: users.map((user: UserDtoSchema) => ({
       name: user.Name ?? "",
+      ...(user.Id && webPreferences.has(user.Id)
+        ? {
+            displayPreferences: [
+              dumpDisplayPreferences(
+                webPreferences.get(user.Id) as DisplayPreferencesDtoSchema,
+              ),
+            ],
+          }
+        : {}),
       policy: {
         ...dumpFields(user.Policy, POLICY_FIELDS),
         ...dumpFields(user.Policy, POLICY_LIBRARY_FIELDS, resolveLibraryNames),

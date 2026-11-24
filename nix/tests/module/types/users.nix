@@ -592,6 +592,35 @@ in [
       }
     ])
 
+  (assertEq "display preferences drop null fields" (mkUsersConfig [
+      {
+        name = "viewer";
+        password = "pass";
+        passwordFile = null;
+        displayPreferences = [
+          {
+            client = "emby";
+            id = null;
+            sortBy = null;
+            showSidebar = false;
+            customPrefs = {theme = "dark";};
+          }
+        ];
+      }
+    ]) [
+      {
+        name = "viewer";
+        password = "pass";
+        displayPreferences = [
+          {
+            client = "emby";
+            showSidebar = false;
+            customPrefs = {theme = "dark";};
+          }
+        ];
+      }
+    ])
+
   (assertThrows "reject empty grouped library" (mkUsersConfig [
     {
       name = "viewer";

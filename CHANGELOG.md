@@ -34,6 +34,10 @@ and this project adheres to
   options): `userId`, `releaseDateFormat`, `saveImagePathsInNfo`,
   `enablePathSubstitution` and `enableExtraThumbsDuplication`. It is read by
   `--dump`, planned by `--dry-run`, and available in the NixOS module.
+- `users[].displayPreferences` pins per-user display preferences, matched by
+  `(id, client)` (`id` defaults to `usersettings`). Declared fields and
+  `customPrefs` keys are merged into the stored entry; undeclared ones are kept.
+  The `jellarr` entry that holds jellarr's own markers cannot be declared.
 
 ### Changed
 
