@@ -625,10 +625,9 @@ users:
 `policy.enabledLibraries` accepts library names; jellarr resolves them to folder
 IDs when talking to the Jellyfin API.
 
-Every settable field of Jellyfin's `UserPolicy` (41) and `UserConfiguration`
+Every settable field of Jellyfin's `UserPolicy` (43) and `UserConfiguration`
 (16) is available under `policy` and at the top level of the user. Not exposed,
-because the server manages them: `AuthenticationProviderId`,
-`PasswordResetProviderId` and `InvalidLoginAttemptCount`. Declared lists are
+because the server manages it: `InvalidLoginAttemptCount`. Declared lists are
 authoritative and `[]` clears them. Fields that hold library IDs take library
 names: `policy.enabledLibraries`, `policy.enableContentDeletionFromLibraries`,
 `policy.blockedMediaLibraries`, `orderedLibraries`, `groupedLibraries`,
@@ -636,6 +635,19 @@ names: `policy.enabledLibraries`, `policy.enableContentDeletionFromLibraries`,
 `policy.accessSchedules` takes `dayOfWeek` (a day, `Everyday`, `Weekday` or
 `Weekend`), `startHour` and `endHour`; `policy.syncPlayAccess` is
 `CreateAndJoinGroups`, `JoinGroups` or `None`.
+
+**Provider ids can lock a user out.** `policy.authenticationProviderId` and
+`policy.passwordResetProviderId` choose which provider signs a user in and
+resets their password. Set a provider that cannot authenticate the user (a
+plugin that is not loaded, a typo that happens to be accepted) and that user can
+no longer sign in. Jellarr therefore reads the providers the server reports
+(`GET /Auth/Providers` and `GET /Auth/PasswordResetProviders`) and stops the run
+with an error, before writing anything for users, when a declared id is not in
+that list; the error lists the ids the server knows. The id is the provider's
+full type name, not its display name (the built-in one is
+`Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider`). This
+check also runs in a dry run. Leave both out unless you need them; a plugin that
+sets the provider for the users it creates (single sign-on) usually manages it.
 
 `policy.maxParentalRating` and `policy.maxParentalSubRating` can be cleared: an
 explicit `null` removes the limit on the server, while an absent key leaves it

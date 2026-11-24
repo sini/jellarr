@@ -32,6 +32,7 @@ import {
   calculateNetworkRestartFields,
   networkRestartTarget,
 } from "../apply/networking";
+import { validateUserProviders } from "../apply/user-providers";
 import {
   applyUserRenames,
   calculateUserRenames,
@@ -588,6 +589,8 @@ export async function runPipeline(
         ]),
       );
     }
+
+    await validateUserProviders(jellyfinClient, cfg.users);
 
     const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
       calculateUserPoliciesDiff(currentUsers, cfg.users, currentVirtualFolders);

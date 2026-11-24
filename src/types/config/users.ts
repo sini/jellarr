@@ -100,6 +100,8 @@ export const UserPolicyConfigType: z.ZodObject<{
     >
   >;
   accessSchedules: z.ZodOptional<z.ZodArray<typeof AccessScheduleConfigType>>;
+  authenticationProviderId: z.ZodOptional<z.ZodString>;
+  passwordResetProviderId: z.ZodOptional<z.ZodString>;
 }> = z.object({
   isAdministrator: z.boolean().optional(),
   isHidden: z.boolean().optional(),
@@ -167,6 +169,8 @@ export const UserPolicyConfigType: z.ZodObject<{
     )
     .optional(),
   accessSchedules: z.array(AccessScheduleConfigType).optional(),
+  authenticationProviderId: z.string().min(1).optional(),
+  passwordResetProviderId: z.string().min(1).optional(),
 });
 
 export type UserPolicyConfig = z.infer<typeof UserPolicyConfigType>;

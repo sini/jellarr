@@ -82,6 +82,7 @@ describe("dump: users", () => {
         enabledChannels: [],
         enableContentDeletionFromLibraries: ["Music"],
         accessSchedules: [{ dayOfWeek: "Weekend", startHour: 8, endHour: 22 }],
+        authenticationProviderId: "internal",
       },
       hidePlayedInLatest: false,
       myMediaExcludedLibraries: ["Movies"],

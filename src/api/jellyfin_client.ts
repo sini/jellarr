@@ -12,6 +12,7 @@ import type {
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
   DisplayPreferencesDtoSchema,
+  NameIdPairSchema,
   UserDtoSchema,
   CreateUserByNameSchema,
   UserPolicySchema,
@@ -960,6 +961,29 @@ export function createJellyfinClient(
           `POST /Library/VirtualFolders/Name failed: ${res.response.status.toString()}`,
         );
       }
+    },
+
+    async getAuthProviders(): Promise<NameIdPairSchema[]> {
+      const res: ApiResponse<NameIdPairSchema[]> =
+        await client.GET("/Auth/Providers");
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /Auth/Providers failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data ?? [];
+    },
+
+    async getPasswordResetProviders(): Promise<NameIdPairSchema[]> {
+      const res: ApiResponse<NameIdPairSchema[]> = await client.GET(
+        "/Auth/PasswordResetProviders",
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /Auth/PasswordResetProviders failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data ?? [];
     },
 
     async getScheduledTasks(): Promise<TaskInfoSchema[]> {

@@ -229,6 +229,26 @@
         default = null;
         description = "Unrated item types hidden from the user.";
       };
+      authenticationProviderId = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = ''
+          Id of the authentication provider that signs this user in, as the
+          server reports it (`GET /Auth/Providers`). A wrong provider can lock
+          the user out, so jellarr stops with an error when the server does not
+          list the id.
+        '';
+      };
+      passwordResetProviderId = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = ''
+          Id of the password reset provider for this user, as the server
+          reports it (`GET /Auth/PasswordResetProviders`). A wrong provider can
+          lock the user out, so jellarr stops with an error when the server
+          does not list the id.
+        '';
+      };
       accessSchedules = mkOption {
         type = nullOr (types.listOf accessScheduleType);
         default = null;

@@ -7,3 +7,5 @@ export type UserConfigurationSchema =
   components["schemas"]["UserConfiguration"];
 export type DisplayPreferencesDtoSchema =
   components["schemas"]["DisplayPreferencesDto"];
+
+export type NameIdPairSchema = components["schemas"]["NameIdPair"];

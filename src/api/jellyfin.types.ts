@@ -15,6 +15,7 @@ import type {
   CreateUserByNameSchema,
   UserPolicySchema,
   DisplayPreferencesDtoSchema,
+  NameIdPairSchema,
   UserConfigurationSchema,
 } from "../types/schema/users";
 import {
@@ -172,6 +173,9 @@ export interface JellyfinClient {
     pluginId: string,
     body: BasePluginConfigurationSchema,
   ): Promise<void>;
+  /** The authentication providers the server reports (Id is what a user policy names). */
+  getAuthProviders(): Promise<NameIdPairSchema[]>;
+  getPasswordResetProviders(): Promise<NameIdPairSchema[]>;
   getApiKeys(): Promise<AuthenticationInfoSchema[]>;
   /** Revokes an API key by its access token. */
   deleteApiKey(accessToken: string): Promise<void>;

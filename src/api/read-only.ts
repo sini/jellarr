@@ -20,6 +20,8 @@ const READ_ONLY: ReadonlySet<string> = new Set([
   "getPackages",
   "getPluginConfiguration",
   "getApiKeys",
+  "getAuthProviders",
+  "getPasswordResetProviders",
   "getCurrentUser",
   "getScheduledTasks",
   "getPublicSystemInfo",

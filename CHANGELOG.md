@@ -46,6 +46,10 @@ and this project adheres to
   keeping the account, its history and its policy. A renamed administrator still
   signs in when no API key is set: the sign-in tries the declared name, then
   `renameFrom`.
+- `users[].policy.authenticationProviderId` and `passwordResetProviderId` set a
+  user's providers. An id the server does not report (`GET /Auth/Providers`,
+  `GET /Auth/PasswordResetProviders`) is an error before anything is written,
+  because a wrong provider can lock a user out; the README says so.
 
 ### Changed
 

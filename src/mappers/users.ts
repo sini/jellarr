@@ -82,6 +82,8 @@ export const POLICY_FIELDS: ReadonlyArray<[string, string]> = [
   ["blockedTags", "BlockedTags"],
   ["blockUnratedItems", "BlockUnratedItems"],
   ["accessSchedules", "AccessSchedules"],
+  ["authenticationProviderId", "AuthenticationProviderId"],
+  ["passwordResetProviderId", "PasswordResetProviderId"],
 ];
 
 export const USER_CONFIGURATION_FIELDS: ReadonlyArray<[string, string]> = [
