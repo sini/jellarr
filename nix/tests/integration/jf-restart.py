@@ -1,3 +1,7 @@
+# One switch restarts Jellyfin and fires jellarr-apply.timer at once.
+# On 12 this guards the setup server that answers /health with "Degraded" and
+# then drops the connection. The 500 from /System/Info/Public while 10.11 loads
+# its configuration cannot be reproduced in a VM, so 10.11 only checks the switch.
 def show(server, unit, prop):
     return server.succeed(f"systemctl show {unit} -p {prop} --value").strip()
 
