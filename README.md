@@ -123,8 +123,9 @@ pioneered declarative Jellyfin configuration, it takes a risky approach:
 
 - ✅ **API-based** — Uses Jellyfin's official REST API, never touches internal
   files or databases
-- ✅ **Zero service interruption** — Jellyfin keeps running; the only restart is
-  the one a plugin install or removal needs
+- ✅ **Zero service interruption** — Jellyfin keeps running; the only restarts
+  are the ones a plugin install or removal, or a startup-only network setting,
+  needs
 - ✅ **Cross-platform** — Works on Docker, bare metal, any OS (not just NixOS)
 - ✅ **Type-safe** — OpenAPI-generated types catch errors at build time
 - ✅ **Future-proof** — Relies on stable API contracts, not reverse-engineered
@@ -415,6 +416,24 @@ committing it in plain text.
 The full field set mirrors Jellyfin's `NetworkConfiguration` object. Note that
 `corsHosts` is a `ServerConfiguration` field, not `NetworkConfiguration`, and is
 not part of the `networking` key.
+
+**Fields that need a restart.** Jellyfin reads `baseUrl`, `enableHttps`,
+`requireHttps`, `certificatePath`, `certificatePassword`, `internalHttpPort`,
+`internalHttpsPort`, `enableIPv4`, `enableIPv6`, `localNetworkAddresses`,
+`ignoreVirtualInterfaces`, `virtualInterfaceNames` and `knownProxies` once at
+startup (Kestrel bind addresses and ports, the base-path routing, HTTPS
+redirection, the certificate load and the forwarded-headers proxy list); the
+other fields apply at once. When a run changes one of those, Jellarr writes the
+networking section last, then restarts Jellyfin once and waits for it, on the
+new port if `base_url` carried the old one. `--dry-run` reports
+`would restart
+Jellyfin to apply <fields>`.
+
+Changing `baseUrl` is the exception. Jellyfin routes the new base path at once
+but serves the old layout until it restarts, so it can no longer be restarted
+over the API. Jellarr still writes it (last), warns, and leaves the restart to
+you (`systemctl restart jellyfin`, `docker restart`); set `base_url` to the new
+address for later runs.
 
 ### Metadata Configuration
 

@@ -7,7 +7,11 @@ const client: {
   getSystemConfiguration: ReturnType<typeof vi.fn>;
   getNetworkingConfiguration: ReturnType<typeof vi.fn>;
   updateNetworkingConfiguration: ReturnType<typeof vi.fn>;
+  restartServer: ReturnType<typeof vi.fn>;
+  getPendingRestart: ReturnType<typeof vi.fn>;
 } = {
+  restartServer: vi.fn().mockResolvedValue(undefined),
+  getPendingRestart: vi.fn().mockResolvedValue(false),
   getSystemConfiguration: vi.fn(),
   getNetworkingConfiguration: vi.fn(),
   updateNetworkingConfiguration: vi.fn(),

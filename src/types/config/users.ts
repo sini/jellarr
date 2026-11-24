@@ -100,7 +100,9 @@ export const UserPolicyConfigType: z.ZodObject<{
   isAdministrator: z.boolean().optional(),
   isHidden: z.boolean().optional(),
   isDisabled: z.boolean().optional(),
+  // NOTE: Jellyfin treats -1 as never lock out and 0 as the server default.
   loginAttemptsBeforeLockout: z.number().int().min(-1).optional(),
+  // NOTE: Jellyfin treats 0 as unlimited.
   maxActiveSessions: z.number().int().min(0).optional(),
   remoteClientBitrateLimit: z.number().int().min(0).optional(),
   // NOTE: an explicit null clears the limit; an absent key leaves it unmanaged.

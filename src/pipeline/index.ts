@@ -26,7 +26,12 @@ import {
   calculateSplashscreenRemoval,
   applySplashscreenRemoval,
 } from "../apply/splashscreen";
-import { calculateNetworkingDiff, applyNetworking } from "../apply/networking";
+import {
+  calculateNetworkingDiff,
+  applyNetworking,
+  calculateNetworkRestartFields,
+  networkRestartTarget,
+} from "../apply/networking";
 import {
   calculateNewUsersDiff,
   calculateUserPoliciesDiff,
@@ -191,6 +196,11 @@ export async function runPipeline(
     ? guardReadOnly(liveClient)
     : liveClient;
   if (dryRun) console.log("DRY RUN: nothing will be changed");
+
+  // NOTE: the networking write is deferred to the end of the run. A changed BaseUrl routes at once, so the server answers nothing on its old path afterwards.
+  let networkWrite: NetworkConfigurationSchema | undefined;
+  let networkCurrent: NetworkConfigurationSchema | undefined;
+  let networkRestartFields: string[] = [];
 
   console.log("→ waiting for Jellyfin to become healthy");
   await waitForHealth(cfg.base_url, { timeoutMs: waitTimeoutMs });
@@ -429,6 +439,13 @@ export async function runPipeline(
     const updatedNetworkingSchema: NetworkConfigurationSchema | undefined =
       calculateNetworkingDiff(currentNetworkingSchema, cfg.networking);
 
+    if (updatedNetworkingSchema) {
+      networkCurrent = currentNetworkingSchema;
+      networkRestartFields = calculateNetworkRestartFields(
+        currentNetworkingSchema,
+        updatedNetworkingSchema,
+      );
+    }
     if (updatedNetworkingSchema && plan) {
       plan.change(
         "networking",
@@ -436,9 +453,7 @@ export async function runPipeline(
         updatedNetworkingSchema,
       );
     } else if (updatedNetworkingSchema) {
-      console.log("→ updating networking config");
-      await applyNetworking(jellyfinClient, updatedNetworkingSchema);
-      console.log("✓ updated networking config");
+      networkWrite = updatedNetworkingSchema;
     } else {
       console.log("✓ networking config already up to date");
     }
@@ -838,6 +853,38 @@ export async function runPipeline(
       }
     } else {
       console.log("✓ nothing undeclared to delete");
+    }
+  }
+
+  if (networkWrite && networkCurrent) {
+    console.log("→ updating networking config");
+    await applyNetworking(jellyfinClient, networkWrite);
+    console.log("✓ updated networking config");
+  }
+  if (networkRestartFields.length > 0) {
+    const fields: string = networkRestartFields.join(", ");
+    // NOTE: the restart request goes to the old path, which no longer routes once BaseUrl changed.
+    const overApi: boolean = !networkRestartFields.includes("baseUrl");
+    if (plan && overApi) {
+      plan.action(`would restart Jellyfin to apply ${fields}`);
+    } else if (plan) {
+      plan.action(
+        `${fields} apply only after a restart, which the API cannot do once baseUrl changes: restart Jellyfin yourself`,
+      );
+    } else if (overApi && networkWrite && networkCurrent) {
+      console.log(
+        `→ restarting Jellyfin to apply ${fields} (read only at startup)`,
+      );
+      await restartJellyfin(
+        jellyfinClient,
+        networkRestartTarget(cfg.base_url, networkCurrent, networkWrite),
+        waitTimeoutMs,
+      );
+      console.log("✓ restarted Jellyfin");
+    } else {
+      console.warn(
+        `⚠ ${fields} apply only after a restart, and Jellyfin cannot be restarted over the API once baseUrl changed: restart it yourself`,
+      );
     }
   }
 

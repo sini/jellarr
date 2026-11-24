@@ -289,3 +289,39 @@ describe("apply/networking", () => {
     });
   });
 });
+
+import { calculateNetworkRestartFields } from "../../src/apply/networking";
+
+describe("apply/networking restart fields", () => {
+  const current: NetworkConfigurationSchema = {
+    BaseUrl: "",
+    InternalHttpPort: 8096,
+    EnableIPv6: true,
+    LocalNetworkSubnets: [],
+    KnownProxies: [],
+  } as NetworkConfigurationSchema;
+
+  it("lists the changed fields Jellyfin only reads at startup, by config name", () => {
+    const updated: NetworkConfigurationSchema = {
+      ...current,
+      BaseUrl: "/jf",
+      InternalHttpPort: 8097,
+      EnableIPv6: false,
+      KnownProxies: ["10.0.0.1"],
+    } as NetworkConfigurationSchema;
+    expect(calculateNetworkRestartFields(current, updated)).toEqual([
+      "baseUrl",
+      "internalHttpPort",
+      "enableIPv6",
+      "knownProxies",
+    ]);
+  });
+
+  it("ignores fields Jellyfin applies live", () => {
+    const updated: NetworkConfigurationSchema = {
+      ...current,
+      LocalNetworkSubnets: ["10.0.0.0/8"],
+    } as NetworkConfigurationSchema;
+    expect(calculateNetworkRestartFields(current, updated)).toEqual([]);
+  });
+});
