@@ -60,15 +60,16 @@ New in this fork:
   and path substitutions, splashscreen upload and removal, and library folders
   kept in step with the declared paths (stale or duplicate `.mblink` links are
   cleaned up).
-- **Plugins:** matched by catalog GUID, pinned or kept up to date, chosen from a
-  specific repository when you want, restarted in the same run after an install,
-  and configured once they are Active.
-- **Secrets** from files (`{ _file: path }`) or the environment (`${VAR}`)
-  anywhere in the config, resolved after parsing so a secret can't change the
-  config's structure.
+- **Plugins:** matched by catalog GUID, pinned or upgraded on request, chosen
+  from a specific repository when you want, restarted in the same run after an
+  install, and configured once they are Active.
+- **Secrets** from files (`{ _file: path }`) and, with `expandEnv: true`, the
+  environment (`${VAR}`) anywhere in the config, resolved after parsing so a
+  secret can't change the config's structure.
 - **Authentication** falls back to signing in as the admin when no API key is
   set or the key is rejected; the key can also come from `JELLARR_API_KEY_FILE`.
-  `passwordFile` is reconciled for existing users without risking lockout.
+  With `reconcilePasswords: true`, the password of an existing user is
+  reconciled without risking lockout.
 - **Startup that waits properly** for a Jellyfin that is still starting or
   migrating its database, so a deploy that restarts Jellyfin doesn't fail.
 - **Every module is tested to change nothing** on a second run with the same
@@ -82,9 +83,10 @@ New in this fork:
 - **A migration guide from declarative-jellyfin**:
   [docs/migrating-from-declarative-jellyfin.md](docs/migrating-from-declarative-jellyfin.md).
 
-Coming from upstream v0.1.1? Read [CHANGELOG.md](CHANGELOG.md) first. A few
-behaviours changed, most notably that strings containing `${NAME}` are now
-expanded from the environment (write `$${` for a literal `${`).
+Coming from upstream? Read [CHANGELOG.md](CHANGELOG.md) first. A config that
+works with upstream still validates and applies, with a few exceptions listed
+under Breaking changes there. Env expansion, password reconciliation and plugin
+upgrades are off unless you ask for them.
 
 Releases start at v0.3.0. Another fork has already published 0.2.x, and skipping
 it keeps the two from being confused.
@@ -727,7 +729,11 @@ an array you omit is left alone, and `[]` clears one. That includes
 `policy.enabledLibraries: []`, which removes all library access unless
 `enableAllFolders` is true.
 
-**Password reconciliation:** on every run, an existing user whose password
+**Password reconciliation:** a declared `password` or `passwordFile` is set when
+a user is created. It is not touched afterwards unless you opt in with the
+top-level `reconcilePasswords: true`, or `reconcilePassword: true` on one user
+(`reconcilePassword: false` opts a user out when the top-level setting is on;
+the per-user key wins). With it on, on every run an existing user whose password
 differs from the configured one has it set (`POST /Users/Password`). Jellarr
 finds out by signing in as that user under its own device id and signing out
 again, which creates no lasting session. A failed sign-in counts towards
@@ -873,7 +879,7 @@ startup:
     user:
         name: "admin"
         passwordFile: "/run/secrets/jellyfin-admin-password" # or `password`
-    completeStartupWizard: true # default; false leaves the wizard open
+    completeStartupWizard: true # runs the wizard even with no user; false leaves it open
 ```
 
 The first-boot wizard runs only against a pristine server, one whose
@@ -881,7 +887,12 @@ The first-boot wizard runs only against a pristine server, one whose
 drives `/Startup/Configuration`, `/Startup/RemoteAccess`, `/Startup/User` and
 `/Startup/Complete`, creates the admin from `user`, and signs in as that admin
 for the rest of the run (see [Authentication](#authentication)). On a server
-whose wizard is already complete the block does nothing. Jellarr never creates
+whose wizard is already complete the block does nothing. The wizard runs only
+when `completeStartupWizard: true` or a `startup.user` is declared; a `startup`
+section with neither (server settings alone, or `completeStartupWizard: false`
+without a user) leaves a pristine server alone. Once it runs, it also completes
+the wizard unless `completeStartupWizard: false`. Jellarr signs in as the
+`startup.user` afterwards only when there is no API key. Jellarr never creates
 or writes an API key here; supply `JELLARR_API_KEY` for later runs, or let it
 sign in as the admin each time.
 
@@ -945,12 +956,13 @@ every tuner host, while leaving `tunerHosts` out never touches them. Changing an
 identity field creates a new entry, and with `authoritative` the old one is
 removed.
 
-A listings `password` is plain text (use `{ _file }` or `${VAR}`; it is masked
-in dry-run output). The server stores only a SHA-1 hash of it and takes the
-plain text as the `pw` query parameter, so jellarr compares the hash and sends
-the password only when it differs. Providers are saved without the server
-validating the login or the guide. `MediaLocationsCreated` is server state and
-is not configurable. `jellarr dump` exports the section without passwords.
+A listings `password` is plain text (use `{ _file }` or, with `expandEnv: true`,
+`${VAR}`; it is masked in dry-run output). The server stores only a SHA-1 hash
+of it and takes the plain text as the `pw` query parameter, so jellarr compares
+the hash and sends the password only when it differs. Providers are saved
+without the server validating the login or the guide. `MediaLocationsCreated` is
+server state and is not configurable. `jellarr dump` exports the section without
+passwords.
 
 `authoritative.livetv` is accepted as an alias of `livetv.authoritative`. The
 canonical form is `livetv.authoritative`; set only one of them (the two
@@ -1159,6 +1171,10 @@ plugins:
     - name: "Shoko"
       version: "6.0.5.4012"
 
+    # Upgrade an installed plugin to the newest compatible version on every run
+    - name: "Playback Reporting"
+      upgrade: true
+
     # Take one plugin from a named repository; the others use any repository
     - name: "Fanart"
       repository: "Dev"
@@ -1181,9 +1197,15 @@ plugins:
   installed from the repository it came from. `repository` names an entry of
   `system.pluginRepositories` and restricts the plugin to that repository's
   versions; an undeclared name is a configuration error
-- Without `version`, each plugin is kept at the newest version its repositories
-  offer for the running Jellyfin version, so changing a repository URL or
-  upgrading Jellyfin upgrades the plugin on the next run
+- Without `version`, a missing plugin is installed at the newest version its
+  repositories offer for the running Jellyfin version. An installed plugin is
+  left alone, whatever its version, unless it sets `upgrade: true`; then it is
+  upgraded to the newest compatible version on every run, so changing a
+  repository URL or upgrading Jellyfin upgrades the plugin on the next run
+- `version` and `upgrade` interact as follows: `version` always wins. A plugin
+  with `version` is installed at that exact version when it is missing or older,
+  with or without `upgrade`, and is never taken past it. `upgrade` only matters
+  for a plugin without `version`; its default is `false`
 - With `version`, that version is installed and the plugin is held there.
   Jellyfin always loads the newest installed copy of a plugin, so a pin below
   the installed version is reported but not applied; uninstall the plugin to
@@ -1232,9 +1254,12 @@ plugins:
 
 Both forms work anywhere in the config, not only in plugin `configuration`. They
 are resolved on the parsed YAML, so a secret cannot change the structure of the
-config.
+config. `{ _file }` is always on. `${VAR}` is expanded only when the top-level
+`expandEnv: true` is set; without it every string, `${...}` and `$${` included,
+is used exactly as written, and an undefined variable is not an error.
 
 ```yaml
+expandEnv: true
 plugins:
     - name: "Trakt"
       configuration:
@@ -1245,17 +1270,20 @@ plugins:
 
 - `{ _file: "<path>" }` is replaced by the file's contents with surrounding
   whitespace trimmed
-- `${VAR}` is replaced by the environment variable, including inside a longer
-  string, and in `_file` paths; `$${` is a literal `${`. Every other `$`
-  (including `$$`) is left as written, so a password such as `pa$$word` is
-  unchanged
-- A missing file or an undefined variable fails the run
-- Path-valued `*File` options (`passwordFile`) take a plain path, and `${VAR}`
-  is allowed in it (`${CREDENTIALS_DIRECTORY}/admin`); `{ _file: ... }` there is
-  an error, because it would use the file's contents as a path. The NixOS module
-  types `passwordFile` as a plain string for the same reason
+- With `expandEnv: true`, `${VAR}` is replaced by the environment variable,
+  including inside a longer string, and in `_file` paths; `$${` is a literal
+  `${`. `$${` only means something when `expandEnv` is true: with the default it
+  stays `$${`. Every other `$` (including `$$`) is left as written, so a
+  password such as `pa$$word` is unchanged
+- A missing file fails the run, and so does an undefined variable when
+  `expandEnv` is true
+- Path-valued `*File` options (`passwordFile`) take a plain path, and with
+  `expandEnv: true` `${VAR}` is allowed in it
+  (`${CREDENTIALS_DIRECTORY}/admin`); `{ _file: ... }` there is an error,
+  because it would use the file's contents as a path. The NixOS module types
+  `passwordFile` as a plain string for the same reason
 - Substituted values are always strings, so `${VAR}` cannot fill a numeric or
-  boolean field
+  boolean field. Values that were expanded are masked in log and dry-run output
 
 **Finding plugin configuration keys:**
 
@@ -1530,27 +1558,31 @@ create-only.
 
 All options live under `services.jellarr`.
 
-| Option                      | Default              | Meaning                                                                                                          |
-| --------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `enable`                    | `false`              | Enable the service and timer                                                                                     |
-| `package`                   | flake's own build    | Package whose binary runs                                                                                        |
-| `config`                    | `null`               | Typed configuration; set exactly one of `config` and `configFile`                                                |
-| `configFile`                | `null`               | Path to a YAML or JSON config used as is (share one settings set with another consumer)                          |
-| `apiKeyFile`                | `null`               | API key file, delivered by systemd `LoadCredential` as `JELLARR_API_KEY_FILE`; do not also set `JELLARR_API_KEY` |
-| `environmentFile`           | `null`               | systemd environment file (for `JELLARR_API_KEY` and `${VAR}` secrets)                                            |
-| `jellyfinService`           | `"jellyfin.service"` | Unit jellarr runs after and wants; `null` when Jellyfin is elsewhere. Was `bootstrap.jellyfinService` (renamed)  |
-| `waitTimeout`               | `300`                | Seconds to wait for Jellyfin `/health` (`JELLARR_WAIT_TIMEOUT`)                                                  |
-| `schedule`                  | `"daily"`            | Timer `OnCalendar` for periodic runs                                                                             |
-| `user` / `group`            | `"jellarr"`          | Service user and group                                                                                           |
-| `dataDir`                   | `/var/lib/jellarr`   | Working directory; the config is installed to `config/config.yml`                                                |
-| `bootstrap.enable`          | `false`              | Seed the API key into Jellyfin's database (same host only)                                                       |
-| `bootstrap.apiKeyFile`      | `apiKeyFile`         | File with the key to seed                                                                                        |
-| `bootstrap.apiKeyName`      | `"jellarr"`          | Name of the key row; the upsert key                                                                              |
-| `bootstrap.extraKeys`       | `{}`                 | More keys to seed, `{ <name> = <file>; }`, upserted by name with the same checks                                 |
-| `bootstrap.jellyfinDataDir` | Jellyfin `dataDir`   | Directory holding `data/jellyfin.db`                                                                             |
+| Option                      | Default            | Meaning                                                                                                                                                                            |
+| --------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enable`                    | `false`            | Enable the service and timer                                                                                                                                                       |
+| `package`                   | flake's own build  | Package whose binary runs                                                                                                                                                          |
+| `config`                    | `null`             | Typed configuration; set exactly one of `config` and `configFile`                                                                                                                  |
+| `configFile`                | `null`             | Path to a YAML or JSON config used as is (share one settings set with another consumer)                                                                                            |
+| `apiKeyFile`                | `null`             | API key file, delivered by systemd `LoadCredential` as `JELLARR_API_KEY_FILE`; do not also set `JELLARR_API_KEY`                                                                   |
+| `environmentFile`           | `null`             | systemd environment file (for `JELLARR_API_KEY`, and `${VAR}` secrets when `config.expandEnv` is `true`)                                                                           |
+| `jellyfinService`           | see meaning        | Unit jellarr runs after and wants. `"jellyfin.service"` when `services.jellyfin.enable` is true on this host, else `null` (no ordering). Was `bootstrap.jellyfinService` (renamed) |
+| `waitTimeout`               | `300`              | Seconds to wait for Jellyfin `/health` (`JELLARR_WAIT_TIMEOUT`)                                                                                                                    |
+| `schedule`                  | `"daily"`          | Timer `OnCalendar` for periodic runs                                                                                                                                               |
+| `user` / `group`            | `"jellarr"`        | Service user and group                                                                                                                                                             |
+| `dataDir`                   | `/var/lib/jellarr` | Working directory; the config is installed to `config/config.yml`                                                                                                                  |
+| `bootstrap.enable`          | `false`            | Seed the API key into Jellyfin's database (same host only)                                                                                                                         |
+| `bootstrap.apiKeyFile`      | `apiKeyFile`       | File with the key to seed                                                                                                                                                          |
+| `bootstrap.apiKeyName`      | `"jellarr"`        | Name of the key row; the upsert key                                                                                                                                                |
+| `bootstrap.extraKeys`       | `{}`               | More keys to seed, `{ <name> = <file>; }`, upserted by name with the same checks                                                                                                   |
+| `bootstrap.jellyfinDataDir` | Jellyfin `dataDir` | Directory holding `data/jellyfin.db`                                                                                                                                               |
 
-Inside `config`, every string option also accepts `{ _file = "/path"; }`, which
-jellarr reads at run time, so secrets stay out of the Nix store:
+Inside `config`, `expandEnv` (default unset, meaning `false`) and
+`reconcilePasswords` (unset means `false`) are the same top-level keys as in the
+YAML, `users.*.reconcilePassword` overrides the latter per user, and
+`plugins.*.upgrade` (unset means `false`) enables upgrades per plugin. Every
+string option also accepts `{ _file = "/path"; }`, which jellarr reads at run
+time, so secrets stay out of the Nix store:
 
 ```nix
 services.jellarr.config.networking.certificatePassword = {

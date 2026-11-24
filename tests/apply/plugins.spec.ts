@@ -134,7 +134,7 @@ describe("calculatePluginInstalls", () => {
   it("should leave an installed unpinned plugin alone by default", () => {
     expect(
       calculatePluginInstalls(
-        [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+        [installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4")],
         catalog,
         [
           { name: "SSO Authentication" },
@@ -147,7 +147,7 @@ describe("calculatePluginInstalls", () => {
 
   it("should install a pinned newer version without upgrade", () => {
     const result: PluginInstall[] | undefined = calculatePluginInstalls(
-      [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+      [installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4")],
       catalog,
       [{ name: "SSO Authentication", version: "5.1.1" }],
       "12.2.0",
@@ -158,7 +158,7 @@ describe("calculatePluginInstalls", () => {
 
   it("should install the pinned version, not the newest, when upgrade is also set", () => {
     const result: PluginInstall[] | undefined = calculatePluginInstalls(
-      [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+      [installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4")],
       catalog,
       [{ name: "SSO Authentication", version: "5.1.0", upgrade: true }],
       "12.2.0",
@@ -181,7 +181,7 @@ describe("calculatePluginInstalls", () => {
   it("should upgrade an installed plugin matched by GUID under a different name", () => {
     // Act
     const result: PluginInstall[] | undefined = calculatePluginInstalls(
-      [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+      [installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4")],
       catalog,
       [{ name: "SSO Authentication", upgrade: true }],
       "12.2.0",
@@ -222,7 +222,7 @@ describe("calculatePluginInstalls", () => {
   it("should install a pinned version and hold the plugin there", () => {
     expect(
       calculatePluginInstalls(
-        [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+        [installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4")],
         catalog,
         [{ name: "SSO Authentication", version: "5.1.0" }],
         "12.2.0",
@@ -231,7 +231,7 @@ describe("calculatePluginInstalls", () => {
 
     expect(
       calculatePluginInstalls(
-        [installedPlugin("SSO-Auth", SSO_GUID, "5.1.0.0")],
+        [installedPlugin("Installed-Copy", SSO_GUID, "5.1.0.0")],
         catalog,
         [{ name: "SSO Authentication", version: "5.1.0" }],
         "12.2.0",
@@ -242,7 +242,7 @@ describe("calculatePluginInstalls", () => {
   it("should not try to downgrade below the installed version", () => {
     expect(
       calculatePluginInstalls(
-        [installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0")],
+        [installedPlugin("Installed-Copy", SSO_GUID, "5.1.1.0")],
         catalog,
         [{ name: "SSO Authentication", version: "5.1.0" }],
         "12.2.0",
@@ -254,8 +254,8 @@ describe("calculatePluginInstalls", () => {
     expect(
       calculatePluginInstalls(
         [
-          installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
-          installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+          installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4"),
+          installedPlugin("Installed-Copy", SSO_GUID, "5.1.1.0"),
         ],
         catalog,
         [{ name: "SSO Authentication" }],
@@ -433,13 +433,13 @@ describe("calculatePluginRemovals", () => {
   it("should remove a superseded copy once the upgrade is active", () => {
     // Arrange: the state Jellyfin was left in after upgrading SSO 4.0.0.4.
     const installed: PluginInfoSchema[] = [
-      installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+      installedPlugin("Installed-Copy", SSO_GUID, "5.1.1.0"),
       withStatus(
         installedPlugin("SSO Authentication", SSO_GUID, "5.1.1"),
         "Restart",
       ),
       withStatus(
-        installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+        installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4"),
         "Superseded",
       ),
     ];
@@ -465,9 +465,9 @@ describe("calculatePluginRemovals", () => {
     expect(
       calculatePluginRemovals(
         [
-          installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+          installedPlugin("Installed-Copy", SSO_GUID, "5.1.1.0"),
           withStatus(
-            installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+            installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4"),
             "Superceded",
           ),
         ],
@@ -481,7 +481,7 @@ describe("calculatePluginRemovals", () => {
     expect(
       calculatePluginRemovals(
         [
-          installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+          installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4"),
           withStatus(
             installedPlugin("SSO Authentication", SSO_GUID, "5.1.1"),
             "Restart",
@@ -497,9 +497,9 @@ describe("calculatePluginRemovals", () => {
     expect(
       calculatePluginRemovals(
         [
-          installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+          installedPlugin("Installed-Copy", SSO_GUID, "5.1.1.0"),
           withStatus(
-            installedPlugin("SSO-Auth", SSO_GUID, "5.1.1"),
+            installedPlugin("Installed-Copy", SSO_GUID, "5.1.1"),
             "Superseded",
           ),
         ],
@@ -513,9 +513,9 @@ describe("calculatePluginRemovals", () => {
     expect(
       calculatePluginRemovals(
         [
-          installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+          installedPlugin("Installed-Copy", SSO_GUID, "5.1.1.0"),
           withStatus(
-            installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+            installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4"),
             "Superseded",
           ),
         ],
@@ -585,9 +585,9 @@ describe("calculatePluginRemovals", () => {
     expect(
       calculatePluginRemovals(
         [
-          installedPlugin("SSO-Auth", SSO_GUID, "5.1.1.0"),
+          installedPlugin("Installed-Copy", SSO_GUID, "5.1.1.0"),
           withStatus(
-            installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4"),
+            installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4"),
             "Deleted",
           ),
         ],
@@ -620,11 +620,11 @@ describe("resolveInstalledPluginNames", () => {
   it("should rename desired plugins to their installed names", () => {
     expect(
       resolveInstalledPluginNames(
-        [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+        [installedPlugin("Installed-Copy", SSO_GUID, "4.0.0.4")],
         catalog,
         [{ name: "SSO Authentication", configuration: { a: 1 } }],
       ),
-    ).toEqual([{ name: "SSO-Auth", configuration: { a: 1 } }]);
+    ).toEqual([{ name: "Installed-Copy", configuration: { a: 1 } }]);
   });
 
   it("should keep the desired name when the plugin is not installed", () => {

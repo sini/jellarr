@@ -180,8 +180,10 @@ needs a plaintext `password` or `passwordFile` (exactly one of the two). Prefer
 `passwordFile`, and make the file readable by the user jellarr runs as
 (`services.jellarr.user`, default `jellarr`).
 
-What jellarr does for a user that already exists on the server
-(`src/apply/users.ts`, `reconcileUserPasswords`):
+jellarr sets the password when it creates the user. For a user that already
+exists it leaves the password alone unless you set `reconcilePasswords = true`
+(or `reconcilePassword = true` on that user; the per-user value wins). With that
+on, this is what it does (`src/apply/users.ts`, `reconcileUserPasswords`):
 
 1. It checks whether one failed sign-in is safe. It reads the user's
    `LoginAttemptsBeforeLockout` and `InvalidLoginAttemptCount` and only probes
@@ -253,10 +255,12 @@ catalog:
   installed name differs from its catalog name is still found. A plugin that is
   in no repository is left as it is when installed, and is an error when not.
 - A plugin already installed at the version jellarr would choose is not
-  reinstalled. Without `version`, jellarr keeps the plugin at the newest version
-  the repositories offer for your Jellyfin version, so an update in the catalog
-  is installed on the next run. Set `version` to hold it where it is. A
-  `version` below the installed one is reported and not applied.
+  reinstalled. Without `version`, jellarr installs a missing plugin at the
+  newest version the repositories offer for your Jellyfin version and leaves an
+  installed one alone; set `upgrade = true` on the plugin to take catalog
+  updates on the next run. Set `version` to hold it at an exact version, with or
+  without `upgrade`. A `version` below the installed one is reported and not
+  applied.
 - Installing or upgrading a plugin restarts Jellyfin, because Jellyfin loads
   plugins at start. After an upgrade, older copies that Jellyfin reports as
   `Superseded` are uninstalled.
@@ -291,11 +295,13 @@ when it runs and trims surrounding whitespace. Do not use `_file` for
 the file's contents, not its path. Use `password = { _file = "..."; }` or
 `passwordFile = "/run/secrets/name"`.
 
-`${VAR}` inside a string is replaced from jellarr's environment, which you fill
-with `services.jellarr.environmentFile`. `$${` is a literal `${`. Any other `$`
-is left as written. A missing file or an undefined variable fails the run.
-Substituted values are strings, so `${VAR}` cannot fill an integer or boolean
-option.
+With `services.jellarr.config.expandEnv = true`, `${VAR}` inside a string is
+replaced from jellarr's environment, which you fill with
+`services.jellarr.environmentFile`. `$${` is a literal `${`. Any other `$` is
+left as written. Without `expandEnv`, strings are used exactly as written. A
+missing file fails the run, and so does an undefined variable when `expandEnv`
+is on. Substituted values are strings, so `${VAR}` cannot fill an integer or
+boolean option.
 
 ## What jellarr cannot do
 
@@ -454,9 +460,9 @@ you use will remove it from the server. Run the dry run first.
    changes to expect.
 
    If your config points at credential paths that only exist inside the jellarr
-   unit, such as `passwordFile = "${CREDENTIALS_DIRECTORY}/admin"`, run the dry
-   run as a transient unit with the same name and credentials, so the paths
-   resolve the same way:
+   unit, such as `passwordFile = "${CREDENTIALS_DIRECTORY}/admin"` (which needs
+   `expandEnv = true`), run the dry run as a transient unit with the same name
+   and credentials, so the paths resolve the same way:
 
    ```sh
    systemd-run --unit=jellarr --wait --pipe \
