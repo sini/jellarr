@@ -148,9 +148,9 @@ in [
 
   (assertEq "hardwareDecodingCodecs all" (mkEncodingOptionsConfig (nullConfig
     // {
-      hardwareDecodingCodecs = ["h264" "hevc" "mpeg2video" "vc1" "vp8" "vp9" "av1"];
+      hardwareDecodingCodecs = ["h264" "hevc" "mpeg1video" "mpeg2video" "mpeg4" "vc1" "vp8" "vp9" "av1"];
     })) {
-    hardwareDecodingCodecs = ["h264" "hevc" "mpeg2video" "vc1" "vp8" "vp9" "av1"];
+    hardwareDecodingCodecs = ["h264" "hevc" "mpeg1video" "mpeg2video" "mpeg4" "vc1" "vp8" "vp9" "av1"];
   })
 
   (assertEq "hardwareDecodingCodecs empty" (mkEncodingOptionsConfig (nullConfig // {hardwareDecodingCodecs = [];})) {

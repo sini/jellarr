@@ -185,7 +185,9 @@ describe("EncodingOptionsConfig", () => {
         hardwareDecodingCodecs: [
           "h264",
           "hevc",
+          "mpeg1video",
           "mpeg2video",
+          "mpeg4",
           "vc1",
           "vp8",
           "vp9",

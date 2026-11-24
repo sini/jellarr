@@ -21,7 +21,9 @@ export const EncodingOptionsConfigType: z.ZodObject<{
       z.ZodEnum<{
         h264: "h264";
         hevc: "hevc";
+        mpeg1video: "mpeg1video";
         mpeg2video: "mpeg2video";
+        mpeg4: "mpeg4";
         vc1: "vc1";
         vp8: "vp8";
         vp9: "vp9";
@@ -150,7 +152,19 @@ export const EncodingOptionsConfigType: z.ZodObject<{
     vaapiDevice: z.string().optional(),
     qsvDevice: z.string().optional(),
     hardwareDecodingCodecs: z
-      .array(z.enum(["h264", "hevc", "mpeg2video", "vc1", "vp8", "vp9", "av1"]))
+      .array(
+        z.enum([
+          "h264",
+          "hevc",
+          "mpeg1video",
+          "mpeg2video",
+          "mpeg4",
+          "vc1",
+          "vp8",
+          "vp9",
+          "av1",
+        ]),
+      )
       .optional(),
     enableDecodingColorDepth10Hevc: z.boolean().optional(),
     enableDecodingColorDepth10Vp9: z.boolean().optional(),

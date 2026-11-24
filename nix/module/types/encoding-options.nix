@@ -39,7 +39,9 @@
         type = nullOr (types.listOf (types.enum [
           "h264"
           "hevc"
+          "mpeg1video"
           "mpeg2video"
+          "mpeg4"
           "vc1"
           "vp8"
           "vp9"

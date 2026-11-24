@@ -461,50 +461,24 @@ describe("UserPolicyConfig", () => {
     );
   });
 
-  it("should reject negative loginAttemptsBeforeLockout", () => {
-    // Arrange
-    const invalidConfig: z.input<typeof UserPolicyConfigType> = {
-      loginAttemptsBeforeLockout: -1,
-    };
-
-    // Act
-    const result: ZodSafeParseResult<UserPolicyConfig> =
-      UserPolicyConfigType.safeParse(invalidConfig);
-
-    // Assert
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues).toBeDefined();
-      expect(result.error.issues.length).toBeGreaterThan(0);
-      const numError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err: z.core.$ZodIssue) =>
-          err.path.includes("loginAttemptsBeforeLockout"),
-      );
-      expect(numError?.message).toContain(">=1");
+  it("should accept -1 (never lock out) and 0 (server default) for loginAttemptsBeforeLockout", () => {
+    for (const value of [-1, 0]) {
+      const result: ZodSafeParseResult<UserPolicyConfig> =
+        UserPolicyConfigType.safeParse({ loginAttemptsBeforeLockout: value });
+      expect(result.success).toBe(true);
     }
   });
 
-  it("should reject zero loginAttemptsBeforeLockout", () => {
-    // Arrange
-    const invalidConfig: z.input<typeof UserPolicyConfigType> = {
-      loginAttemptsBeforeLockout: 0,
-    };
-
-    // Act
+  it("should reject loginAttemptsBeforeLockout below -1", () => {
     const result: ZodSafeParseResult<UserPolicyConfig> =
-      UserPolicyConfigType.safeParse(invalidConfig);
-
-    // Assert
+      UserPolicyConfigType.safeParse({ loginAttemptsBeforeLockout: -2 });
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues).toBeDefined();
-      expect(result.error.issues.length).toBeGreaterThan(0);
-      const numError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err: z.core.$ZodIssue) =>
-          err.path.includes("loginAttemptsBeforeLockout"),
-      );
-      expect(numError?.message).toContain(">=1");
-    }
+  });
+
+  it("should accept 0 (unlimited) for maxActiveSessions", () => {
+    const result: ZodSafeParseResult<UserPolicyConfig> =
+      UserPolicyConfigType.safeParse({ maxActiveSessions: 0 });
+    expect(result.success).toBe(true);
   });
 
   it("should reject non-integer loginAttemptsBeforeLockout", () => {

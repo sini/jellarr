@@ -100,8 +100,8 @@ export const UserPolicyConfigType: z.ZodObject<{
   isAdministrator: z.boolean().optional(),
   isHidden: z.boolean().optional(),
   isDisabled: z.boolean().optional(),
-  loginAttemptsBeforeLockout: z.number().int().min(1).optional(),
-  maxActiveSessions: z.number().int().min(1).optional(),
+  loginAttemptsBeforeLockout: z.number().int().min(-1).optional(),
+  maxActiveSessions: z.number().int().min(0).optional(),
   remoteClientBitrateLimit: z.number().int().min(0).optional(),
   // NOTE: an explicit null clears the limit; an absent key leaves it unmanaged.
   maxParentalRating: z.number().int().min(0).nullable().optional(),
@@ -227,7 +227,7 @@ export const UserConfigType: z.ZodObject<{
     audioLanguagePreference: z.string().min(1).optional(),
     playDefaultAudioTrack: z.boolean().optional(),
     castReceiverId: z.string().min(1).optional(),
-    maxActiveSessions: z.number().int().min(1).optional(),
+    maxActiveSessions: z.number().int().min(0).optional(),
   })
   .strict()
   .refine(

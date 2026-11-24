@@ -41,12 +41,12 @@
       loginAttemptsBeforeLockout = mkOption {
         type = nullOr types.int;
         default = null;
-        description = "Number of login attempts before lockout (minimum 1).";
+        description = "Number of login attempts before lockout (-1 never locks out, 0 uses the server default).";
       };
       maxActiveSessions = mkOption {
         type = nullOr types.int;
         default = null;
-        description = "Maximum concurrent active sessions for the user.";
+        description = "Maximum concurrent active sessions for the user (0 is unlimited).";
       };
       remoteClientBitrateLimit = mkOption {
         type = nullOr types.ints.unsigned;
@@ -364,8 +364,8 @@
     assert checkEntries c ["enabledLibraries" "enableContentDeletionFromLibraries" "blockedMediaLibraries" "enabledDevices" "enabledChannels" "blockedChannels" "allowedTags" "blockedTags"];
     assert (c.loginAttemptsBeforeLockout or null)
     == null
-    || c.loginAttemptsBeforeLockout >= 1
-    || throw "loginAttemptsBeforeLockout must be at least 1";
+    || c.loginAttemptsBeforeLockout >= (-1)
+    || throw "loginAttemptsBeforeLockout must be at least -1";
       presentOnly c
       # "unrestricted" renders as an explicit null, which clears the limit.
       // lib.genAttrs (lib.filter (n: (c.${n} or null) == "unrestricted") ["maxParentalRating" "maxParentalSubRating"]) (_: null);

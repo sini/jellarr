@@ -2,6 +2,7 @@
   lib,
   assertEq,
   assertThrows,
+  assertSucceeds,
   ...
 }: let
   types = import ../../../module/types {inherit lib;};
@@ -384,7 +385,19 @@ in [
       }
     ])
 
-  (assertThrows "reject negative loginAttemptsBeforeLockout" (mkUsersConfig [
+  (assertThrows "reject loginAttemptsBeforeLockout below -1" (mkUsersConfig [
+    {
+      name = "user";
+      password = "pass";
+      passwordFile = null;
+      policy = {
+        isAdministrator = null;
+        loginAttemptsBeforeLockout = -2;
+      };
+    }
+  ]))
+
+  (assertSucceeds "accept loginAttemptsBeforeLockout -1 (never lock out)" (mkUsersConfig [
     {
       name = "user";
       password = "pass";
@@ -396,7 +409,7 @@ in [
     }
   ]))
 
-  (assertThrows "reject zero loginAttemptsBeforeLockout" (mkUsersConfig [
+  (assertSucceeds "accept loginAttemptsBeforeLockout 0 (server default)" (mkUsersConfig [
     {
       name = "user";
       password = "pass";
