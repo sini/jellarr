@@ -14,7 +14,9 @@ describe("lib/health", () => {
       .fn()
       .mockRejectedValueOnce(new Error("refused"))
       .mockResolvedValueOnce(new Response("", { status: 503 }))
-      .mockResolvedValue(new Response("Healthy", { status: 200 }));
+      .mockImplementation(() =>
+        Promise.resolve(new Response("Healthy", { status: 200 })),
+      );
 
     // Act
     await waitForHealth("http://jf:8096/", {
@@ -29,6 +31,31 @@ describe("lib/health", () => {
     expect(fetchFn.mock.calls[3]?.[0]).toBe(
       "http://jf:8096/System/Info/Public",
     );
+  });
+
+  it("whenHealthAnswers200WithDegradedBody_thenItIsNotReady", async () => {
+    // Arrange: Jellyfin 12's setup server, before the real one starts
+    const fetchFn: Mock = vi.fn((url: string) =>
+      Promise.resolve(
+        new Response(url.endsWith("/health") ? "Degraded" : "{}", {
+          status: 200,
+        }),
+      ),
+    );
+
+    // Act + Assert
+    await expect(
+      waitForHealth("http://jf:8096", {
+        timeoutMs: 20,
+        intervalMs: 5,
+        fetchFn: fetchFn as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(/did not report healthy on \/health/);
+    expect(
+      fetchFn.mock.calls.some(
+        (call: unknown[]) => call[0] === "http://jf:8096/System/Info/Public",
+      ),
+    ).toBe(false);
   });
 
   it("whenServerNeverHealthy_thenWaitForHealthThrowsClearError", async () => {
@@ -53,9 +80,11 @@ describe("lib/health", () => {
     // Arrange
     const fetchFn: Mock = vi
       .fn()
-      .mockResolvedValueOnce(new Response("", { status: 200 }))
+      .mockResolvedValueOnce(new Response("Healthy", { status: 200 }))
       .mockRejectedValueOnce(new Error("refused"))
-      .mockResolvedValue(new Response("", { status: 200 }));
+      .mockImplementation(() =>
+        Promise.resolve(new Response("Healthy", { status: 200 })),
+      );
 
     // Act
     await waitForRestart("http://jf:8096", {
@@ -72,7 +101,7 @@ describe("lib/health", () => {
     // Arrange
     const fetchFn: Mock = vi.fn((url: string) =>
       Promise.resolve(
-        new Response("", {
+        new Response(url.endsWith("/health") ? "Healthy" : "", {
           status:
             url.endsWith("/health") || fetchFn.mock.calls.length > 4
               ? 200
@@ -99,7 +128,9 @@ describe("lib/health", () => {
     // Arrange
     const fetchFn: Mock = vi.fn((url: string) =>
       Promise.resolve(
-        new Response("", { status: url.endsWith("/health") ? 200 : 503 }),
+        url.endsWith("/health")
+          ? new Response("Healthy", { status: 200 })
+          : new Response("", { status: 503 }),
       ),
     );
 
@@ -148,7 +179,7 @@ describe("lib/health", () => {
 
 describe("lib/health restart observation", () => {
   const healthy: () => Promise<Response> = (): Promise<Response> =>
-    Promise.resolve(new Response("", { status: 200 }));
+    Promise.resolve(new Response("Healthy", { status: 200 }));
 
   it("whenTimeoutIsZero_thenItIsRejected", () => {
     expect(() => resolveWaitTimeoutMs(0, {})).toThrow(/Invalid wait timeout/);
