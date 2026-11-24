@@ -30,6 +30,10 @@ and this project adheres to
   configuration of a plugin declared `enabled: false` is not applied, since a
   disabled plugin is not loaded. `--dump` writes `enabled: false` for a disabled
   plugin.
+- `xbmcMetadata` manages the `xbmcmetadata` named configuration (NFO saving
+  options): `userId`, `releaseDateFormat`, `saveImagePathsInNfo`,
+  `enablePathSubstitution` and `enableExtraThumbsDuplication`. It is read by
+  `--dump`, planned by `--dry-run`, and available in the NixOS module.
 
 ### Changed
 

@@ -33,6 +33,11 @@ import {
   networkRestartTarget,
 } from "../apply/networking";
 import {
+  calculateXbmcMetadataDiff,
+  applyXbmcMetadata,
+} from "../apply/xbmc-metadata";
+import { type XbmcMetadataOptionsSchema } from "../types/schema/xbmc-metadata";
+import {
   calculateNewUsersDiff,
   calculateUserPoliciesDiff,
   applyUserPolicies,
@@ -305,6 +310,24 @@ export async function runPipeline(
       console.log("✓ updated metadata config");
     } else {
       console.log("✓ metadata config already up to date");
+    }
+  }
+
+  if (cfg.xbmcMetadata) {
+    const currentXbmcSchema: XbmcMetadataOptionsSchema =
+      await jellyfinClient.getXbmcMetadataConfiguration();
+
+    const updatedXbmcSchema: XbmcMetadataOptionsSchema | undefined =
+      calculateXbmcMetadataDiff(currentXbmcSchema, cfg.xbmcMetadata);
+
+    if (updatedXbmcSchema && plan) {
+      plan.change("xbmcMetadata", currentXbmcSchema, updatedXbmcSchema);
+    } else if (updatedXbmcSchema) {
+      console.log("→ updating NFO (xbmcmetadata) config");
+      await applyXbmcMetadata(jellyfinClient, updatedXbmcSchema);
+      console.log("✓ updated NFO (xbmcmetadata) config");
+    } else {
+      console.log("✓ NFO (xbmcmetadata) config already up to date");
     }
   }
 

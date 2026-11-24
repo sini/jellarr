@@ -13,6 +13,7 @@
     livetv = import ./livetv.nix {inherit lib;};
     networking = import ./networking.nix {inherit lib;};
     metadata = import ./metadata.nix {inherit lib;};
+    xbmcMetadata = import ./xbmc-metadata.nix {inherit lib;};
     plugins = import ./plugins.nix {inherit lib;};
     startup = import ./startup.nix {inherit lib;};
     system = import ./system.nix {inherit lib;};
@@ -38,6 +39,11 @@
         type = nullOr subTypes.metadata.metadataConfigType;
         default = null;
         description = "Metadata configuration.";
+      };
+      xbmcMetadata = mkOption {
+        type = nullOr subTypes.xbmcMetadata.xbmcMetadataConfigType;
+        default = null;
+        description = "NFO saving options (the `xbmcmetadata` named configuration).";
       };
       encoding = mkOption {
         type = nullOr subTypes.encodingOptions.encodingOptionsConfigType;
@@ -114,6 +120,9 @@
       }
       // optionalAttrs (cfg ? metadata && cfg.metadata != null) {
         metadata = subTypes.metadata.mkMetadataConfig cfg.metadata;
+      }
+      // optionalAttrs (cfg ? xbmcMetadata && cfg.xbmcMetadata != null) {
+        xbmcMetadata = subTypes.xbmcMetadata.mkXbmcMetadataConfig cfg.xbmcMetadata;
       }
       // optionalAttrs (cfg ? encoding && cfg.encoding != null) {
         encoding = subTypes.encodingOptions.mkEncodingOptionsConfig cfg.encoding;

@@ -449,6 +449,26 @@ metadata:
 The Jellyfin default is `true`. Leave this section out if you do not want
 Jellarr to manage the setting.
 
+### NFO Options (`xbmcMetadata`)
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+xbmcMetadata:
+    # Id of the user whose watched state is written to NFO files; null clears it
+    userId: "0a1b2c3d4e5f4a6b8c7d9e0f1a2b3c4d"
+    releaseDateFormat: "yyyy-MM-dd"
+    saveImagePathsInNfo: true
+    enablePathSubstitution: true
+    enableExtraThumbsDuplication: false
+```
+
+This is Jellyfin's `xbmcmetadata` named configuration, the global options for
+saving NFO files; whether a library saves NFO files at all is
+`libraryOptions.metadataSavers`. Only the fields you set are changed, and the
+others keep the server's values. `userId` is a Jellyfin user id (it is not
+resolved from a user name), and `null` clears it.
+
 ### Library Configuration
 
 ```yaml

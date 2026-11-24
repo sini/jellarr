@@ -12,6 +12,7 @@
     base_url = "http://10.0.0.76:8096";
     system = null;
     metadata = null;
+    xbmcMetadata = null;
     encoding = null;
     networking = null;
     library = null;

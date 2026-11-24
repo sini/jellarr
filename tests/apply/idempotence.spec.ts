@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { calculateSystemDiff } from "../../src/apply/system";
 import { calculateEncodingDiff } from "../../src/apply/encoding-options";
 import { calculateNetworkingDiff } from "../../src/apply/networking";
+import { calculateXbmcMetadataDiff } from "../../src/apply/xbmc-metadata";
 import { calculateLibraryDiff } from "../../src/apply/library";
 import { calculateBrandingOptionsDiff } from "../../src/apply/branding-options";
 import { calculateMetadataDiff } from "../../src/apply/metadata";
@@ -121,6 +122,19 @@ describe("a second run with an unchanged config changes nothing", () => {
         calculateNetworkingDiff(s, {
           enableUPnP: false,
           localNetworkSubnets: ["10.0.0.0/8", "192.168.0.0/16"],
+        } as never),
+    );
+    expect(first).toBeDefined();
+    expect(second).toBeUndefined();
+  });
+
+  it("xbmcMetadata", () => {
+    const { first, second }: Pair = twice(
+      { ReleaseDateFormat: "yyyy", UserId: null } as never,
+      (s: never): object | undefined =>
+        calculateXbmcMetadataDiff(s, {
+          releaseDateFormat: "yyyy-MM-dd",
+          userId: "u1",
         } as never),
     );
     expect(first).toBeDefined();

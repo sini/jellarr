@@ -13,6 +13,7 @@ vi.mock("../../src/api/jellyfin_client", () => ({
         CastReceiverApplications: [{ Id: "ABC123", Name: "Stable" }],
       }),
     getMetadataConfiguration: () => Promise.resolve({}),
+    getXbmcMetadataConfiguration: () => Promise.resolve({}),
     getEncodingConfiguration: () => Promise.resolve({}),
     getNetworkingConfiguration: () => Promise.resolve({}),
     getBrandingConfiguration: () => Promise.resolve({}),

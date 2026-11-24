@@ -10,6 +10,7 @@ const READS: Record<string, unknown> = {
   getServerVersion: "10.11.0",
   getSystemConfiguration: { ServerName: "old" },
   getMetadataConfiguration: { UseFileCreationTimeForDateAdded: false },
+  getXbmcMetadataConfiguration: { ReleaseDateFormat: "yyyy" },
   getEncodingConfiguration: { EncoderPreset: "auto" },
   getVirtualFolders: [
     {
@@ -56,6 +57,7 @@ const READS: Record<string, unknown> = {
 const WRITES: string[] = [
   "updateSystemConfiguration",
   "updateMetadataConfiguration",
+  "updateXbmcMetadataConfiguration",
   "updateEncodingConfiguration",
   "addVirtualFolder",
   "addMediaPath",
@@ -155,6 +157,7 @@ describe("pipeline/dry run", () => {
     await writeConfig([
       "system: { serverName: new }",
       "metadata: { useFileCreationTimeForDateAdded: true }",
+      "xbmcMetadata: { releaseDateFormat: yyyy-MM-dd }",
       "encoding: { encoderPreset: slow }",
       "library:",
       "  virtualFolders:",
@@ -196,6 +199,7 @@ describe("pipeline/dry run", () => {
     for (const expected of [
       'system.ServerName: "old" → "new"',
       "metadata.UseFileCreationTimeForDateAdded: false → true",
+      'xbmcMetadata.ReleaseDateFormat: "yyyy" → "yyyy-MM-dd"',
       "encoding.EncoderPreset",
       "library Movies: would unlink /stale",
       "its items leave the library",

@@ -5,6 +5,7 @@ vi.mock("../../src/api/jellyfin_client", () => ({
   createJellyfinClient: (): object => ({
     getSystemConfiguration: () => Promise.resolve({}),
     getMetadataConfiguration: () => Promise.resolve({}),
+    getXbmcMetadataConfiguration: () => Promise.resolve({}),
     getEncodingConfiguration: () => Promise.resolve({}),
     getNetworkingConfiguration: () => Promise.resolve({}),
     getBrandingConfiguration: () => Promise.resolve({}),

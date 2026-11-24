@@ -454,6 +454,41 @@ describe("api/jf Metadata façade", () => {
     expect(request.url).toMatch(/\/System\/Configuration\/metadata$/);
   });
 
+  it("reads and writes the xbmcmetadata named configuration", async (): Promise<void> => {
+    mockFetchJson({ ReleaseDateFormat: "yyyy" });
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.getXbmcMetadataConfiguration();
+    expect(getLastRequest().url).toMatch(
+      /\/System\/Configuration\/xbmcmetadata$/,
+    );
+
+    mockFetchNoContent();
+    await jellyfinClient.updateXbmcMetadataConfiguration({
+      ReleaseDateFormat: "yyyy-MM-dd",
+    });
+    const request: Request = getLastRequest();
+    expect(request.method).toBe("POST");
+    expect(request.url).toMatch(/\/System\/Configuration\/xbmcmetadata$/);
+  });
+
+  it("enables and disables a plugin by id and version", async (): Promise<void> => {
+    mockFetchNoContent();
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.enablePlugin("abc", "1.2.3.4");
+    expect(getLastRequest().method).toBe("POST");
+    expect(getLastRequest().url).toMatch(/\/Plugins\/abc\/1\.2\.3\.4\/Enable$/);
+    await jellyfinClient.disablePlugin("abc", "1.2.3.4");
+    expect(getLastRequest().url).toMatch(
+      /\/Plugins\/abc\/1\.2\.3\.4\/Disable$/,
+    );
+  });
+
   it("updates the metadata configuration", async (): Promise<void> => {
     mockFetchNoContent();
     const jellyfinClient: JellyfinClient = createJellyfinClient(

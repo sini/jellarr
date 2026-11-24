@@ -15,6 +15,7 @@ import {
 import { EncodingOptionsConfigType } from "../../src/types/config/encoding-options";
 import { NetworkingConfigType } from "../../src/types/config/networking";
 import { MetadataConfigType } from "../../src/types/config/metadata";
+import { XbmcMetadataConfigType } from "../../src/types/config/xbmc-metadata";
 import {
   LiveTvConfigType,
   TunerHostConfigType,
@@ -73,6 +74,7 @@ const targets: Target[] = (
     ["EncodingOptions", EncodingOptionsConfigType],
     ["NetworkConfiguration", NetworkingConfigType],
     ["MetadataConfiguration", MetadataConfigType],
+    ["XbmcMetadataOptions", XbmcMetadataConfigType],
     ["LiveTvOptions", LiveTvConfigType],
     ["BrandingOptionsDto", BrandingOptionsConfigType],
     ["LibraryOptions", LibraryOptionsConfigType],
@@ -101,7 +103,6 @@ const targets: Target[] = (
 
 /** DTOs with no jellarr schema yet; each field is judged against the exclusion lists. */
 const UNCOVERED_DTOS: string[] = [
-  "XbmcMetadataOptions",
   "DatabaseConfigurationOptions",
   "ImageOption",
   "DisplayPreferencesDto",

@@ -2,6 +2,7 @@ import type { ServerConfigurationSchema } from "../types/schema/system";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
 import type { NetworkConfigurationSchema } from "../types/schema/networking";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
+import type { XbmcMetadataOptionsSchema } from "../types/schema/xbmc-metadata";
 import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
@@ -115,6 +116,10 @@ export interface JellyfinClient {
   getMetadataConfiguration(): Promise<MetadataConfigurationSchema>;
   updateMetadataConfiguration(
     body: Partial<MetadataConfigurationSchema>,
+  ): Promise<void>;
+  getXbmcMetadataConfiguration(): Promise<XbmcMetadataOptionsSchema>;
+  updateXbmcMetadataConfiguration(
+    body: Partial<XbmcMetadataOptionsSchema>,
   ): Promise<void>;
   getVirtualFolders(): Promise<VirtualFolderInfoSchema[]>;
   addVirtualFolder(

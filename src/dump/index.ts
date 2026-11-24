@@ -10,6 +10,7 @@ import type {
   CastReceiverApplicationSchema,
 } from "../types/schema/system";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
+import type { XbmcMetadataOptionsSchema } from "../types/schema/xbmc-metadata";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
 import type { NetworkConfigurationSchema } from "../types/schema/networking";
 import type {
@@ -59,6 +60,7 @@ export async function runDump(baseUrl: string): Promise<void> {
   const [
     systemConfig,
     metadataConfig,
+    xbmcConfig,
     encodingConfig,
     networkingConfig,
     virtualFolders,
@@ -71,6 +73,7 @@ export async function runDump(baseUrl: string): Promise<void> {
   ]: [
     ServerConfigurationSchema,
     MetadataConfigurationSchema,
+    XbmcMetadataOptionsSchema,
     EncodingOptionsSchema,
     NetworkConfigurationSchema,
     VirtualFolderInfoSchema[],
@@ -83,6 +86,7 @@ export async function runDump(baseUrl: string): Promise<void> {
   ] = await Promise.all([
     client.getSystemConfiguration(),
     client.getMetadataConfiguration(),
+    client.getXbmcMetadataConfiguration(),
     client.getEncodingConfiguration(),
     client.getNetworkingConfiguration(),
     client.getVirtualFolders(),
@@ -245,6 +249,14 @@ export async function runDump(baseUrl: string): Promise<void> {
     metadata: {
       useFileCreationTimeForDateAdded:
         metadataConfig.UseFileCreationTimeForDateAdded,
+    },
+
+    xbmcMetadata: {
+      userId: xbmcConfig.UserId,
+      releaseDateFormat: xbmcConfig.ReleaseDateFormat,
+      saveImagePathsInNfo: xbmcConfig.SaveImagePathsInNfo,
+      enablePathSubstitution: xbmcConfig.EnablePathSubstitution,
+      enableExtraThumbsDuplication: xbmcConfig.EnableExtraThumbsDuplication,
     },
 
     encoding: {

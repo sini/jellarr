@@ -9,6 +9,7 @@ const READ_ONLY: ReadonlySet<string> = new Set([
   "getEncodingConfiguration",
   "getNetworkingConfiguration",
   "getMetadataConfiguration",
+  "getXbmcMetadataConfiguration",
   "getVirtualFolders",
   "getBrandingConfiguration",
   "getSplashscreen",

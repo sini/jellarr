@@ -1,6 +1,7 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
 import type { NetworkConfigurationSchema } from "../types/schema/networking";
+import type { XbmcMetadataOptionsSchema } from "../types/schema/xbmc-metadata";
 import type { MetadataConfigurationSchema } from "../types/schema/metadata";
 import type {
   VirtualFolderInfoSchema,
@@ -299,6 +300,39 @@ export function createJellyfinClient(
       if (!res.response.ok) {
         throw new Error(
           `POST /System/Configuration/encoding failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getXbmcMetadataConfiguration(): Promise<XbmcMetadataOptionsSchema> {
+      const res: ApiResponse = await client.GET("/System/Configuration/{key}", {
+        params: { path: { key: "xbmcmetadata" } },
+      });
+
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /System/Configuration/xbmcmetadata failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return res.data as XbmcMetadataOptionsSchema;
+    },
+
+    async updateXbmcMetadataConfiguration(
+      body: Partial<XbmcMetadataOptionsSchema>,
+    ): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "xbmcmetadata" } },
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /System/Configuration/xbmcmetadata failed: ${res.response.status.toString()}`,
         );
       }
     },
