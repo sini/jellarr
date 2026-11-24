@@ -45,6 +45,8 @@ and this project adheres to
   an undeclared one is carried over unchanged.
 - `devices` sets the custom name of devices by id (`POST /Devices/Options`). A
   device the server does not know yet is warned about and skipped.
+- VM tests: the published image run as a Kubernetes Job runs it (`container`),
+  and a switch that restarts Jellyfin while jellarr runs (`jf-restart`).
 
 ## [0.5.1] - 2026-11-24
 

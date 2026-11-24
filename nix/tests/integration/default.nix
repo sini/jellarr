@@ -3,7 +3,7 @@
   jellyfinPackages,
   image,
 }: let
-  jellyfinTests = ["sanity" "library-update" "gaps" "locations" "authority" "network-restart"];
+  jellyfinTests = ["sanity" "library-update" "gaps" "locations" "authority" "network-restart" "jf-restart"];
   versionIndependent = ["switch-apply"];
   # the image does not depend on the Jellyfin version, so one version stands in
   imageTests = ["container"];
