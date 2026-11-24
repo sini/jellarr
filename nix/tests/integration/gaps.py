@@ -454,13 +454,15 @@ def cov_plugin(server):
         " ", ""
     )
     # the real run enables it (the manifest changes, Jellyfin restarts), and then
-    # fails honestly because the placeholder assembly cannot load (Malfunctioned)
+    # fails honestly because the placeholder assembly cannot load (Malfunctioned).
+    # The timeout bounds both the restart wait and the Active wait, so it must
+    # cover a slow restart on a loaded CI runner; 30 s was not enough there.
     out = cov(
         server,
         "enable",
         on,
         expect_fail="did not become active",
-        env="JELLARR_WAIT_TIMEOUT=30",
+        env="JELLARR_WAIT_TIMEOUT=180",
     )
     manifest = server.succeed(f"cat {PLANTED}/meta.json").replace(" ", "")
     print(f"REAL BEHAVIOUR manifest after enable: {manifest}")
