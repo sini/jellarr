@@ -154,4 +154,90 @@ describe("api/client 503 retry", () => {
     expect(bodies[0]).toContain("ServerName");
     spy.mockRestore();
   });
+
+  function failWith(code: string, nested: boolean = false): TypeError {
+    const inner: Error = Object.assign(new Error(code), { code });
+    const cause: Error = nested
+      ? Object.assign(new AggregateError([inner, inner], code), { code })
+      : inner;
+    return new TypeError("fetch failed", { cause });
+  }
+
+  function stubFailures(failure: Error, then: number = 200): Mock {
+    let n: number = 0;
+    return vi
+      .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
+      .mockImplementation(() =>
+        n++ < 2
+          ? Promise.reject(failure)
+          : Promise.resolve(new Response("{}", { status: then })),
+      );
+  }
+
+  it.each(["ECONNREFUSED", "ECONNRESET", "UND_ERR_SOCKET", "EPIPE"])(
+    "retries a GET that fails with %s",
+    async (code: string) => {
+      const spy: Mock = stubFailures(failWith(code));
+      const jf: Client<paths> = makeClient("http://x", "T", "d", retry);
+      const res: { response: Response } = await jf.GET("/System/Configuration");
+      expect(res.response.status).toBe(200);
+      expect(spy).toHaveBeenCalledTimes(3);
+      spy.mockRestore();
+    },
+  );
+
+  it("retries a GET refused on both IPv4 and IPv6", async () => {
+    const spy: Mock = stubFailures(failWith("ECONNREFUSED", true));
+    const jf: Client<paths> = makeClient("http://x", "T", "d", retry);
+    await jf.GET("/System/Configuration");
+    expect(spy).toHaveBeenCalledTimes(3);
+    spy.mockRestore();
+  });
+
+  it("retries a POST refused before any connection was made", async () => {
+    const spy: Mock = stubFailures(failWith("ECONNREFUSED"));
+    const jf: Client<paths> = makeClient("http://x", "T", "d", retry);
+    const res: { response: Response } = await jf.POST("/System/Configuration", {
+      body: { ServerName: "a" } as never,
+    });
+    expect(res.response.status).toBe(200);
+    expect(spy).toHaveBeenCalledTimes(3);
+    spy.mockRestore();
+  });
+
+  it.each(["ECONNRESET", "UND_ERR_SOCKET", "EPIPE"])(
+    "does not retry a POST that fails with %s",
+    async (code: string) => {
+      const spy: Mock = stubFailures(failWith(code));
+      const jf: Client<paths> = makeClient("http://x", "T", "d", retry);
+      await expect(
+        jf.POST("/System/Configuration", {
+          body: { ServerName: "a" } as never,
+        }),
+      ).rejects.toThrow("fetch failed");
+      expect(spy).toHaveBeenCalledTimes(1);
+      spy.mockRestore();
+    },
+  );
+
+  it("does not retry a failure that is not a connection error", async () => {
+    const spy: Mock = stubFailures(new TypeError("Invalid URL"));
+    const jf: Client<paths> = makeClient("http://x", "T", "d", retry);
+    await expect(jf.GET("/System/Configuration")).rejects.toThrow(
+      "Invalid URL",
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  it("fails after the deadline when connections keep failing", async () => {
+    const spy: Mock = vi
+      .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
+      .mockImplementation(() => Promise.reject(failWith("ECONNREFUSED")));
+    const jf: Client<paths> = makeClient("http://x", "T", "d", retry);
+    await expect(jf.GET("/System/Configuration")).rejects.toThrow(
+      /still refused or dropped connections.*waitTimeout/,
+    );
+    spy.mockRestore();
+  });
 });

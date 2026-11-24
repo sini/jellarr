@@ -48,6 +48,15 @@ and this project adheres to
 - VM tests: the published image run as a Kubernetes Job runs it (`container`),
   and a switch that restarts Jellyfin while jellarr runs (`jf-restart`).
 
+### Fixed
+
+- Jellyfin 12 starts a setup server that answers `/health` with 200 and the
+  body `Degraded` before the real server replaces it; jellarr now waits for
+  `Healthy`.
+- A request that fails at the connection level while Jellyfin restarts is
+  retried within the wait timeout. Reads retry any connection failure; writes
+  retry only when the connection was never made, so a create is never repeated.
+
 ## [0.5.1] - 2026-11-24
 
 ### Added
