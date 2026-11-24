@@ -40,21 +40,46 @@ everything it carries beyond upstream `main`:
 
 New in this fork:
 
-- `--dry-run`: strictly read-only, prints `path: current → desired` for every
-  pending change, masks secrets, and exits 0 / 2 / 1 for no change / changes
-  pending / error, so it can gate CI or a deploy.
-- Authentication falls back to signing in as the admin when no API key is set or
-  the key is rejected; the API key can also come from `JELLARR_API_KEY_FILE`.
-- `passwordFile` is reconciled for existing users without risking lockout or
-  logging anyone out unnecessarily.
-- Plugin installs and removals restart Jellyfin in the same run, so plugin
-  configuration applies on the first pass.
-- Declared arrays are authoritative in every module, and every module is tested
-  to make no changes on a second run with the same config.
-- The NixOS module orders after Jellyfin, re-applies on `nixos-rebuild switch`,
-  takes `apiKeyFile` through systemd credentials, accepts `{ _file = ...; }`
-  wherever it accepts a string, and can take a plain `configFile`.
-- The NixOS VM tests run against both Jellyfin 10.11 and 12.
+- **Jellyfin 10.11 and 12.** The API types are generated from Jellyfin 12, and a
+  setting the connected server doesn't support is skipped with a warning rather
+  than re-applied on every run, so one config works against both.
+- **`--dry-run`**: strictly read-only, prints `path: current → desired` for
+  every pending change, masks secrets, and exits 0 / 2 / 1 for no change /
+  changes pending / error, so it can gate CI or a deploy.
+- **Optional authoritative mode** for users, libraries, plugins and API keys:
+  remove what the config doesn't declare, with rails that protect the signed-in
+  user, the active key and the last administrator, a `keep` list, and a refusal
+  to remove more than half of anything without `allowMassDelete`.
+- **User sync for SSO-created accounts:** scope authoritative users to an
+  authentication provider, disable users who are no longer kept instead of
+  deleting them, re-enable them if they come back, and optionally delete them
+  after a grace period (`deleteDisabledAfter`).
+- **More of Jellyfin's settings:** every settable user policy and preference,
+  Live TV tuners and guide providers, scheduled task triggers, metadata options
+  and path substitutions, splashscreen upload and removal, and library folders
+  kept in step with the declared paths (stale or duplicate `.mblink` links are
+  cleaned up).
+- **Plugins:** matched by catalog GUID, pinned or kept up to date, chosen from a
+  specific repository when you want, restarted in the same run after an install,
+  and configured once they are Active.
+- **Secrets** from files (`{ _file: path }`) or the environment (`${VAR}`)
+  anywhere in the config, resolved after parsing so a secret can't change the
+  config's structure.
+- **Authentication** falls back to signing in as the admin when no API key is
+  set or the key is rejected; the key can also come from `JELLARR_API_KEY_FILE`.
+  `passwordFile` is reconciled for existing users without risking lockout.
+- **Startup that waits properly** for a Jellyfin that is still starting or
+  migrating its database, so a deploy that restarts Jellyfin doesn't fail.
+- **Every module is tested to change nothing** on a second run with the same
+  config, and a declared list always replaces the server's list.
+- **NixOS module:** ordered after Jellyfin, runs at boot and after a switch that
+  changes the config or the package without making either wait, takes
+  `apiKeyFile` through systemd credentials, accepts `{ _file = ...; }` wherever
+  it accepts a string, and can take a plain `configFile`.
+- **Container image** with jellarr as its entrypoint, running as an unprivileged
+  user, ready for a Kubernetes Job.
+- **A migration guide from declarative-jellyfin**:
+  [docs/migrating-from-declarative-jellyfin.md](docs/migrating-from-declarative-jellyfin.md).
 
 Coming from upstream v0.1.1? Read [CHANGELOG.md](CHANGELOG.md) first. A few
 behaviours changed, most notably that strings containing `${NAME}` are now
@@ -1376,16 +1401,16 @@ nix fmt                  # Format project files
 
 ## Comparison: Jellarr vs declarative-jellyfin
 
-| Feature            | Jellarr                         | declarative-jellyfin                           |
-| ------------------ | ------------------------------- | ---------------------------------------------- |
-| **Method**         | Official REST API               | Direct XML/DB manipulation                     |
-| **Service Impact** | Zero (never stops Jellyfin)     | Stops/starts multiple times                    |
-| **Platform**       | Cross-platform (Docker, any OS) | NixOS-only                                     |
-| **Dependencies**   | Node.js 24+                     | systemd, sqlite, jellyfin running on same host |
-| **Safety**         | API validates all changes       | Direct file/DB writes                          |
-| **Future-proof**   | API contract stability          | Breaks on internal changes                     |
-| **Type Safety**    | TypeScript + Zod + OpenAPI      | Bash scripts                                   |
-| **Testing**        | Comprehensive unit tests        | Complex NixOS VM tests                         |
+| Feature            | Jellarr                                                       | declarative-jellyfin                           |
+| ------------------ | ------------------------------------------------------------- | ---------------------------------------------- |
+| **Method**         | Official REST API                                             | Direct XML/DB manipulation                     |
+| **Service Impact** | Restarts only to load or unload plugins                       | Stops/starts multiple times                    |
+| **Platform**       | Cross-platform (Docker, any OS)                               | NixOS-only                                     |
+| **Dependencies**   | Node.js 24+                                                   | systemd, sqlite, jellyfin running on same host |
+| **Safety**         | API validates all changes                                     | Direct file/DB writes                          |
+| **Future-proof**   | API contract stability                                        | Breaks on internal changes                     |
+| **Type Safety**    | TypeScript + Zod + OpenAPI                                    | Bash scripts                                   |
+| **Testing**        | Unit tests, plus NixOS VM tests against Jellyfin 10.11 and 12 | NixOS VM tests                                 |
 
 **declarative-jellyfin's approach:**
 
@@ -1398,16 +1423,22 @@ nix fmt                  # Format project files
 **Jellarr's approach:**
 
 - Uses `/System/Configuration` and similar API endpoints
-- Never touches internal files or databases
+- Never touches internal files or databases, except the optional NixOS
+  `bootstrap`, which seeds an API key into the database before Jellyfin starts
 - Jellyfin validates all changes
-- Zero service interruption
+- No service interruption, except the restart Jellyfin needs to load or unload a
+  plugin
 - Works on any platform where Jellyfin runs
 
 ---
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome. Open an
+[issue](https://github.com/sini/jellarr/issues) for bugs and ideas, or a pull
+request against `main`. Run `nix fmt` before committing, and keep
+`pnpm typecheck`, `pnpm eslint` and `pnpm test` clean; CI also runs the NixOS VM
+tests.
 
 ---
 
