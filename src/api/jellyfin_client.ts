@@ -730,6 +730,30 @@ export function createJellyfinClient(
       }
     },
 
+    async enablePlugin(pluginId: string, version: string): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/Plugins/{pluginId}/{version}/Enable",
+        { params: { path: { pluginId, version } } },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Plugins/${pluginId}/${version}/Enable failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async disablePlugin(pluginId: string, version: string): Promise<void> {
+      const res: ApiResponse = await client.POST(
+        "/Plugins/{pluginId}/{version}/Disable",
+        { params: { path: { pluginId, version } } },
+      );
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Plugins/${pluginId}/${version}/Disable failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async getPluginConfiguration(
       pluginId: string,
     ): Promise<BasePluginConfigurationSchema> {

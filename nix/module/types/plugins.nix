@@ -27,6 +27,16 @@
           use it. When unset, versions from every repository are candidates.
         '';
       };
+      enabled = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = ''
+          Whether the plugin is enabled. When unset, the plugin's state is left
+          alone. Jellyfin applies a change after a restart, which jellarr
+          performs. The `configuration` of a plugin set to `false` is not
+          applied, because a disabled plugin is not loaded.
+        '';
+      };
       configuration = mkOption {
         type = nullOr types.attrs;
         default = null;
@@ -44,6 +54,7 @@
         // {inherit (plugin) name;}
         // optionalAttrs (plugin ? version && plugin.version != null) {inherit (plugin) version;}
         // optionalAttrs (plugin ? repository && plugin.repository != null) {inherit (plugin) repository;}
+        // optionalAttrs (plugin ? enabled && plugin.enabled != null) {inherit (plugin) enabled;}
         // optionalAttrs (plugin.configuration != null) {inherit (plugin) configuration;})
     cfg;
 in {

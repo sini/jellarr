@@ -24,6 +24,13 @@ and this project adheres to
   the server cannot be restarted over the API, so jellarr writes it last, warns,
   and leaves the restart to you.
 
+- `plugins[].enabled` enables or disables an installed plugin
+  (`POST /Plugins/{id}/{version}/Enable` and `/Disable`). Jellyfin applies the
+  change after a restart, which jellarr performs in the same run. The
+  configuration of a plugin declared `enabled: false` is not applied, since a
+  disabled plugin is not loaded. `--dump` writes `enabled: false` for a disabled
+  plugin.
+
 ### Changed
 
 - The networking section is written after every other section.

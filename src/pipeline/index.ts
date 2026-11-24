@@ -66,6 +66,9 @@ import {
   installPlugins,
   calculatePluginRemovals,
   removePlugins,
+  calculatePluginStateChanges,
+  applyPluginStates,
+  type PluginStateChange,
   resolveInstalledPluginNames,
   calculatePluginConfigurationsDiff,
   applyPluginConfigurations,
@@ -630,18 +633,54 @@ export async function runPipeline(
       console.log("✓ restarted Jellyfin");
     }
 
+    const stateChanges: PluginStateChange[] | undefined =
+      calculatePluginStateChanges(installedPlugins, catalog, cfg.plugins);
+    if (stateChanges && plan) {
+      for (const change of stateChanges) {
+        plan.action(
+          `plugin ${change.name}: ${change.enable ? "enable" : "disable"} ${change.version}`,
+        );
+      }
+    } else if (stateChanges) {
+      console.log("→ changing plugin states");
+      await applyPluginStates(jellyfinClient, stateChanges);
+      console.log("✓ changed plugin states");
+      console.log("→ restarting Jellyfin to apply them");
+      await restartJellyfin(jellyfinClient, cfg.base_url, waitTimeoutMs);
+      const enabled: PluginInstall[] = stateChanges
+        .filter((change: PluginStateChange) => change.enable)
+        .map((change: PluginStateChange) => ({
+          name: change.name,
+          guid: change.id,
+          version: change.version,
+        }));
+      installedPlugins =
+        enabled.length > 0
+          ? await waitForInstalledPluginsActive(
+              jellyfinClient,
+              enabled,
+              waitTimeoutMs,
+            )
+          : await jellyfinClient.getPlugins();
+      console.log("✓ restarted Jellyfin");
+    }
+
     const renamedPlugins: PluginConfigList = resolveInstalledPluginNames(
       installedPlugins,
       catalog,
       cfg.plugins,
     );
+    const loadable: PluginConfigList = renamedPlugins.filter(
+      (wanted: PluginConfig) => wanted.enabled !== false,
+    );
     const desiredPlugins: PluginConfigList = dryRun
-      ? renamedPlugins.filter((wanted: PluginConfig) =>
+      ? loadable.filter((wanted: PluginConfig) =>
           installedPlugins.some(
-            (installed: PluginInfoSchema) => installed.Name === wanted.name,
+            (installed: PluginInfoSchema) =>
+              installed.Name === wanted.name && installed.Status !== "Disabled",
           ),
         )
-      : renamedPlugins;
+      : loadable;
     const currentPluginConfigurations: Map<string, PluginConfigurationSchema> =
       await getPluginConfigurationSchemaByName(
         jellyfinClient,

@@ -14,6 +14,7 @@ export const PluginConfigType: z.ZodObject<{
   version: z.ZodOptional<z.ZodString>;
   repository: z.ZodOptional<z.ZodString>;
   configuration: z.ZodOptional<typeof PluginConfigurationConfigType>;
+  enabled: z.ZodOptional<z.ZodBoolean>;
 }> = z
   .object({
     name: z.string().min(1, "Plugin name cannot be empty"),
@@ -26,6 +27,7 @@ export const PluginConfigType: z.ZodObject<{
       .min(1, "Plugin repository cannot be empty")
       .optional(),
     configuration: PluginConfigurationConfigType.optional(),
+    enabled: z.boolean().optional(),
   })
   .strict();
 

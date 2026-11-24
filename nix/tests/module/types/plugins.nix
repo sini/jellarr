@@ -106,6 +106,42 @@ in [
       {name = "Trakt";}
     ])
 
+  (assertEq "enabled false kept" (mkPluginsConfig [
+      {
+        name = "Trakt";
+        enabled = false;
+        configuration = null;
+      }
+    ]) [
+      {
+        name = "Trakt";
+        enabled = false;
+      }
+    ])
+
+  (assertEq "enabled true kept" (mkPluginsConfig [
+      {
+        name = "Trakt";
+        enabled = true;
+        configuration = null;
+      }
+    ]) [
+      {
+        name = "Trakt";
+        enabled = true;
+      }
+    ])
+
+  (assertEq "null enabled omitted" (mkPluginsConfig [
+      {
+        name = "Trakt";
+        enabled = null;
+        configuration = null;
+      }
+    ]) [
+      {name = "Trakt";}
+    ])
+
   (assertThrows "reject empty name" (mkPluginsConfig [
     {
       name = "";

@@ -42,6 +42,7 @@ import * as yaml from "yaml";
 
 interface PluginWithConfig {
   name: string;
+  enabled?: boolean;
   configuration?: BasePluginConfigurationSchema;
 }
 
@@ -95,16 +96,17 @@ export async function runDump(baseUrl: string): Promise<void> {
 
   const pluginsWithConfig: PluginWithConfig[] = await Promise.all(
     plugins.map(async (plugin: PluginInfoSchema): Promise<PluginWithConfig> => {
-      if (!plugin.Id) return { name: plugin.Name ?? "unknown" };
+      const base: PluginWithConfig = {
+        name: plugin.Name ?? "unknown",
+        ...(plugin.Status === "Disabled" ? { enabled: false } : {}),
+      };
+      if (!plugin.Id || plugin.Status === "Disabled") return base;
       try {
         const pluginConfig: BasePluginConfigurationSchema =
           await client.getPluginConfiguration(plugin.Id);
-        return {
-          name: plugin.Name ?? "unknown",
-          configuration: pluginConfig,
-        };
+        return { ...base, configuration: pluginConfig };
       } catch {
-        return { name: plugin.Name ?? "unknown" };
+        return base;
       }
     }),
   );

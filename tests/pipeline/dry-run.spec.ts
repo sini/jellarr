@@ -74,6 +74,8 @@ const WRITES: string[] = [
   "setAccessToken",
   "installPackage",
   "uninstallPlugin",
+  "enablePlugin",
+  "disablePlugin",
   "restartServer",
   "updatePluginConfiguration",
   "createApiKey",

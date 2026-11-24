@@ -315,5 +315,11 @@ describe("configuration coverage", (): void => {
       `endpoints: ${String(nCalled)} called, ${String(Object.keys(ENDPOINT_EXCLUSIONS).length)} excluded, ${String(Object.keys(PENDING_ENDPOINTS).length)} pending, of ${String(config.length)}`,
     );
     expect(open).toEqual([]);
+    expect(
+      Object.keys(PENDING_ENDPOINTS).filter((e: string): boolean =>
+        called.has(e),
+      ),
+      "pending endpoints that are now called; delete them from PENDING_ENDPOINTS",
+    ).toEqual([]);
   });
 });

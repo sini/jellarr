@@ -470,6 +470,63 @@ export async function removePlugins(
   }
 }
 
+export interface PluginStateChange {
+  name: string;
+  id: string;
+  version: string;
+  enable: boolean;
+}
+
+/**
+ * Compares each declared `enabled` flag with the installed copies' status. A
+ * copy Jellyfin reports as Active is disabled when the flag is false, and one
+ * reported as Disabled is enabled when it is true; every other status
+ * (Superseded, Restart, Malfunctioned) is left alone. An undeclared flag
+ * leaves the plugin as it is.
+ */
+export function calculatePluginStateChanges(
+  installed: PluginInfoSchema[],
+  catalog: PackageInfoSchema[],
+  desired: PluginConfigList,
+): PluginStateChange[] | undefined {
+  const changes: PluginStateChange[] = [];
+  for (const plugin of desired) {
+    if (plugin.enabled === undefined) continue;
+    const from: string = plugin.enabled ? "Disabled" : "Active";
+    for (const copy of findInstalled(
+      installed,
+      findPackage(catalog, plugin),
+      plugin,
+    )) {
+      if (copy.Status !== from || !copy.Id || !copy.Version) continue;
+      logger.info(
+        say(
+          `${plugin.enabled ? "Enabling" : "Disabling"} plugin ${plugin.name} ${copy.Version}`,
+          `Would ${plugin.enabled ? "enable" : "disable"} plugin ${plugin.name} ${copy.Version}`,
+        ),
+      );
+      changes.push({
+        name: plugin.name,
+        id: copy.Id,
+        version: copy.Version,
+        enable: plugin.enabled,
+      });
+    }
+  }
+  return changes.length > 0 ? changes : undefined;
+}
+
+export async function applyPluginStates(
+  client: JellyfinClient,
+  changes: PluginStateChange[] | undefined,
+): Promise<void> {
+  if (!changes) return;
+  for (const change of changes) {
+    if (change.enable) await client.enablePlugin(change.id, change.version);
+    else await client.disablePlugin(change.id, change.version);
+  }
+}
+
 /**
  * Renames desired plugins to the names Jellyfin reports for their installed
  * copies, so their configuration can be matched against installed plugins.

@@ -154,6 +154,10 @@ export interface JellyfinClient {
   getPackages(): Promise<PackageInfoSchema[]>;
   installPackage(name: string, options?: InstallPackageOptions): Promise<void>;
   uninstallPlugin(pluginId: string, version: string): Promise<void>;
+  /** Enables a disabled plugin; it loads after the next restart. */
+  enablePlugin(pluginId: string, version: string): Promise<void>;
+  /** Disables a plugin; it unloads after the next restart. */
+  disablePlugin(pluginId: string, version: string): Promise<void>;
   getPluginConfiguration(
     pluginId: string,
   ): Promise<BasePluginConfigurationSchema>;

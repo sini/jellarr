@@ -985,6 +985,10 @@ plugins:
     # Take one plugin from a named repository; the others use any repository
     - name: "Fanart"
       repository: "Dev"
+
+    # Keep a plugin installed but switched off
+    - name: "Playback Reporting"
+      enabled: false
 ```
 
 **How it works:**
@@ -1022,9 +1026,20 @@ plugins:
   become Active, re-reads the plugin list and then applies plugin
   `configuration`, all in the same run
 - A plugin declared with a `configuration` whose configuration cannot be read
-  (not installed or loaded, disabled, or no configuration endpoint) fails the
-  run with a non-zero exit. Plugins declared without a `configuration` that have
-  none are skipped
+  (not installed or loaded, disabled without `enabled: false`, or no
+  configuration endpoint) fails the run with a non-zero exit. Plugins declared
+  without a `configuration` that have none are skipped
+- `enabled: false` disables an installed plugin, `enabled: true` enables a
+  disabled one, and leaving it out leaves the plugin as it is. A change takes
+  effect only after a restart, so Jellarr restarts Jellyfin in the same run and,
+  for an enabled plugin, waits for it to become Active. A second run changes
+  nothing. A plugin that is declared and not installed is still installed, then
+  disabled
+- A disabled plugin is not loaded, so Jellyfin has no configuration endpoint for
+  it. Jellarr therefore does **not** apply the `configuration` of a plugin
+  declared `enabled: false`: it is skipped silently instead of failing the run,
+  and is applied by the first run that declares the plugin enabled (or leaves
+  `enabled` out) once it is loaded
 - The `configuration` field accepts arbitrary key-value pairs specific to each
   plugin
 - Only specified configuration fields are updated; unspecified fields are
