@@ -121,6 +121,7 @@ describe("apply/startup", () => {
           enableRemoteAccess: true,
           enableAutomaticPortMapping: true,
         },
+        user: { name: "admin", password: "pw" },
         completeStartupWizard: false,
       });
       const body: object = spies.setRemoteAccess.mock.calls[0][0] as object;
@@ -151,5 +152,42 @@ describe("apply/startup", () => {
 
     // Assert
     expect(order).toEqual(["complete"]);
+  });
+
+  it.each([
+    { label: "no startup keys", startup: {} },
+    { label: "only server settings", startup: { serverName: "Home" } },
+    {
+      label: "completeStartupWizard false",
+      startup: { completeStartupWizard: false },
+    },
+  ])(
+    "whenStartupHas_$label_thenPristineServerIsLeftAlone",
+    async ({ startup }: { label: string; startup: StartupConfig }) => {
+      // Arrange
+      const { order, client, spies }: Calls = makeClient(false);
+
+      // Act
+      const ran: boolean = await applyStartupWizard(client, startup);
+
+      // Assert
+      expect(ran).toBe(false);
+      expect(order).toEqual([]);
+      expect(spies.updateStartupConfiguration).not.toHaveBeenCalled();
+    },
+  );
+
+  it("whenOnlyStartupUserDeclared_thenWizardRunsAndCompletes", async () => {
+    // Arrange
+    const { order, client }: Calls = makeClient(false);
+
+    // Act
+    const ran: boolean = await applyStartupWizard(client, {
+      user: { name: "admin", password: "pw" },
+    });
+
+    // Assert
+    expect(ran).toBe(true);
+    expect(order).toEqual(["getUser", "user", "complete"]);
   });
 });

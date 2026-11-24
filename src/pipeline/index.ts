@@ -145,7 +145,7 @@ import {
   isUnauthorized,
   type AdminCredentials,
 } from "../apply/auth";
-import { applyStartupWizard } from "../apply/startup";
+import { applyStartupWizard, wantsStartupWizard } from "../apply/startup";
 import { Plan } from "../lib/plan";
 import { setServerSpec, setServerVersion } from "../lib/objects";
 import { maskSecrets, logger } from "../lib/logger";
@@ -242,7 +242,7 @@ export async function runPipeline(
   await waitForHealth(cfg.base_url, { timeoutMs: waitTimeoutMs });
   console.log("✓ Jellyfin is healthy");
 
-  if (plan && cfg.startup) {
+  if (plan && cfg.startup && wantsStartupWizard(cfg.startup)) {
     const info: PublicSystemInfoSchema =
       await jellyfinClient.getPublicSystemInfo();
     if (info.StartupWizardCompleted === false) {

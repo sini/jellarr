@@ -215,7 +215,7 @@ describe("pipeline/dry run", () => {
       "  authoritative: true",
       "  tunerHosts: [{ type: m3u, url: 'http://tv.example/l.m3u' }]",
       "  listingProviders: []",
-      "startup: { serverName: x }",
+      "startup: { completeStartupWizard: true }",
     ]);
 
     // Act

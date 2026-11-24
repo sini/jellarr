@@ -71,7 +71,7 @@
       completeStartupWizard = mkOption {
         type = nullOr types.bool;
         default = null;
-        description = "Mark startup wizard as complete.";
+        description = "Mark the startup wizard as complete. The wizard runs only when this is true or `user` is set; `false` with a `user` leaves it open.";
       };
     };
   };

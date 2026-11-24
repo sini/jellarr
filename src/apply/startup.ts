@@ -4,16 +4,23 @@ import type { StartupConfig } from "../types/config/startup";
 import type { PublicSystemInfoSchema } from "../types/schema/startup";
 import { getPassword } from "../mappers/users";
 
+/** The wizard runs only when asked: `completeStartupWizard: true` or a declared `startup.user`. */
+export function wantsStartupWizard(startup: StartupConfig): boolean {
+  return startup.completeStartupWizard === true || startup.user !== undefined;
+}
+
 /**
  * Drives the first-boot wizard of a pristine server (StartupWizardCompleted
  * is false): server settings, remote access, the admin user, then completion.
- * Does nothing on a server whose wizard is already complete. Completion is
- * implied unless `completeStartupWizard: false`. Returns whether it ran.
+ * Does nothing unless `wantsStartupWizard`, or on a server whose wizard is
+ * already complete. Once it runs, completion is implied unless
+ * `completeStartupWizard: false`. Returns whether it ran.
  */
 export async function applyStartupWizard(
   client: JellyfinClient,
   startup: StartupConfig,
 ): Promise<boolean> {
+  if (!wantsStartupWizard(startup)) return false;
   const info: PublicSystemInfoSchema = await client.getPublicSystemInfo();
   if (info.StartupWizardCompleted !== false) {
     logger.info("✓ startup wizard already completed");
