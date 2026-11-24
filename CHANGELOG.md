@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A coverage test derives every writable field of the configuration DTOs from
+  `generated/schema.d.ts` and requires each to have a jellarr config key or an
+  entry, with a reason, in `tests/coverage/exclusions.ts`. A new Jellyfin field
+  fails the test until someone decides.
+- `plugins[].enabled` enables or disables an installed plugin
+  (`POST /Plugins/{id}/{version}/Enable` and `/Disable`). Jellyfin applies the
+  change after a restart, which jellarr performs in the same run. The
+  configuration of a plugin declared `enabled: false` is not applied, since a
+  disabled plugin is not loaded. `--dump` writes `enabled: false` for a disabled
+  plugin.
+- `xbmcMetadata` manages the `xbmcmetadata` named configuration (NFO saving
+  options): `userId`, `releaseDateFormat`, `saveImagePathsInNfo`,
+  `enablePathSubstitution` and `enableExtraThumbsDuplication`. It is read by
+  `--dump`, planned by `--dry-run`, and available in the NixOS module.
+- `users[].displayPreferences` pins per-user display preferences, matched by
+  `(id, client)` (`id` defaults to `usersettings`). Declared fields and
+  `customPrefs` keys are merged into the stored entry; undeclared ones are kept.
+  The `jellarr` entry that holds jellarr's own markers cannot be declared.
+- `library.virtualFolders[].renameFrom` renames a library
+  (`POST /Library/VirtualFolders/Name`) when the old name exists and the new one
+  does not, then reconciles it as usual. It does nothing once the rename
+  happened, and is an error when both names exist.
+- `users[].renameFrom` renames a user (`POST /Users`) with the same rules,
+  keeping the account, its history and its policy. A renamed administrator still
+  signs in when no API key is set: the sign-in tries the declared name, then
+  `renameFrom`.
+- `users[].policy.authenticationProviderId` and `passwordResetProviderId` set a
+  user's providers. An id the server does not report (`GET /Auth/Providers`,
+  `GET /Auth/PasswordResetProviders`) is an error before anything is written,
+  because a wrong provider can lock a user out; the README says so.
+- `library.virtualFolders[].libraryOptions.typeOptions[].imageOptions` sets the
+  per-image-type limit and minimum width. A declared list replaces the server's;
+  an undeclared one is carried over unchanged.
+- `devices` sets the custom name of devices by id (`POST /Devices/Options`). A
+  device the server does not know yet is warned about and skipped.
+
 ## [0.5.1] - 2026-11-24
 
 ### Added

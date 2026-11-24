@@ -94,16 +94,14 @@ describe("pipeline/user rename", () => {
   });
 
   it("whenAlreadyRenamed_thenNothingIsRenamedAgain", async () => {
-    client.getUsers = vi
-      .fn()
-      .mockResolvedValue([
-        {
-          Name: "root",
-          Id: "u1",
-          Policy: { IsAdministrator: true },
-          Configuration: {},
-        },
-      ]);
+    client.getUsers = vi.fn().mockResolvedValue([
+      {
+        Name: "root",
+        Id: "u1",
+        Policy: { IsAdministrator: true },
+        Configuration: {},
+      },
+    ]);
     client.authenticateByName = vi.fn().mockResolvedValue("tok");
 
     await runPipeline(cfgFile);
