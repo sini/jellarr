@@ -32,6 +32,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          # Without an explicit tag the draft gets a placeholder "untagged-…"
+          # tag, and publishing it creates that tag on the target branch.
+          tag_name: ${{ github.ref_name }}
           files: release/*.cjs
           body: |
             ## Jellarr ${{ github.ref_name }}
