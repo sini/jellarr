@@ -50,8 +50,8 @@ and this project adheres to
 
 ### Fixed
 
-- Jellyfin 12 starts a setup server that answers `/health` with 200 and the
-  body `Degraded` before the real server replaces it; jellarr now waits for
+- Jellyfin 12 starts a setup server that answers `/health` with 200 and the body
+  `Degraded` before the real server replaces it; jellarr now waits for
   `Healthy`.
 - A request that fails at the connection level while Jellyfin restarts is
   retried within the wait timeout. Reads retry any connection failure; writes

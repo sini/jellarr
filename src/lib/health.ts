@@ -37,7 +37,6 @@ async function isHealthy(
       `${baseUrl.replace(/\/+$/, "")}/health`,
       { signal: AbortSignal.timeout(5000) },
     );
-    // Jellyfin 12 answers 200 with "Degraded" from its setup server before the real one starts
     return res.status === 200 && (await res.text()).trim() === "Healthy";
   } catch {
     return false;
