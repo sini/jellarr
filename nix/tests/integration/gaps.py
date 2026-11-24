@@ -470,7 +470,46 @@ def cov_plugin(server):
     print("✓ plugin enable")
 
 
+def cov_defaults(server):
+    """The opt-in defaults: passwords are not reconciled and ${VAR} is not expanded unless asked."""
+    server.succeed("printf 'filepw\\n' > /tmp/cov-pw && chmod 644 /tmp/cov-pw")
+    users = "users:\n  - name: pwuser\n    passwordFile: /tmp/cov-pw\n"
+    cov(server, "pw-create", users)
+    assert sign_in_status(server, "pwuser", "filepw") == 200
+    uid = user_id(server, "pwuser")
+    post(
+        server, f"/Users/{uid}/Password", {"CurrentPw": "filepw", "NewPw": "changedpw"}
+    )
+    cov(server, "pw-default", users)
+    assert (
+        sign_in_status(server, "pwuser", "changedpw") == 200
+    ), "default run reset the password"
+    assert sign_in_status(server, "pwuser", "filepw") == 401
+    cov(server, "pw-reconcile", "reconcilePasswords: true\n" + users)
+    assert (
+        sign_in_status(server, "pwuser", "filepw") == 200
+    ), "reconcilePasswords did not set the password"
+    assert sign_in_status(server, "pwuser", "changedpw") == 401
+    print("✓ reconcilePasswords")
+
+    def disclaimer():
+        return api(server, "/Branding/Configuration").get("LoginDisclaimer")
+
+    literal = "a ${HOME} b $${x}"
+    cov(server, "env-default", f"branding:\n  loginDisclaimer: '{literal}'\n")
+    assert disclaimer() == literal, disclaimer()
+    cov(
+        server,
+        "env-on",
+        "expandEnv: true\nbranding:\n  loginDisclaimer: 'v=${JF_COV_X} lit=$${x}'\n",
+        env="JF_COV_X=hello",
+    )
+    assert disclaimer() == "v=hello lit=${x}", disclaimer()
+    print("✓ expandEnv")
+
+
 def run_cov_stages(server):
+    cov_defaults(server)
     cov_library(server)
     cov_nfo(server)
     cov_prefs(server)
@@ -491,6 +530,8 @@ def run_gaps_test(server):
     server.succeed(f"cat > {CONFIG} <<'EOF'\n{CONFIG_YAML}EOF")
 
     jellyfin_12 = is_jellyfin_12(server)
+    wizard_before = api(server, "/System/Info/Public")["StartupWizardCompleted"]
+    print(f"REAL BEHAVIOUR StartupWizardCompleted before jellarr: {wizard_before!r}")
     first = jellarr(server)
     print(first)
     validate_applied(server, png)
@@ -503,6 +544,10 @@ def run_gaps_test(server):
             live not in second
         ), f"second run still changes things ({live}):\n{second}"
     validate_version_dependent(server, second, jellyfin_12)
+    # no startup block: the wizard state is left as it was
+    assert (
+        api(server, "/System/Info/Public")["StartupWizardCompleted"] == wizard_before
+    ), "jellarr changed the startup wizard state without a startup block"
 
     # exit 2 means changes are pending; succeed() demands 0
     print(jellarr(server, "--dry-run"))
