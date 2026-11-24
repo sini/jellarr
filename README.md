@@ -228,6 +228,10 @@ services:
         restart: "no"
 ```
 
+The image is built with nix `dockerTools` (`nix/docker-image.nix`), not a
+Dockerfile. Build it locally with `nix build .#docker-image` and load it with
+`docker load < result`; it is tagged `jellarr:latest`.
+
 ### Bundle Download
 
 Download from [releases](https://github.com/sini/jellarr/releases) (requires
@@ -1437,9 +1441,8 @@ nix fmt                  # Format project files
 
 Contributions are welcome. Open an
 [issue](https://github.com/sini/jellarr/issues) for bugs and ideas, or a pull
-request against `main`. Run `nix fmt` before committing, and keep
-`pnpm typecheck`, `pnpm eslint` and `pnpm test` clean; CI also runs the NixOS VM
-tests.
+request against `main`. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to
+build, the checks to run, and the commit conventions.
 
 ---
 
