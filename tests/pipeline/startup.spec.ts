@@ -97,4 +97,39 @@ describe("pipeline/first boot", () => {
     // Assert
     expect(order).toEqual(["info", "systemConfiguration"]);
   });
+
+  it("whenWizardCompletedWithApiKeyAndNoStartupUser_thenKeyIsKeptAndNoSignInIsTried", async () => {
+    // Arrange
+    process.env.JELLARR_API_KEY = "key";
+    await fs.writeFile(
+      cfgFile,
+      [
+        "version: 1",
+        'base_url: "http://localhost:8096"',
+        "system: {}",
+        "startup:",
+        "  completeStartupWizard: true",
+        "users:",
+        "  - name: admin",
+        "    password: s3cret",
+        "    policy:",
+        "      isAdministrator: true",
+        "",
+      ].join("\n"),
+    );
+
+    client.getUsers = step("users", []);
+    client.createUser = step("createUser", { Id: "u1" });
+
+    // Act
+    await runPipeline(cfgFile).catch(() => undefined);
+
+    // Assert
+    expect(order.slice(0, 3)).toEqual([
+      "info",
+      "complete",
+      "systemConfiguration",
+    ]);
+    expect(client.authenticateByName).not.toHaveBeenCalled();
+  });
 });

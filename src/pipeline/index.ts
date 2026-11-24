@@ -255,7 +255,8 @@ export async function runPipeline(
       : false;
 
   let verifiedAdmin: AdminCredentials | undefined;
-  if (wizardRan || !apiKey) {
+  // NOTE: with a key the wizard needs no sign-in; a rejected key falls back below.
+  if (!apiKey) {
     verifiedAdmin = await authenticateAsAdmin(
       jellyfinClient,
       cfg,
