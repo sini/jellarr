@@ -50,5 +50,7 @@ jobs:
             ## Changelog
 
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed release notes.
-          draft: false
+          # A tag creates a draft with the bundle attached; a maintainer writes
+          # the notes and publishes it by hand.
+          draft: true
           prerelease: false
