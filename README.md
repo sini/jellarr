@@ -1162,6 +1162,88 @@ containers:
             value: /secrets/api-key
 ```
 
+### Running From an External Scheduler
+
+The image does not schedule itself and has no watcher: jellarr runs once,
+applies the config and exits, so a scheduler outside the container decides when.
+Every form below runs the same command as above.
+
+**cron** (every night at 03:15):
+
+```cron
+15 3 * * * docker run --rm -e JELLARR_API_KEY_FILE=/secrets/api-key -v /etc/jellarr:/config:ro -v /etc/jellarr/api-key:/secrets/api-key:ro ghcr.io/sini/jellarr:v0.5.0 --configFile /config/config.yml
+```
+
+**systemd timer** for a container (a oneshot service plus a timer):
+
+```ini
+# /etc/systemd/system/jellarr.service
+[Unit]
+Description=Apply the jellarr configuration
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker run --rm -e JELLARR_API_KEY_FILE=/secrets/api-key -v /etc/jellarr:/config:ro -v /etc/jellarr/api-key:/secrets/api-key:ro ghcr.io/sini/jellarr:v0.5.0 --configFile /config/config.yml
+
+# /etc/systemd/system/jellarr.timer
+[Unit]
+Description=Apply the jellarr configuration daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target
+```
+
+Enable it with `systemctl enable --now jellarr.timer`.
+
+**Kubernetes CronJob** (set `args:` and leave `command:` unset, as above):
+
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+    name: jellarr
+spec:
+    schedule: "15 3 * * *"
+    concurrencyPolicy: Forbid
+    jobTemplate:
+        spec:
+            template:
+                spec:
+                    restartPolicy: OnFailure
+                    containers:
+                        - name: jellarr
+                          image: ghcr.io/sini/jellarr:v0.5.0
+                          args: ["--configFile", "/config/config.yml"]
+                          env:
+                              - name: JELLARR_API_KEY_FILE
+                                value: /secrets/api-key
+                          volumeMounts:
+                              - {
+                                    name: config,
+                                    mountPath: /config,
+                                    readOnly: true,
+                                }
+                              - {
+                                    name: secrets,
+                                    mountPath: /secrets,
+                                    readOnly: true,
+                                }
+                    volumes:
+                        - name: config
+                          configMap: { name: jellarr-config }
+                        - name: secrets
+                          secret: { secretName: jellarr-api-key }
+```
+
+A run applies only the difference, so scheduling it often is cheap.
+
 ### API Key Bootstrap (NixOS, Same Host Only)
 
 For NixOS deployments where Jellarr runs on the **same host** as Jellyfin, you
