@@ -78,6 +78,7 @@
             }
             // import ./nix/tests/integration {
               inherit pkgs;
+              image = inputs.self.packages.${system}.docker-image;
               jellyfinPackages = {
                 "10_11" = inputs.nixpkgs-jellyfin-10_11.legacyPackages.${system}.jellyfin;
                 "12" = pkgs.jellyfin;
