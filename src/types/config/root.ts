@@ -53,6 +53,7 @@ export const RootConfigType: z.ZodObject<{
   livetv: z.ZodOptional<typeof LiveTvConfigType>;
   authoritative: z.ZodOptional<typeof AuthoritativeConfigType>;
   scheduledTasks: z.ZodOptional<typeof ScheduledTaskConfigListType>;
+  reconcilePasswords: z.ZodOptional<z.ZodBoolean>;
 }> = z
   .object({
     version: z.number().int().positive("Version must be a positive integer"),
@@ -72,6 +73,7 @@ export const RootConfigType: z.ZodObject<{
     livetv: LiveTvConfigType.optional(),
     authoritative: AuthoritativeConfigType.optional(),
     scheduledTasks: ScheduledTaskConfigListType.optional(),
+    reconcilePasswords: z.boolean().optional(),
   })
   .strict()
   .superRefine((cfg: RootConfigInput, ctx: z.RefinementCtx): void => {

@@ -35,7 +35,10 @@ describe("pipeline/auth fallback", () => {
   let dir: string;
   let cfgFile: string;
 
-  async function writeConfig(withAdmin: boolean): Promise<void> {
+  async function writeConfig(
+    withAdmin: boolean,
+    reconcile: boolean = true,
+  ): Promise<void> {
     const passwordFile: string = path.join(dir, "admin-pw");
     await fs.writeFile(passwordFile, "hunter2\n");
     await fs.writeFile(
@@ -46,6 +49,7 @@ describe("pipeline/auth fallback", () => {
         "system: {}",
         ...(withAdmin
           ? [
+              ...(reconcile ? ["reconcilePasswords: true"] : []),
               "users:",
               "  - name: root",
               `    passwordFile: ${passwordFile}`,
@@ -94,6 +98,18 @@ describe("pipeline/auth fallback", () => {
     // Assert
     expect(client.authenticateByName).not.toHaveBeenCalled();
     expect(client.checkUserPassword).toHaveBeenCalledWith("root", "hunter2");
+  });
+
+  it("whenReconcilePasswordsIsNotSet_thenNoPasswordIsProbed", async () => {
+    // Arrange
+    process.env.JELLARR_API_KEY = "key";
+    await writeConfig(true, false);
+
+    // Act
+    await runPipeline(cfgFile);
+
+    // Assert
+    expect(client.checkUserPassword).not.toHaveBeenCalled();
   });
 
   it("whenApiKeyAbsent_thenSignsInAsConfiguredAdminAndWarns", async () => {

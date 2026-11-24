@@ -193,6 +193,7 @@ describe("pipeline/dry run", () => {
       "networking:",
       `  certificatePassword: { _file: ${secretFile} }`,
       '  baseUrl: "/${JELLARR_DRY_TOKEN}"',
+      "reconcilePasswords: true",
       "users:",
       "  - name: bob",
       "    password: pw",

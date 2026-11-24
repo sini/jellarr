@@ -180,6 +180,7 @@ export const UserConfigType: z.ZodObject<{
   renameFrom: z.ZodOptional<z.ZodString>;
   password: z.ZodOptional<z.ZodString>;
   passwordFile: z.ZodOptional<z.ZodString>;
+  reconcilePassword: z.ZodOptional<z.ZodBoolean>;
   policy: z.ZodOptional<typeof UserPolicyConfigType>;
   orderedLibraries: z.ZodOptional<z.ZodArray<z.ZodString>>;
   groupedLibraries: z.ZodOptional<z.ZodArray<z.ZodString>>;
@@ -215,6 +216,7 @@ export const UserConfigType: z.ZodObject<{
     renameFrom: z.string().min(1).optional(),
     password: z.string().optional(),
     passwordFile: z.string().optional(),
+    reconcilePassword: z.boolean().optional(),
     policy: UserPolicyConfigType.optional(),
     orderedLibraries: z
       .array(z.string().min(1, "Library name is required"))

@@ -73,6 +73,7 @@ describe("apply/users password reconciliation", () => {
       [alice],
       await desiredFromFile("pw\n"),
       new Set(),
+      true,
     );
 
     // Assert
@@ -91,6 +92,7 @@ describe("apply/users password reconciliation", () => {
       [alice],
       await desiredFromFile("pw\n"),
       new Set(),
+      true,
     );
 
     // Assert
@@ -108,6 +110,7 @@ describe("apply/users password reconciliation", () => {
       [alice],
       await desiredFromFile("pw"),
       new Set(),
+      true,
     );
 
     // Assert
@@ -135,6 +138,7 @@ describe("apply/users password reconciliation", () => {
       [nearLockout],
       await desiredFromFile("pw"),
       new Set(),
+      true,
     );
 
     // Assert
@@ -152,13 +156,56 @@ describe("apply/users password reconciliation", () => {
     const desired: UserConfigList = await desiredFromFile("pw");
 
     // Act
-    await reconcileUserPasswords(client, [alice], desired, new Set(["alice"]));
-    await reconcileUserPasswords(client, [], desired, new Set());
+    await reconcileUserPasswords(
+      client,
+      [alice],
+      desired,
+      new Set(["alice"]),
+      true,
+    );
+    await reconcileUserPasswords(client, [], desired, new Set(), true);
 
     // Assert
     expect(checkUserPassword).not.toHaveBeenCalled();
     expect(updateUserPassword).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { top: undefined, user: undefined, probes: false },
+    { top: false, user: undefined, probes: false },
+    { top: true, user: undefined, probes: true },
+    { top: true, user: false, probes: false },
+    { top: false, user: true, probes: true },
+    { top: undefined, user: true, probes: true },
+  ])(
+    "whenTopLevelIs$top_andUserOverrideIs$user_thenProbing=$probes",
+    async ({
+      top,
+      user,
+      probes,
+    }: {
+      top: boolean | undefined;
+      user: boolean | undefined;
+      probes: boolean;
+    }) => {
+      // Arrange
+      const fx: Fixture = makeClient("invalid");
+      const { client, checkUserPassword, updateUserPassword }: Fixture = fx;
+      const desired: UserConfigList = (await desiredFromFile("pw")).map(
+        (config: UserConfigList[number]) => ({
+          ...config,
+          reconcilePassword: user,
+        }),
+      );
+
+      // Act
+      await reconcileUserPasswords(client, [alice], desired, new Set(), top);
+
+      // Assert
+      expect(checkUserPassword.mock.calls.length > 0).toBe(probes);
+      expect(updateUserPassword.mock.calls.length > 0).toBe(probes);
+    },
+  );
 
   it.each([
     [undefined, 0, true],

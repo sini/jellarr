@@ -280,20 +280,31 @@ export function isProbeSafe(
   return (policy?.InvalidLoginAttemptCount ?? 0) + 1 < limit;
 }
 
+/** The per-user `reconcilePassword` wins over the top-level `reconcilePasswords`; both default to off. */
+export function wantsPasswordReconcile(
+  user: UserConfig,
+  reconcilePasswords: boolean | undefined,
+): boolean {
+  return user.reconcilePassword ?? reconcilePasswords ?? false;
+}
+
 /**
  * Sets the password of existing users whose current password differs from
  * the configured one. Setting a password revokes the user's other tokens, so
  * it is only done after a probe sign-in (own device id, signed out again)
- * fails; a user too close to lockout to probe is left unchanged.
+ * fails; a user too close to lockout to probe is left unchanged. Only users
+ * for which `wantsPasswordReconcile` holds are looked at.
  */
 export async function reconcileUserPasswords(
   client: JellyfinClient,
   current: UserDtoSchema[],
   desired: UserConfigList,
   skip: ReadonlySet<string>,
+  reconcilePasswords: boolean | undefined,
 ): Promise<void> {
   for (const userConfig of desired) {
     if (skip.has(userConfig.name)) continue;
+    if (!wantsPasswordReconcile(userConfig, reconcilePasswords)) continue;
     const user: UserDtoSchema | undefined = current.find(
       (candidate: UserDtoSchema) => candidate.Name === userConfig.name,
     );

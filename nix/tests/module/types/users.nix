@@ -646,6 +646,31 @@ in [
       }
     ])
 
+  (assertEq "reconcilePassword is kept and null is dropped" (mkUsersConfig [
+      {
+        name = "a";
+        password = "pw";
+        passwordFile = null;
+        reconcilePassword = false;
+      }
+      {
+        name = "b";
+        password = "pw";
+        passwordFile = null;
+        reconcilePassword = null;
+      }
+    ]) [
+      {
+        name = "a";
+        password = "pw";
+        reconcilePassword = false;
+      }
+      {
+        name = "b";
+        password = "pw";
+      }
+    ])
+
   (assertThrows "reject empty grouped library" (mkUsersConfig [
     {
       name = "viewer";

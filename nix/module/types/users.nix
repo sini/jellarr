@@ -357,6 +357,15 @@
         default = null;
         description = "Path to file containing user password.";
       };
+      reconcilePassword = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = ''
+          Overrides the top-level `reconcilePasswords` for this user: whether
+          jellarr sets the declared password when a sign-in with it is
+          rejected. Unset follows the top-level setting.
+        '';
+      };
       policy = mkOption {
         type = nullOr userPolicyConfigType;
         default = null;

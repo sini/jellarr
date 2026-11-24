@@ -301,6 +301,27 @@ in [
     encoding = {};
   })
 
+  (assertEq "reconcilePasswords is emitted when set" (mkConfig (nullConfig
+    // {
+      system = nullSystemConfig;
+      reconcilePasswords = true;
+    })) {
+    version = 1;
+    base_url = "http://10.0.0.76:8096";
+    system = {};
+    reconcilePasswords = true;
+  })
+
+  (assertEq "reconcilePasswords null is dropped" (mkConfig (nullConfig
+    // {
+      system = nullSystemConfig;
+      reconcilePasswords = null;
+    })) {
+    version = 1;
+    base_url = "http://10.0.0.76:8096";
+    system = {};
+  })
+
   (assertEq "with startup section" (mkConfig (nullConfig
     // {
       system = nullSystemConfig;

@@ -105,6 +105,16 @@
           unless a flag here is set.
         '';
       };
+      reconcilePasswords = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = ''
+          Whether jellarr sets the declared password of an existing user when
+          a sign-in with it is rejected. Unset means false: a password is set
+          only when the user is created. `users.*.reconcilePassword` overrides
+          this per user.
+        '';
+      };
       scheduledTasks = mkOption {
         type = nullOr subTypes.scheduledTasks.scheduledTasksConfigType;
         default = null;
@@ -162,6 +172,9 @@
       }
       // optionalAttrs (cfg ? authoritative && cfg.authoritative != null) {
         authoritative = subTypes.authoritative.mkAuthoritativeConfig cfg.authoritative;
+      }
+      // optionalAttrs (cfg ? reconcilePasswords && cfg.reconcilePasswords != null) {
+        inherit (cfg) reconcilePasswords;
       }
       // optionalAttrs (cfg ? scheduledTasks && cfg.scheduledTasks != null) {
         scheduledTasks = subTypes.scheduledTasks.mkScheduledTasksConfig cfg.scheduledTasks;

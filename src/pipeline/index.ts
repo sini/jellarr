@@ -73,6 +73,7 @@ import {
   calculateUserConfigurationsDiff,
   applyUserConfigurations,
   reconcileUserPasswords,
+  wantsPasswordReconcile,
 } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
@@ -584,7 +585,13 @@ export async function runPipeline(
 
     if (plan) {
       for (const user of existingUsers) {
-        if (cfg.users.some((wanted: UserConfig) => wanted.name === user.Name)) {
+        if (
+          cfg.users.some(
+            (wanted: UserConfig) =>
+              wanted.name === user.Name &&
+              wantsPasswordReconcile(wanted, cfg.reconcilePasswords),
+          )
+        ) {
           passwordsUnverified = true;
           plan.note(
             `user ${user.Name ?? "?"}: password not verified (dry run)`,
@@ -600,6 +607,7 @@ export async function runPipeline(
           ...(usersToCreate ?? []).map((user: UserConfig) => user.name),
           ...(verifiedAdmin ? [verifiedAdmin.name] : []),
         ]),
+        cfg.reconcilePasswords,
       );
     }
 
