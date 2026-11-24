@@ -6,7 +6,7 @@
 pkgs.testers.runNixOSTest {
   extraPythonPackages = p: [p.pyhamcrest];
 
-  globalTimeout = 1500;
+  globalTimeout = 3000;
 
   name = "jellarr-gaps";
 

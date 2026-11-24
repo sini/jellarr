@@ -1001,7 +1001,7 @@ export function createJellyfinClient(
     async renameVirtualFolder(name: string, newName: string): Promise<void> {
       const res: ApiResponse = await client.POST(
         "/Library/VirtualFolders/Name",
-        { params: { query: { name, newName, refreshLibrary: false } } },
+        { params: { query: { name, newName, refreshLibrary: true } } },
       );
       if (!res.response.ok) {
         throw new Error(

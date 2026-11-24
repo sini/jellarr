@@ -50,6 +50,7 @@ import {
   applyLibraryRenames,
   calculateLibraryRenames,
   renameInMemory,
+  waitForRenamedLibraries,
   type LibraryRename,
 } from "../apply/library-rename";
 import {
@@ -398,7 +399,11 @@ export async function runPipeline(
       console.log("→ renaming libraries");
       await applyLibraryRenames(jellyfinClient, libraryRenames);
       console.log("✓ renamed libraries");
-      currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+      currentVirtualFolders = await waitForRenamedLibraries(
+        jellyfinClient,
+        libraryRenames,
+        waitTimeoutMs,
+      );
     }
     const locationChanges: LocationChange[] = calculateLocationChanges(
       currentVirtualFolders,

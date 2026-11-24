@@ -60,6 +60,45 @@ export function renameInMemory(
   );
 }
 
+/**
+ * Jellyfin moves the library's folder on a rename but only re-creates its
+ * library item (its id and options) in the library validation that
+ * refreshLibrary starts in the background. Until then the renamed library is
+ * listed without an id or options, so a reconciliation would see nothing to
+ * compare. Waits until every renamed library is complete.
+ */
+export async function waitForRenamedLibraries(
+  client: JellyfinClient,
+  renames: LibraryRename[],
+  timeoutMs: number,
+  intervalMs: number = 1000,
+): Promise<VirtualFolderInfoSchema[]> {
+  const deadline: number = Date.now() + timeoutMs;
+  for (;;) {
+    const folders: VirtualFolderInfoSchema[] = await client.getVirtualFolders();
+    const pending: string[] = renames
+      .map((rename: LibraryRename) => rename.to)
+      .filter(
+        (name: string) =>
+          !folders.some(
+            (folder: VirtualFolderInfoSchema) =>
+              folder.Name === name &&
+              folder.LibraryOptions !== undefined &&
+              (folder.ItemId ?? (folder as { Id?: string }).Id) !== undefined,
+          ),
+      );
+    if (pending.length === 0) return folders;
+    if (Date.now() >= deadline) {
+      throw new Error(
+        `Renamed ${pending.map((name: string) => `"${name}"`).join(", ")} but Jellyfin did not finish re-creating the library within ${(timeoutMs / 1000).toString()}s`,
+      );
+    }
+    await new Promise<void>((resolve: () => void) =>
+      setTimeout(resolve, intervalMs),
+    );
+  }
+}
+
 export async function applyLibraryRenames(
   client: JellyfinClient,
   renames: LibraryRename[] | undefined,

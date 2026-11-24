@@ -499,6 +499,12 @@ export function calculatePluginStateChanges(
       plugin,
     )) {
       if (copy.Status !== from || !copy.Id || !copy.Version) continue;
+      // NOTE: Jellyfin answers 404 for a plugin that ships with the server,
+      if (copy.CanUninstall === false) {
+        throw new Error(
+          `Plugin ${plugin.name} is bundled with the server; Jellyfin cannot ${plugin.enabled ? "enable" : "disable"} it`,
+        );
+      }
       logger.info(
         say(
           `${plugin.enabled ? "Enabling" : "Disabling"} plugin ${plugin.name} ${copy.Version}`,

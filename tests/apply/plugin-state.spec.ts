@@ -80,6 +80,23 @@ describe("plugin enabled flag", () => {
     ]);
   });
 
+  it("whenThePluginIsBundledAndNeedsAChange_thenItIsAnError", () => {
+    const bundled: PluginInfoSchema = {
+      ...copy("Active"),
+      CanUninstall: false,
+    } as PluginInfoSchema;
+    expect(() =>
+      calculatePluginStateChanges([bundled], catalog, [
+        { name: "Example Plugin", enabled: false },
+      ]),
+    ).toThrow(/bundled with the server; Jellyfin cannot disable it/);
+    expect(
+      calculatePluginStateChanges([bundled], catalog, [
+        { name: "Example Plugin", enabled: true },
+      ]),
+    ).toBeUndefined();
+  });
+
   it("whenApplied_thenEnableAndDisableHitTheirEndpoints", async () => {
     const client: Pick<JellyfinClient, "enablePlugin" | "disablePlugin"> = {
       enablePlugin: vi.fn().mockResolvedValue(undefined),

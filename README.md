@@ -527,6 +527,11 @@ library:
                   - path: "/data/movies"
 ```
 
+Jellyfin re-creates a renamed library's entry only in the library refresh that
+the rename starts, so Jellarr asks for that refresh (a scan of the library) and
+waits, bounded by the [startup wait](#startup-wait) timeout, until the renamed
+library is listed with its id and options before reconciling it.
+
 If a library named `Films` exists and none named `Movies` does, Jellarr renames
 it (`POST /Library/VirtualFolders/Name`) and carries on with the usual
 reconciliation under the new name, in the same run. After that `Films` no longer
@@ -1207,6 +1212,12 @@ plugins:
   for an enabled plugin, waits for it to become Active. A second run changes
   nothing. A plugin that is declared and not installed is still installed, then
   disabled
+- Only plugins installed in Jellyfin's plugins directory can be switched.
+  Jellyfin has no manifest for a plugin that ships with the server (its
+  `CanUninstall` is false) and answers 404, so declaring `enabled: false` on a
+  bundled plugin stops the run with an error before anything is written, in a
+  dry run too. `enabled: true` on a bundled plugin that is already active is a
+  no-op
 - A disabled plugin is not loaded, so Jellyfin has no configuration endpoint for
   it. Jellarr therefore does **not** apply the `configuration` of a plugin
   declared `enabled: false`: it is skipped silently instead of failing the run,

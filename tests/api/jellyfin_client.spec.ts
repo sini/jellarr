@@ -871,7 +871,7 @@ describe("api/jf Users façade", () => {
     const req: Request = getLastRequest();
     expect(req.method).toBe("POST");
     expect(req.url).toMatch(
-      /\/Library\/VirtualFolders\/Name\?name=Films&newName=Movies&refreshLibrary=false$/,
+      /\/Library\/VirtualFolders\/Name\?name=Films&newName=Movies&refreshLibrary=true$/,
     );
   });
 

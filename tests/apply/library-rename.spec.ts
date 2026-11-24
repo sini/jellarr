@@ -3,6 +3,7 @@ import {
   applyLibraryRenames,
   calculateLibraryRenames,
   renameInMemory,
+  waitForRenamedLibraries,
 } from "../../src/apply/library-rename";
 import {
   LibraryConfigType,
@@ -80,6 +81,37 @@ describe("library renameFrom", () => {
       [{ from: "Films", to: "Movies" }],
     );
     expect(renameVirtualFolder).toHaveBeenCalledWith("Films", "Movies");
+  });
+
+  it("whenTheRenamedLibraryIsStillIncomplete_thenItWaitsForIdAndOptions", async () => {
+    const getVirtualFolders: Mock = vi
+      .fn()
+      .mockResolvedValueOnce([{ Name: "Movies" }])
+      .mockResolvedValueOnce([
+        { Name: "Movies", ItemId: "f1", LibraryOptions: {} },
+      ]);
+    const folders: VirtualFolderInfoSchema[] = await waitForRenamedLibraries(
+      { getVirtualFolders } as unknown as JellyfinClient,
+      [{ from: "Films", to: "Movies" }],
+      1000,
+      0,
+    );
+    expect(getVirtualFolders).toHaveBeenCalledTimes(2);
+    expect(folders[0]?.ItemId).toBe("f1");
+  });
+
+  it("whenTheRenamedLibraryNeverCompletes_thenItTimesOut", async () => {
+    const getVirtualFolders: Mock = vi
+      .fn()
+      .mockResolvedValue([{ Name: "Movies" }]);
+    await expect(
+      waitForRenamedLibraries(
+        { getVirtualFolders } as unknown as JellyfinClient,
+        [{ from: "Films", to: "Movies" }],
+        0,
+        0,
+      ),
+    ).rejects.toThrow(/did not finish re-creating the library/);
   });
 
   it("whenRenameFromEqualsNameOrCollides_thenTheConfigIsRejected", () => {
