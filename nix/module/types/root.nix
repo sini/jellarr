@@ -115,6 +115,16 @@
           this per user.
         '';
       };
+      expandEnv = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = ''
+          Whether `''${VAR}` in config strings is replaced from the environment
+          (an undefined variable fails the run, and `$''${` is a literal `''${`).
+          Unset means false: strings are used as written. `{ _file = ...; }`
+          references are always resolved.
+        '';
+      };
       scheduledTasks = mkOption {
         type = nullOr subTypes.scheduledTasks.scheduledTasksConfigType;
         default = null;
@@ -175,6 +185,9 @@
       }
       // optionalAttrs (cfg ? reconcilePasswords && cfg.reconcilePasswords != null) {
         inherit (cfg) reconcilePasswords;
+      }
+      // optionalAttrs (cfg ? expandEnv && cfg.expandEnv != null) {
+        inherit (cfg) expandEnv;
       }
       // optionalAttrs (cfg ? scheduledTasks && cfg.scheduledTasks != null) {
         scheduledTasks = subTypes.scheduledTasks.mkScheduledTasksConfig cfg.scheduledTasks;

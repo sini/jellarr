@@ -35,7 +35,9 @@ describe("resolveFileReferences", () => {
       passwordFile: "${JELLARR_TEST_DIR}/admin",
     };
 
-    await expect(resolveFileReferences(input)).resolves.toStrictEqual({
+    await expect(
+      resolveFileReferences(input, { expandEnv: true }),
+    ).resolves.toStrictEqual({
       passwordFile: "/creds/admin",
     });
     delete process.env.JELLARR_TEST_DIR;
@@ -235,14 +237,17 @@ describe("resolveFileReferences", () => {
 describe("env substitution", () => {
   it("expands ${VAR} inside strings, with $${ as a literal ${", async () => {
     process.env.JF_TEST_HOST = "example.org";
-    const result: Record<string, unknown> = await resolveFileReferences({
-      url: "https://${JF_TEST_HOST}/x",
-      price: "$$5",
-      lit: "$${JF_TEST_HOST}",
-      pw: "pa$$word",
-      list: ["${JF_TEST_HOST}"],
-      n: 3,
-    });
+    const result: Record<string, unknown> = await resolveFileReferences(
+      {
+        url: "https://${JF_TEST_HOST}/x",
+        price: "$$5",
+        lit: "$${JF_TEST_HOST}",
+        pw: "pa$$word",
+        list: ["${JF_TEST_HOST}"],
+        n: 3,
+      },
+      { expandEnv: true },
+    );
     expect(result).toEqual({
       url: "https://example.org/x",
       price: "$$5",
@@ -256,14 +261,50 @@ describe("env substitution", () => {
   it("expands ${VAR} in a _file path", async () => {
     process.env.JF_TEST_DIR = "/run/secrets";
     mockReadFile.mockResolvedValueOnce("v\n");
-    const result: unknown = await resolveValue({ _file: "${JF_TEST_DIR}/x" });
+    const result: unknown = await resolveValue(
+      { _file: "${JF_TEST_DIR}/x" },
+      { expandEnv: true },
+    );
     expect(mockReadFile).toHaveBeenCalledWith("/run/secrets/x", "utf8");
     expect(result).toBe("v");
   });
 
+  it("leaves a _file path untouched by default", async () => {
+    process.env.JF_TEST_DIR = "/run/secrets";
+    mockReadFile.mockResolvedValueOnce("v\n");
+    await resolveValue({ _file: "${JF_TEST_DIR}/x" });
+    expect(mockReadFile).toHaveBeenCalledWith("${JF_TEST_DIR}/x", "utf8");
+  });
+
+  it("passes strings through untouched by default, and an undefined variable is no error", async () => {
+    process.env.JF_TEST_HOST = "example.org";
+    const input: Record<string, unknown> = {
+      a: "https://${JF_TEST_HOST}/x",
+      b: "${JF_TEST_UNDEFINED_VAR}",
+      c: "$${JF_TEST_HOST}",
+      d: ["${JF_TEST_HOST}"],
+    };
+    const secrets: Set<string> = new Set();
+    expect(await resolveFileReferences(input, { secrets })).toEqual(input);
+    expect(secrets.size).toBe(0);
+  });
+
+  it("masks an expanded value", async () => {
+    process.env.JF_TEST_HOST = "example.org";
+    const secrets: Set<string> = new Set();
+    await resolveValue("https://${JF_TEST_HOST}/x", {
+      secrets,
+      expandEnv: true,
+    });
+    expect(secrets).toEqual(new Set(["https://example.org/x"]));
+  });
+
   it("throws on an undefined variable", async () => {
     await expect(
-      resolveFileReferences({ a: "${JF_TEST_UNDEFINED_VAR}" }),
+      resolveFileReferences(
+        { a: "${JF_TEST_UNDEFINED_VAR}" },
+        { expandEnv: true },
+      ),
     ).rejects.toThrow(/JF_TEST_UNDEFINED_VAR/);
   });
 
@@ -271,7 +312,7 @@ describe("env substitution", () => {
     const nasty: string = 'x: y # z\n- "q"\n"lead';
     process.env.JF_TEST_NASTY = nasty;
     const parsed: unknown = YAML.parse('a: "${JF_TEST_NASTY}"\nb: 1\n');
-    const result: unknown = await resolveValue(parsed);
+    const result: unknown = await resolveValue(parsed, { expandEnv: true });
     expect(result).toEqual({ a: nasty, b: 1 });
   });
 });
@@ -301,17 +342,19 @@ describe("dollar escaping in rendered markup", () => {
     expect(escaped).toContain(dollar + dollar + "{price}");
     expect(escaped).toContain("paid $$ and $");
 
-    const result: Record<string, unknown> = await resolveFileReferences({
-      html: escaped,
-    });
+    const result: Record<string, unknown> = await resolveFileReferences(
+      { html: escaped },
+      { expandEnv: true },
+    );
 
     expect(result.html).toBe(original);
   });
 
   it("leaves a lone dollar not followed by a brace or dollar unchanged", async () => {
-    const result: Record<string, unknown> = await resolveFileReferences({
-      a: "cost $5, regex a$, end $",
-    });
+    const result: Record<string, unknown> = await resolveFileReferences(
+      { a: "cost $5, regex a$, end $" },
+      { expandEnv: true },
+    );
     expect(result.a).toBe("cost $5, regex a$, end $");
   });
 });

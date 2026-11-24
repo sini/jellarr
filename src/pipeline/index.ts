@@ -202,8 +202,16 @@ export async function runPipeline(
   setDryRun(dryRun);
   let passwordsUnverified: boolean = false;
 
+  const parsedYaml: unknown = YAML.parse(raw);
+  // NOTE: read from the raw document, since it decides whether the rest is expanded.
+  const expandEnv: boolean =
+    typeof parsedYaml === "object" &&
+    parsedYaml !== null &&
+    (parsedYaml as { expandEnv?: unknown }).expandEnv === true;
   const validationResult: ZodSafeParseResult<RootConfig> =
-    RootConfigType.safeParse(await resolveValue(YAML.parse(raw), secrets));
+    RootConfigType.safeParse(
+      await resolveValue(parsedYaml, { secrets, expandEnv }),
+    );
   if (!validationResult.success) {
     const errorMessages: string = validationResult.error.issues
       .map((err: z.core.$ZodIssue) => `${err.path.join(".")}: ${err.message}`)

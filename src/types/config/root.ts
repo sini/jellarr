@@ -54,6 +54,7 @@ export const RootConfigType: z.ZodObject<{
   authoritative: z.ZodOptional<typeof AuthoritativeConfigType>;
   scheduledTasks: z.ZodOptional<typeof ScheduledTaskConfigListType>;
   reconcilePasswords: z.ZodOptional<z.ZodBoolean>;
+  expandEnv: z.ZodOptional<z.ZodBoolean>;
 }> = z
   .object({
     version: z.number().int().positive("Version must be a positive integer"),
@@ -74,6 +75,7 @@ export const RootConfigType: z.ZodObject<{
     authoritative: AuthoritativeConfigType.optional(),
     scheduledTasks: ScheduledTaskConfigListType.optional(),
     reconcilePasswords: z.boolean().optional(),
+    expandEnv: z.boolean().optional(),
   })
   .strict()
   .superRefine((cfg: RootConfigInput, ctx: z.RefinementCtx): void => {

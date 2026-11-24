@@ -57,6 +57,7 @@ describe("pipeline/secrets", () => {
       cfgFile,
       [
         "version: 1",
+        "expandEnv: true",
         'base_url: "http://localhost:8096"',
         "system: {}",
         "networking:",
@@ -75,6 +76,38 @@ describe("pipeline/secrets", () => {
       expect.objectContaining({
         CertificatePassword: "s3cret",
         BaseUrl: "/media",
+      }),
+    );
+  });
+
+  it("by default resolves _file but leaves ${VAR} and an undefined variable literal", async () => {
+    // Arrange
+    client.updateNetworkingConfiguration.mockClear();
+    const secretFile: string = path.join(dir, "cert-password");
+    await fs.writeFile(secretFile, "s3cret\n");
+    const cfgFile: string = path.join(dir, "config.yml");
+    await fs.writeFile(
+      cfgFile,
+      [
+        "version: 1",
+        'base_url: "http://localhost:8096"',
+        "system: {}",
+        "networking:",
+        `  certificatePassword: { _file: ${secretFile} }`,
+        '  baseUrl: "/${JELLARR_TEST_PREFIX}"',
+        "",
+      ].join("\n"),
+    );
+
+    // Act
+    await runPipeline(cfgFile);
+
+    // Assert
+    expect(client.updateNetworkingConfiguration).toHaveBeenCalledTimes(1);
+    expect(client.updateNetworkingConfiguration).toHaveBeenCalledWith(
+      expect.objectContaining({
+        CertificatePassword: "s3cret",
+        BaseUrl: "/${JELLARR_TEST_PREFIX}",
       }),
     );
   });

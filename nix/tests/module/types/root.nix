@@ -312,6 +312,27 @@ in [
     reconcilePasswords = true;
   })
 
+  (assertEq "expandEnv is emitted when set and dropped when null" (mkConfig (nullConfig
+    // {
+      system = nullSystemConfig;
+      expandEnv = true;
+    })) {
+    version = 1;
+    base_url = "http://10.0.0.76:8096";
+    system = {};
+    expandEnv = true;
+  })
+
+  (assertEq "expandEnv null is dropped" (mkConfig (nullConfig
+    // {
+      system = nullSystemConfig;
+      expandEnv = null;
+    })) {
+    version = 1;
+    base_url = "http://10.0.0.76:8096";
+    system = {};
+  })
+
   (assertEq "reconcilePasswords null is dropped" (mkConfig (nullConfig
     // {
       system = nullSystemConfig;
