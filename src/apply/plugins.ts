@@ -168,9 +168,11 @@ function chooseVersion(
 }
 
 /**
- * Works out which plugins to install or upgrade: missing plugins, and plugins
- * whose repositories offer a newer compatible version. A pinned version is
- * installed exactly and holds the plugin there.
+ * Works out which plugins to install or upgrade: missing plugins, and, for
+ * `upgrade: true`, plugins whose repositories offer a newer compatible
+ * version. An installed plugin with neither `upgrade` nor `version` is left
+ * alone. A pinned version is installed exactly and holds the plugin there,
+ * whatever `upgrade` says.
  */
 export function calculatePluginInstalls(
   installed: PluginInfoSchema[],
@@ -185,6 +187,11 @@ export function calculatePluginInstalls(
     const installedVersion: string | undefined = newestVersion(
       findInstalled(installed, pkg, plugin),
     );
+
+    // NOTE: an installed, unpinned plugin is left alone unless `upgrade: true`.
+    if (installedVersion !== undefined && !plugin.version && !plugin.upgrade) {
+      continue;
+    }
 
     const pinnedInstalled: boolean =
       !!plugin.version &&

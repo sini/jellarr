@@ -16,6 +16,34 @@ in [
       {name = "Trakt";}
     ])
 
+  (assertEq "upgrade is kept when set and dropped when null" (mkPluginsConfig [
+      {
+        name = "A";
+        upgrade = true;
+        configuration = null;
+      }
+      {
+        name = "B";
+        upgrade = false;
+        configuration = null;
+      }
+      {
+        name = "C";
+        upgrade = null;
+        configuration = null;
+      }
+    ]) [
+      {
+        name = "A";
+        upgrade = true;
+      }
+      {
+        name = "B";
+        upgrade = false;
+      }
+      {name = "C";}
+    ])
+
   (assertEq "with configuration" (mkPluginsConfig [
       {
         name = "Trakt";

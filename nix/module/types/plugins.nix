@@ -14,8 +14,20 @@
         type = nullOr secret.str;
         default = null;
         description = ''
-          Version to install and hold the plugin at. When unset, the newest
-          version compatible with the server is installed and kept up to date.
+          Version to install and hold the plugin at, whatever `upgrade` says.
+          When unset, the newest version compatible with the server is
+          installed if the plugin is missing; an installed copy is left alone
+          unless `upgrade` is true.
+        '';
+      };
+      upgrade = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = ''
+          Whether an installed plugin with no `version` is upgraded to the
+          newest compatible version, with a Jellyfin restart. Unset means
+          false: the plugin is installed when missing and never upgraded. A
+          `version` pins that exact version and takes precedence.
         '';
       };
       repository = mkOption {
@@ -54,6 +66,7 @@
         // {inherit (plugin) name;}
         // optionalAttrs (plugin ? version && plugin.version != null) {inherit (plugin) version;}
         // optionalAttrs (plugin ? repository && plugin.repository != null) {inherit (plugin) repository;}
+        // optionalAttrs (plugin ? upgrade && plugin.upgrade != null) {inherit (plugin) upgrade;}
         // optionalAttrs (plugin ? enabled && plugin.enabled != null) {inherit (plugin) enabled;}
         // optionalAttrs (plugin.configuration != null) {inherit (plugin) configuration;})
     cfg;

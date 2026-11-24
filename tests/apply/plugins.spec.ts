@@ -131,12 +131,59 @@ describe("calculatePluginInstalls", () => {
     ]);
   });
 
+  it("should leave an installed unpinned plugin alone by default", () => {
+    expect(
+      calculatePluginInstalls(
+        [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+        catalog,
+        [
+          { name: "SSO Authentication" },
+          { name: "SSO Authentication", upgrade: false },
+        ],
+        "12.2.0",
+      ),
+    ).toBeUndefined();
+  });
+
+  it("should install a pinned newer version without upgrade", () => {
+    const result: PluginInstall[] | undefined = calculatePluginInstalls(
+      [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+      catalog,
+      [{ name: "SSO Authentication", version: "5.1.1" }],
+      "12.2.0",
+    );
+
+    expect(result?.[0]).toMatchObject({ version: "5.1.1" });
+  });
+
+  it("should install the pinned version, not the newest, when upgrade is also set", () => {
+    const result: PluginInstall[] | undefined = calculatePluginInstalls(
+      [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
+      catalog,
+      [{ name: "SSO Authentication", version: "5.1.0", upgrade: true }],
+      "12.2.0",
+    );
+
+    expect(result?.[0]).toMatchObject({ version: "5.1.0" });
+  });
+
+  it("should install a missing plugin whatever upgrade says", () => {
+    const result: PluginInstall[] | undefined = calculatePluginInstalls(
+      [],
+      catalog,
+      [{ name: "SSO Authentication", upgrade: false }],
+      "12.2.0",
+    );
+
+    expect(result?.[0]).toMatchObject({ version: "5.1.1" });
+  });
+
   it("should upgrade an installed plugin matched by GUID under a different name", () => {
     // Act
     const result: PluginInstall[] | undefined = calculatePluginInstalls(
       [installedPlugin("SSO-Auth", SSO_GUID, "4.0.0.4")],
       catalog,
-      [{ name: "SSO Authentication" }],
+      [{ name: "SSO Authentication", upgrade: true }],
       "12.2.0",
     );
 
