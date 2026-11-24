@@ -13,14 +13,12 @@ across environments, and reduces manual intervention.
 
 ## About this fork
 
-This is a fork of [venkyr77/jellarr](https://github.com/venkyr77/jellarr).
-Upstream hasn't had a commit since 2026-08-15, and several working pull requests
-are still waiting for review there, so this fork collects that work in one
-place, tests it together, and releases it.
-
-It is not an official fork, and it isn't endorsed by jellarr's maintainer or
-anyone else. We've reached out to the maintainer about bringing this work back
-upstream, and to the authors of the forks it builds on.
+This is a community fork of
+[venkyr77/jellarr](https://github.com/venkyr77/jellarr). Upstream hasn't had a
+commit since 2026-08-15, and several working pull requests are still waiting for
+review there, so this fork collects that work in one place, tests it together,
+and releases it. We've reached out to the maintainer about bringing it back
+upstream.
 
 Jellarr was created by [@venkyr77](https://github.com/venkyr77) (Venkatesan
 Ravi), and everything in upstream's history is theirs and its contributors'.
