@@ -24,8 +24,15 @@ exceptions.
   `system.pluginRepositories` (declare Jellyfin's own repository if you want to
   keep it) and `policy.enabledLibraries: []`, which removes a user's access to
   every library unless `enableAllFolders` is true.
-- Installing a plugin, or finding one on disk that Jellyfin has not loaded,
-  restarts Jellyfin in the same run so the plugin can be configured.
+- jellarr restarts Jellyfin when a change needs it, and waits for it to come
+  back:
+  - after installing or removing a plugin, or finding one on disk that Jellyfin
+    has not loaded, so the plugin can be configured in the same run;
+  - after changing a network setting Jellyfin reads only at startup (ports,
+    HTTPS and certificate, bind addresses, IPv4/IPv6, virtual interfaces, known
+    proxies), so the change takes effect. For `baseUrl`, jellarr writes the
+    setting and asks you to restart Jellyfin yourself, because Jellyfin's
+    restart endpoint moves with it.
 - Library locations are reconciled: missing paths are linked, undeclared ones
   are unlinked and a folder linked twice is collapsed. Add `pathInfos` to a
   library's `ignoreChanges` to leave its locations alone.
@@ -60,12 +67,12 @@ desired` for every pending change with secrets masked. Exits
   access and the administrator in `startup`. The wizard runs only when
   `completeStartupWizard` is `true` or a `startup.user` is declared, and then
   completes unless `completeStartupWizard` is `false`.
-- Settings coverage: networking (written last, with a restart for settings read
-  only at startup), metadata, `xbmcMetadata`, trickplay, encoding, every library
-  option, `imageOptions`, every settable user policy and configuration field
-  (access schedules, download and bitrate policies, tag restrictions, provider
-  ids), `users[].displayPreferences`, `devices`, `api_keys`, `scheduledTasks`
-  and a `livetv` module.
+- Settings coverage: networking (written last; see the restart note under
+  Breaking changes), metadata, `xbmcMetadata`, trickplay, encoding, every
+  library option, `imageOptions`, every settable user policy and configuration
+  field (access schedules, download and bitrate policies, tag restrictions,
+  provider ids), `users[].displayPreferences`, `devices`, `api_keys`,
+  `scheduledTasks` and a `livetv` module.
 - `renameFrom` on libraries and users renames in place.
 - `branding.splashscreenFile` uploads a splashscreen and
   `branding.removeSplashscreen` deletes it.
