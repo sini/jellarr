@@ -106,9 +106,11 @@
     assert cfg.base_url != "" || throw "base_url must not be empty";
       {
         inherit (cfg) version base_url;
-      }
-      // optionalAttrs (cfg ? system && cfg.system != null) {
-        system = subTypes.system.mkSystemConfig cfg.system;
+        # the runtime schema requires `system`; an empty one changes nothing
+        system =
+          if cfg ? system && cfg.system != null
+          then subTypes.system.mkSystemConfig cfg.system
+          else {};
       }
       // optionalAttrs (cfg ? metadata && cfg.metadata != null) {
         metadata = subTypes.metadata.mkMetadataConfig cfg.metadata;

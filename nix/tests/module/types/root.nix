@@ -60,9 +60,10 @@
 
   nullStartupConfig = {completeStartupWizard = null;};
 in [
-  (assertEq "minimal config" (mkConfig nullConfig) {
+  (assertEq "minimal config emits the required empty system" (mkConfig nullConfig) {
     version = 1;
     base_url = "http://10.0.0.76:8096";
+    system = {};
   })
 
   (assertEq "complete root config with system" (mkConfig (nullConfig
