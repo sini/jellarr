@@ -40,6 +40,7 @@ import type {
 import type { TaskInfoSchema } from "../types/schema/scheduled-tasks";
 import { dumpTaskTriggers } from "../mappers/scheduled-tasks";
 import * as yaml from "yaml";
+import type { DeviceInfoDtoSchema } from "../types/schema/devices";
 import { DEFAULT_DISPLAY_PREFERENCES_ID } from "../types/config/display-preferences";
 import type { DisplayPreferencesDtoSchema } from "../types/schema/users";
 
@@ -137,6 +138,13 @@ export async function runDump(baseUrl: string): Promise<void> {
       }
     }),
   );
+
+  let devices: DeviceInfoDtoSchema[] = [];
+  try {
+    devices = await client.getDevices();
+  } catch {
+    devices = [];
+  }
 
   const webPreferences: Map<string, DisplayPreferencesDtoSchema> = new Map();
   for (const user of users) {
@@ -532,6 +540,15 @@ export async function runDump(baseUrl: string): Promise<void> {
     api_keys: apiKeys.map((key: AuthenticationInfoSchema) => ({
       name: key.AppName,
     })),
+
+    devices: devices.flatMap(
+      (
+        device: DeviceInfoDtoSchema,
+      ): Array<{ id: string; customName: string }> =>
+        device.Id && device.CustomName
+          ? [{ id: device.Id, customName: device.CustomName }]
+          : [],
+    ),
 
     scheduledTasks: scheduledTasks.flatMap((task: TaskInfoSchema) => {
       const dumped: ReturnType<typeof dumpTaskTriggers> =

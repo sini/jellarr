@@ -10,6 +10,7 @@ import { UserConfigListType } from "./users";
 import { StartupConfigType } from "./startup";
 import { PluginConfigListType } from "./plugins";
 import { ApiKeyConfigListType } from "./api-keys";
+import { DeviceConfigListType } from "./devices";
 import { LiveTvConfigType } from "./livetv";
 import { AuthoritativeConfigType } from "./authoritative";
 import {
@@ -48,6 +49,7 @@ export const RootConfigType: z.ZodObject<{
   plugins: z.ZodOptional<typeof PluginConfigListType>;
   startup: z.ZodOptional<typeof StartupConfigType>;
   api_keys: z.ZodOptional<typeof ApiKeyConfigListType>;
+  devices: z.ZodOptional<typeof DeviceConfigListType>;
   livetv: z.ZodOptional<typeof LiveTvConfigType>;
   authoritative: z.ZodOptional<typeof AuthoritativeConfigType>;
   scheduledTasks: z.ZodOptional<typeof ScheduledTaskConfigListType>;
@@ -66,6 +68,7 @@ export const RootConfigType: z.ZodObject<{
     plugins: PluginConfigListType.optional(),
     startup: StartupConfigType.optional(),
     api_keys: ApiKeyConfigListType.optional(),
+    devices: DeviceConfigListType.optional(),
     livetv: LiveTvConfigType.optional(),
     authoritative: AuthoritativeConfigType.optional(),
     scheduledTasks: ScheduledTaskConfigListType.optional(),

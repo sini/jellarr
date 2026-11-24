@@ -14,6 +14,7 @@ export const FIELD_EXCLUSIONS: Record<string, string> = {
   "UserPolicy.InvalidLoginAttemptCount": "server-managed: runtime counter",
   "TunerHostInfo.Id": "server-assigned: matched by url, never declared",
   "ListingsProviderInfo.Id": "server-assigned: matched by content",
+  "DeviceOptionsDto.Id": "server-managed: database row id",
   "AccessSchedule.UserId": "server-managed: set from the owning user",
   "DatabaseConfigurationOptions.DatabaseType":
     "dangerous: a wrong value stops the server; belongs to the host",
@@ -24,11 +25,7 @@ export const FIELD_EXCLUSIONS: Record<string, string> = {
 };
 
 /** Fields not yet covered; each entry is deleted by the commit that covers it. */
-export const PENDING_FIELDS: Record<string, string> = {
-  "DeviceOptionsDto.Id": "pending: item 8",
-  "DeviceOptionsDto.DeviceId": "pending: item 8",
-  "DeviceOptionsDto.CustomName": "pending: item 8",
-};
+export const PENDING_FIELDS: Record<string, string> = {};
 
 export const ENDPOINT_EXCLUSIONS: Record<string, string> = {
   "POST /UserImage": "content: user avatars are images, not configuration",
@@ -40,10 +37,6 @@ export const ENDPOINT_EXCLUSIONS: Record<string, string> = {
   "POST /Repositories":
     "covered through system.pluginRepositories (ServerConfiguration)",
   "DELETE /Plugins/{pluginId}": "equivalent to the by-version uninstall",
-  "POST /System/Configuration/{key}":
-    "covered per named key (encoding, network, metadata, livetv, xbmcmetadata); database is excluded",
 };
 
-export const PENDING_ENDPOINTS: Record<string, string> = {
-  "POST /Devices/Options": "pending: item 8",
-};
+export const PENDING_ENDPOINTS: Record<string, string> = {};

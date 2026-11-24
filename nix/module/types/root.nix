@@ -7,6 +7,7 @@
     authoritative = import ./authoritative.nix {inherit lib;};
     scheduledTasks = import ./scheduled-tasks.nix {inherit lib;};
     apiKeys = import ./api-keys.nix {inherit lib;};
+    devices = import ./devices.nix {inherit lib;};
     brandingOptions = import ./branding-options.nix {inherit lib;};
     encodingOptions = import ./encoding-options.nix {inherit lib;};
     library = import ./library.nix {inherit lib;};
@@ -85,6 +86,11 @@
         default = null;
         description = "API keys to create.";
       };
+      devices = mkOption {
+        type = nullOr subTypes.devices.devicesConfigType;
+        default = null;
+        description = "Custom names for devices, matched by device id.";
+      };
       livetv = mkOption {
         type = nullOr subTypes.livetv.liveTvConfigType;
         default = null;
@@ -144,6 +150,9 @@
       }
       // optionalAttrs (cfg ? startup && cfg.startup != null) {
         startup = subTypes.startup.mkStartupConfig cfg.startup;
+      }
+      // optionalAttrs (cfg ? devices && cfg.devices != null) {
+        devices = subTypes.devices.mkDevicesConfig cfg.devices;
       }
       // optionalAttrs (cfg ? api_keys && cfg.api_keys != null) {
         api_keys = subTypes.apiKeys.mkApiKeysConfig cfg.api_keys;

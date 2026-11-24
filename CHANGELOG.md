@@ -53,6 +53,8 @@ and this project adheres to
 - `library.virtualFolders[].libraryOptions.typeOptions[].imageOptions` sets the
   per-image-type limit and minimum width. A declared list replaces the server's;
   an undeclared one is carried over unchanged.
+- `devices` sets the custom name of devices by id (`POST /Devices/Options`). A
+  device the server does not know yet is warned about and skipped.
 
 ### Changed
 

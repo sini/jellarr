@@ -9,6 +9,10 @@ import type {
   CollectionTypeSchema,
   UpdateLibraryOptionsDtoSchema,
 } from "../types/schema/library";
+import type {
+  DeviceInfoDtoSchema,
+  DeviceOptionsDtoSchema,
+} from "../types/schema/devices";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
   DisplayPreferencesDtoSchema,
@@ -835,6 +839,49 @@ export function createJellyfinClient(
         Items?: AuthenticationInfoSchema[];
       };
       return data.Items ?? [];
+    },
+
+    async getDeviceOptions(
+      id: string,
+    ): Promise<DeviceOptionsDtoSchema | undefined> {
+      const res: ApiResponse<DeviceOptionsDtoSchema> = await client.GET(
+        "/Devices/Options",
+        { params: { query: { id } } },
+      );
+      if (res.response.status === 404) return undefined;
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /Devices/Options failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data;
+    },
+
+    async updateDeviceOptions(
+      id: string,
+      body: DeviceOptionsDtoSchema,
+    ): Promise<void> {
+      const res: ApiResponse = await client.POST("/Devices/Options", {
+        params: { query: { id } },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Devices/Options failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getDevices(): Promise<DeviceInfoDtoSchema[]> {
+      const res: ApiResponse<{ Items?: DeviceInfoDtoSchema[] }> =
+        await client.GET("/Devices");
+      if (!res.response.ok) {
+        throw new Error(
+          `GET /Devices failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data?.Items ?? [];
     },
 
     async createApiKey(appName: string): Promise<void> {

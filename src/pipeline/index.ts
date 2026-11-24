@@ -32,6 +32,13 @@ import {
   calculateNetworkRestartFields,
   networkRestartTarget,
 } from "../apply/networking";
+import {
+  applyDeviceNames,
+  calculateDeviceNameChanges,
+  readDeviceOptions,
+  type DeviceNameChange,
+} from "../apply/devices";
+import type { DeviceOptionsDtoSchema } from "../types/schema/devices";
 import { validateUserProviders } from "../apply/user-providers";
 import {
   applyUserRenames,
@@ -814,6 +821,24 @@ export async function runPipeline(
       console.log("✓ updated plugin configurations");
     } else {
       console.log("✓ plugin configurations already up to date");
+    }
+  }
+
+  if (cfg.devices) {
+    const currentDevices: Map<string, DeviceOptionsDtoSchema> =
+      await readDeviceOptions(jellyfinClient, cfg.devices);
+    const deviceNames: DeviceNameChange[] | undefined =
+      calculateDeviceNameChanges(currentDevices, cfg.devices);
+    if (deviceNames && plan) {
+      for (const change of deviceNames) {
+        plan.change(`device ${change.id}.CustomName`, change.from, change.to);
+      }
+    } else if (deviceNames) {
+      console.log("→ naming devices");
+      await applyDeviceNames(jellyfinClient, deviceNames);
+      console.log("✓ named devices");
+    } else {
+      console.log("✓ device names already up to date");
     }
   }
 

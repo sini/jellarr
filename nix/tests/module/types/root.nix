@@ -21,6 +21,7 @@
     plugins = null;
     startup = null;
     api_keys = null;
+    devices = null;
     livetv = null;
     authoritative = null;
     scheduledTasks = null;

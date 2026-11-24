@@ -875,6 +875,29 @@ describe("api/jf Users façade", () => {
     );
   });
 
+  it("device options read as undefined on 404 and write under the id", async () => {
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("nope", { status: 404 }));
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await expect(
+      jellyfinClient.getDeviceOptions("d1"),
+    ).resolves.toBeUndefined();
+    expect(getLastRequest().url).toMatch(/\/Devices\/Options\?id=d1$/);
+
+    mockFetchNoContent();
+    await jellyfinClient.updateDeviceOptions("d1", {
+      DeviceId: "d1",
+      CustomName: "TV",
+    });
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Devices\/Options\?id=d1$/);
+  });
+
   it("when GET /Users fails then it throws an error with status", async (): Promise<void> => {
     // Arrange
     fetchMock = vi

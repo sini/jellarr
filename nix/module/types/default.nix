@@ -1,6 +1,7 @@
 {lib}: {
   authoritative = import ./authoritative.nix {inherit lib;};
   apiKeys = import ./api-keys.nix {inherit lib;};
+  devices = import ./devices.nix {inherit lib;};
   brandingOptions = import ./branding-options.nix {inherit lib;};
   encodingOptions = import ./encoding-options.nix {inherit lib;};
   library = import ./library.nix {inherit lib;};

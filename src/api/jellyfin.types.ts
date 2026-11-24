@@ -25,6 +25,10 @@ import {
 } from "../types/schema/plugins";
 import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type {
+  DeviceInfoDtoSchema,
+  DeviceOptionsDtoSchema,
+} from "../types/schema/devices";
+import type {
   TaskInfoSchema,
   TaskTriggerInfoSchema,
 } from "../types/schema/scheduled-tasks";
@@ -177,6 +181,10 @@ export interface JellyfinClient {
   getAuthProviders(): Promise<NameIdPairSchema[]>;
   getPasswordResetProviders(): Promise<NameIdPairSchema[]>;
   getApiKeys(): Promise<AuthenticationInfoSchema[]>;
+  /** The options of a device, or undefined when the server does not know it (404). */
+  getDeviceOptions(id: string): Promise<DeviceOptionsDtoSchema | undefined>;
+  updateDeviceOptions(id: string, body: DeviceOptionsDtoSchema): Promise<void>;
+  getDevices(): Promise<DeviceInfoDtoSchema[]>;
   /** Revokes an API key by its access token. */
   deleteApiKey(accessToken: string): Promise<void>;
   /** The user the current token belongs to; undefined for an API key, which has none. */

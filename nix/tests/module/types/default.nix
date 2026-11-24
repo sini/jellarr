@@ -6,6 +6,7 @@
 
   allTests =
     (import ./api-keys.nix testArgs)
+    ++ (import ./devices.nix testArgs)
     ++ (import ./authoritative.nix testArgs)
     ++ (import ./scheduled-tasks.nix testArgs)
     ++ (import ./branding-options.nix testArgs)

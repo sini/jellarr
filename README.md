@@ -832,6 +832,25 @@ declaring the same pair twice for one user is an error.
 - `--dump` writes the `usersettings`/`emby` entry for users that have custom
   preferences; Jellyfin has no endpoint that lists the other entries
 
+### Device Names
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+devices:
+    - id: "5d6c0b1e-1f6a-4c1e-9a43-0c7a6f2d9b11"
+      customName: "Living room TV"
+    - id: "b7e2c4f0-3a85-4e0d-8f66-2d1c9a7e5b30"
+      customName: null # clear the custom name
+```
+
+`devices` sets the name Jellyfin shows for a device (`POST /Devices/Options`),
+matched by device id. A second run changes nothing. A device id exists only once
+a client has connected with it, so an id the server does not know is warned
+about and skipped, not an error; it is named by the first run after the client
+has connected. `customName: null` removes the custom name. `--dump` lists the
+devices that have one.
+
 ### Startup Configuration
 
 ```yaml
