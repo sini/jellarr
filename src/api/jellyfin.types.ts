@@ -143,6 +143,8 @@ export interface JellyfinClient {
   getUsers(): Promise<UserDtoSchema[]>;
   createUser(body: CreateUserByNameSchema): Promise<void>;
   updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;
+  /** Renames a user; the endpoint takes the whole user and writes its configuration too. */
+  renameUser(userId: string, body: UserDtoSchema): Promise<void>;
   updateUserConfiguration(
     userId: string,
     body: UserConfigurationSchema,

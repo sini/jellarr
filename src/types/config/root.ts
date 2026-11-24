@@ -22,6 +22,7 @@ import { parseDuration, triggerProblem } from "../../mappers/scheduled-tasks";
 interface RootConfigInput {
   system: { pluginRepositories?: Array<{ name: string }> | undefined };
   plugins?: Array<{ repository?: string | undefined }> | undefined;
+  users?: Array<{ name: string; renameFrom?: string | undefined }> | undefined;
   livetv?: { authoritative?: boolean | undefined } | undefined;
   authoritative?:
     | {
@@ -118,6 +119,28 @@ export const RootConfigType: z.ZodObject<{
             }
           },
         );
+      },
+    );
+    const userNames: Set<string> = new Set(
+      (cfg.users ?? []).map((user: { name: string }) => user.name),
+    );
+    const userSources: Set<string> = new Set();
+    (cfg.users ?? []).forEach(
+      (user: { renameFrom?: string | undefined }, index: number): void => {
+        if (user.renameFrom === undefined) return;
+        const message: string | undefined = userNames.has(user.renameFrom)
+          ? `users renameFrom "${user.renameFrom}" is also a declared user name`
+          : userSources.has(user.renameFrom)
+            ? `users renameFrom "${user.renameFrom}" is used by more than one user`
+            : undefined;
+        userSources.add(user.renameFrom);
+        if (message) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["users", index, "renameFrom"],
+            message,
+          });
+        }
       },
     );
     const known: Set<string> = new Set(

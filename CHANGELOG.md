@@ -42,6 +42,10 @@ and this project adheres to
   (`POST /Library/VirtualFolders/Name`) when the old name exists and the new one
   does not, then reconciles it as usual. It does nothing once the rename
   happened, and is an error when both names exist.
+- `users[].renameFrom` renames a user (`POST /Users`) with the same rules,
+  keeping the account, its history and its policy. A renamed administrator still
+  signs in when no API key is set: the sign-in tries the declared name, then
+  `renameFrom`.
 
 ### Changed
 

@@ -33,6 +33,12 @@ import {
   networkRestartTarget,
 } from "../apply/networking";
 import {
+  applyUserRenames,
+  calculateUserRenames,
+  renameUsersInMemory,
+  type UserRename,
+} from "../apply/user-rename";
+import {
   applyLibraryRenames,
   calculateLibraryRenames,
   renameInMemory,
@@ -529,6 +535,21 @@ export async function runPipeline(
     }
 
     let currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
+    const userRenames: UserRename[] | undefined = calculateUserRenames(
+      currentUsers,
+      cfg.users,
+    );
+    if (userRenames && plan) {
+      for (const rename of userRenames) {
+        plan.action(`user ${rename.from}: would be renamed to ${rename.to}`);
+      }
+      currentUsers = renameUsersInMemory(currentUsers, userRenames);
+    } else if (userRenames) {
+      console.log("→ renaming users");
+      await applyUserRenames(jellyfinClient, currentUsers, userRenames);
+      console.log("✓ renamed users");
+      currentUsers = await jellyfinClient.getUsers();
+    }
     const existingUsers: UserDtoSchema[] = currentUsers;
 
     const usersToCreate: UserConfig[] | undefined = calculateNewUsersDiff(
@@ -920,7 +941,10 @@ export async function runPipeline(
         : [];
     const declared: Declared = {
       users: [
-        ...(cfg.users ?? []).map((user: UserConfig) => user.name),
+        ...(cfg.users ?? []).flatMap((user: UserConfig): string[] => [
+          user.name,
+          ...(user.renameFrom ? [user.renameFrom] : []),
+        ]),
         ...(cfg.startup?.user ? [cfg.startup.user.name] : []),
       ],
       libraries: (cfg.library?.virtualFolders ?? []).map(

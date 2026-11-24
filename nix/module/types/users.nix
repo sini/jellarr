@@ -317,6 +317,16 @@
         type = secret.str;
         description = "User name.";
       };
+      renameFrom = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = ''
+          Previous name of this user. When a user with that name exists and
+          none with the new name does, the account is renamed instead of a new
+          one created; when both exist, jellarr stops with an error. It does
+          nothing once the rename happened, so it can stay in the config.
+        '';
+      };
       password = mkOption {
         type = nullOr secret.str;
         default = null;

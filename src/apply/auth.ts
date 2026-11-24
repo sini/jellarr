@@ -8,6 +8,8 @@ import { getPassword } from "../mappers/users";
 export interface AdminCredentials {
   name: string;
   password: string;
+  /** Other names the account may still carry on the server, because of a rename. */
+  alternateNames: string[];
 }
 
 /**
@@ -19,15 +21,25 @@ export function resolveAdminCredentials(
   cfg: RootConfig,
 ): AdminCredentials | undefined {
   if (cfg.startup?.user) {
+    const wizardName: string = cfg.startup.user.name;
     return {
-      name: cfg.startup.user.name,
+      name: wizardName,
       password: getPassword(cfg.startup.user),
+      alternateNames: (cfg.users ?? []).flatMap((user: UserConfig): string[] =>
+        user.renameFrom === wizardName ? [user.name] : [],
+      ),
     };
   }
   const admin: UserConfig | undefined = cfg.users?.find(
     (user: UserConfig) => user.policy?.isAdministrator === true,
   );
-  return admin ? { name: admin.name, password: getPassword(admin) } : undefined;
+  return admin
+    ? {
+        name: admin.name,
+        password: getPassword(admin),
+        alternateNames: admin.renameFrom ? [admin.renameFrom] : [],
+      }
+    : undefined;
 }
 
 /**
@@ -49,19 +61,24 @@ export async function authenticateAsAdmin(
   logger.warn(
     `${reason}; falling back to signing in as admin "${admin.name}" with its password`,
   );
-  try {
-    client.setAccessToken(
-      await client.authenticateByName(admin.name, admin.password),
-    );
-  } catch (error) {
-    const detail: string =
-      error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Signing in as admin "${admin.name}" failed (${detail}). Each failed sign-in counts toward the admin's lockout limit, so do not retry blindly; check the password first.`,
-      { cause: error },
-    );
+  // NOTE: a sign-in by a name no account carries counts against nobody, so
+  let firstError: unknown;
+  for (const name of [admin.name, ...admin.alternateNames]) {
+    try {
+      client.setAccessToken(
+        await client.authenticateByName(name, admin.password),
+      );
+      return admin;
+    } catch (error) {
+      firstError ??= error;
+    }
   }
-  return admin;
+  const detail: string =
+    firstError instanceof Error ? firstError.message : String(firstError);
+  throw new Error(
+    `Signing in as admin "${admin.name}" failed (${detail}). Each failed sign-in counts toward the admin's lockout limit, so do not retry blindly; check the password first.`,
+    { cause: firstError },
+  );
 }
 
 export function isUnauthorized(error: unknown): boolean {

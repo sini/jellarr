@@ -173,6 +173,7 @@ export type UserPolicyConfig = z.infer<typeof UserPolicyConfigType>;
 
 export const UserConfigType: z.ZodObject<{
   name: z.ZodString;
+  renameFrom: z.ZodOptional<z.ZodString>;
   password: z.ZodOptional<z.ZodString>;
   passwordFile: z.ZodOptional<z.ZodString>;
   policy: z.ZodOptional<typeof UserPolicyConfigType>;
@@ -207,6 +208,7 @@ export const UserConfigType: z.ZodObject<{
 }> = z
   .object({
     name: z.string().min(1, "User name is required"),
+    renameFrom: z.string().min(1).optional(),
     password: z.string().optional(),
     passwordFile: z.string().optional(),
     policy: UserPolicyConfigType.optional(),
@@ -268,6 +270,11 @@ export const UserConfigType: z.ZodObject<{
       message: "Must specify exactly one of 'password' or 'passwordFile'",
       path: [],
     },
+  )
+  .refine(
+    (data: { name: string; renameFrom?: string | undefined }) =>
+      data.renameFrom !== data.name,
+    { message: "renameFrom must differ from name", path: ["renameFrom"] },
   );
 
 export type UserConfig = z.infer<typeof UserConfigType>;

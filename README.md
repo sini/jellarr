@@ -694,6 +694,34 @@ is left unchanged with a warning. Setting a password signs the user out of their
 other devices, which is why Jellarr only does it when the password differs. The
 admin Jellarr signed in as by name is already verified and is not probed.
 
+**Renaming a user.** Set `renameFrom` to a user's previous name to rename the
+account instead of creating a new one beside it:
+
+```yaml
+users:
+    - name: "root"
+      renameFrom: "admin"
+      passwordFile: "/run/secrets/admin-password"
+      policy:
+          isAdministrator: true
+```
+
+If a user named `admin` exists and none named `root` does, Jellarr renames it
+(`POST /Users`, which keeps the account, its id, watch history and policy) and
+then reconciles it as usual under the new name in the same run. After that
+`admin` no longer exists, so the next run changes nothing. If neither exists,
+`root` is created. If **both** exist, Jellarr stops with an error. `renameFrom`
+must differ from `name`, must not be another declared user's name, and can be
+used by only one user. A dry run reports the rename.
+
+When Jellarr has no API key and signs in as the administrator, a renamed
+administrator still signs in: it tries the declared name first, then
+`renameFrom`. A sign-in by a name no account carries counts against nobody's
+lockout limit, so trying both costs no failed attempt on the real account. The
+same holds for `startup.user`, whose name another `users` entry may rename.
+Under `authoritative.users` the old name is treated as declared, so a dry run
+does not plan to delete the account it is about to rename.
+
 **sops-nix Integration:**
 
 ```nix

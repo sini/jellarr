@@ -621,6 +621,31 @@ in [
       }
     ])
 
+  (assertEq "renameFrom is kept and null is dropped" (mkUsersConfig [
+      {
+        name = "root";
+        renameFrom = "admin";
+        password = "pw";
+        passwordFile = null;
+      }
+      {
+        name = "other";
+        renameFrom = null;
+        password = "pw";
+        passwordFile = null;
+      }
+    ]) [
+      {
+        name = "root";
+        renameFrom = "admin";
+        password = "pw";
+      }
+      {
+        name = "other";
+        password = "pw";
+      }
+    ])
+
   (assertThrows "reject empty grouped library" (mkUsersConfig [
     {
       name = "viewer";

@@ -34,6 +34,12 @@ const READS: Record<string, unknown> = {
   getNetworkingConfiguration: {},
   getUsers: [
     {
+      Name: "oldie",
+      Id: "u2",
+      Policy: {},
+      Configuration: {},
+    },
+    {
       Name: "bob",
       Id: "u1",
       Policy: { IsAdministrator: true },
@@ -79,6 +85,7 @@ const WRITES: string[] = [
   "updateNetworkingConfiguration",
   "createUser",
   "updateUserPolicy",
+  "renameUser",
   "updateUserConfiguration",
   "updateDisplayPreferences",
   "updateUserPassword",
@@ -189,6 +196,9 @@ describe("pipeline/dry run", () => {
       "    password: pw",
       "    policy: { isAdministrator: false }",
       "    displayPreferences: [{ client: emby, customPrefs: { theme: dark } }]",
+      "  - name: newbie",
+      "    renameFrom: oldie",
+      "    password: pw",
       "  - name: carol",
       "    password: pw",
       "plugins:",
@@ -227,6 +237,7 @@ describe("pipeline/dry run", () => {
       "splash.png would be uploaded",
       "networking.CertificatePassword: *** → ***",
       "networking.BaseUrl: *** → ***",
+      "user oldie: would be renamed to newbie",
       "user carol: would be created",
       "user bob.policy.IsAdministrator: true → false",
       "CustomPrefs.theme",

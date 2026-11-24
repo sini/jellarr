@@ -915,6 +915,19 @@ export function createJellyfinClient(
       }
     },
 
+    async renameUser(userId: string, body: UserDtoSchema): Promise<void> {
+      const res: ApiResponse = await client.POST("/Users", {
+        params: { query: { userId } },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+      if (!res.response.ok) {
+        throw new Error(
+          `POST /Users failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async deleteUser(userId: string): Promise<void> {
       const res: ApiResponse = await client.DELETE("/Users/{userId}", {
         params: { path: { userId } },
