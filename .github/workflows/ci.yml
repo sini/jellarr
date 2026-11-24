@@ -55,7 +55,8 @@ jobs:
 
       - name: Build non-VM checks
         run: |
-          for c in formatting linting module-package-override module-bootstrap module-options module-types image-config; do
+          # Every check that isn't a NixOS VM test (those carry a `driver`).
+          for c in $(nix eval --raw .#checks.x86_64-linux --apply 'cs: builtins.concatStringsSep " " (builtins.filter (n: !(builtins.getAttr n cs ? driver)) (builtins.attrNames cs))'); do
             nix build ".#checks.x86_64-linux.$c" --no-link --print-build-logs
           done
 
@@ -66,7 +67,10 @@ jobs:
       - name: Run VM integration tests
         run: |
           failed=0
-          for c in switch-apply sanity-jellyfin-10_11 sanity-jellyfin-12 library-update-jellyfin-10_11 library-update-jellyfin-12 gaps-jellyfin-10_11 gaps-jellyfin-12 locations-jellyfin-10_11 locations-jellyfin-12 authority-jellyfin-10_11 authority-jellyfin-12; do
+          # Every NixOS VM test in the flake, so a new test can't be left out.
+          vms="$(nix eval --raw .#checks.x86_64-linux --apply 'cs: builtins.concatStringsSep " " (builtins.filter (n: builtins.getAttr n cs ? driver) (builtins.attrNames cs))')"
+          [ -n "$vms" ] || { echo "no VM tests found"; exit 1; }
+          for c in $vms; do
             echo "::group::$c"
             nix build ".#checks.x86_64-linux.$c" --no-link --print-build-logs --max-jobs 1 || failed=1
             echo "::endgroup::"
